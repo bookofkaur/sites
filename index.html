@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="Darrian Belcher's web apps — Sole Ops, Peach State Savings, and College Confused." />
+<meta name="color-scheme" content="dark" />
+<meta name="theme-color" content="#0d0d12" />
+<title>Darrian's Sites</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0d0d12;--card:#1a1a26;--border:#2a2a3a;--text:#f0f0f5;--muted:#8a8a9a}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:1.5rem;gap:2rem}
+header{text-align:center}
+h1{font-size:clamp(1.6rem,5vw,2.4rem);font-weight:900;letter-spacing:-0.5px}
+header p{color:var(--muted);margin-top:0.5rem;font-size:0.95rem}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1.25rem;width:100%;max-width:880px}
+a.card{display:block;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:1.5rem;text-decoration:none;color:inherit;transition:transform .15s,border-color .15s}
+a.card:hover,a.card:focus-visible{transform:translateY(-3px);border-color:var(--accent,#6C63FF);outline:none}
+a.card:focus-visible{outline:2px solid #6C63FF;outline-offset:2px}
+.card .ico{font-size:1.8rem}
+.card h2{font-size:1.15rem;font-weight:800;margin:0.6rem 0 0.3rem}
+.card p{color:var(--muted);font-size:0.85rem;line-height:1.5}
+footer{color:var(--muted);font-size:0.8rem}
+@media (prefers-reduced-motion:reduce){a.card{transition:none}}
+</style>
+</head>
+<body>
+<header>
+  <h1>Darrian's Sites</h1>
+  <p>Three tools I built. Pick one.</p>
+</header>
+<nav class="grid">
+  <a class="card" href="sole-ops/">
+    <div class="ico">👟</div>
+    <h2>Sole Ops</h2>
+    <p>Sneaker-reselling operations — inventory, profit calculator, listings, and analytics.</p>
+  </a>
+  <a class="card" href="peach-state-savings/">
+    <div class="ico">💰</div>
+    <h2>Peach State Savings</h2>
+    <p>Personal finance — transactions, budgets, savings goals, net worth, and bills.</p>
+  </a>
+  <a class="card" href="college-confused/">
+    <div class="ico">🎓</div>
+    <h2>College Confused</h2>
+    <p>Free college-prep tools — timeline, scholarships, essays, FAFSA, and SAT/ACT prep.</p>
+  </a>
+</nav>
+<footer>Built by Darrian Belcher</footer>
+</body>
+</html>

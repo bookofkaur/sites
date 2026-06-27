@@ -28,6 +28,11 @@ Every push to `main` and every pull request runs [`.github/workflows/ci.yml`](.g
 
 Reports upload to Lighthouse CI temporary public storage (link in the Action log).
 
+3. **Deploy** — on push to `main` (after the checks pass) the repo publishes to
+   **GitHub Pages**. A landing page ([`index.html`](index.html)) links to each site,
+   served at `/sole-ops/`, `/peach-state-savings/`, `/college-confused/`.
+   Enable once after first push: repo **Settings → Pages → Source: GitHub Actions**.
+
 ## Notes
 
 - `*/photos/` are git-ignored: they're large local media not referenced by the sites.

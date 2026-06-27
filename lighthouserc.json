@@ -3,6 +3,7 @@
     "collect": {
       "staticDistDir": ".",
       "url": [
+        "http://localhost/index.html",
         "http://localhost/sole-ops/index.html",
         "http://localhost/peach-state-savings/index.html",
         "http://localhost/college-confused/index.html",

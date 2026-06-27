@@ -1,0 +1,49 @@
+name: CI
+
+# Contemporary static-site pipeline:
+#  - validates HTML (W3C Nu validator)
+#  - audits accessibility / performance / best-practices / SEO with Lighthouse CI
+# Runs on every push to main and on every pull request.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# Cancel superseded runs on the same ref to save minutes.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  html-validate:
+    name: Validate HTML
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: W3C Nu HTML validation
+        uses: Cyb3r-Jak3/html5validator-action@v7.2.0
+        with:
+          root: .
+          blacklist: node_modules
+          css: true
+
+  lighthouse:
+    name: Lighthouse CI (a11y / perf / SEO)
+    runs-on: ubuntu-latest
+    needs: html-validate
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Run Lighthouse CI
+        run: |
+          npm install -g @lhci/cli@0.15.x
+          lhci autorun --config=./lighthouserc.json
+        env:
+          LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}

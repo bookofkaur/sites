@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="College Confused — free college-prep tools: application timeline, scholarship tracker, essay station, FAFSA guide, and SAT/ACT prep. Built to help students who feel lost in the process." />
+<meta name="color-scheme" content="dark" />
+<meta name="theme-color" content="#0d0d1a" />
+<title>College Confused — Free AI College Prep</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --primary:#6C63FF;--accent:#FF6B6B;--success:#51CF66;--warn:#FFD43B;
+  --bg:#0d0d1a;--surface:#1a1a2e;--card:#1e1e35;--border:#2a2a4a;
+  --text:#e8e8f0;--muted:#8892a4;
+}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);display:flex;flex-direction:column;min-height:100vh}
+/* NAV */
+nav{display:flex;align-items:center;justify-content:space-between;padding:0.9rem 2rem;border-bottom:1px solid var(--border);position:sticky;top:0;background:rgba(13,13,26,0.97);backdrop-filter:blur(8px);z-index:100}
+.logo{font-size:1.2rem;font-weight:800;cursor:pointer}.logo span{color:var(--primary)}
+.nav-links button{background:none;border:none;color:var(--muted);cursor:pointer;padding:0.4rem 0.8rem;border-radius:6px;font-size:0.88rem;transition:all 0.2s}
+.nav-links button:hover,.nav-links button.active{background:rgba(108,99,255,0.15);color:var(--primary)}
+/* LAYOUT */
+.app{display:flex;flex:1}
+.sidebar{width:220px;border-right:1px solid var(--border);padding:1.5rem 1rem;flex-shrink:0;background:var(--surface)}
+.sidebar-item{display:flex;align-items:center;gap:0.6rem;padding:0.6rem 0.75rem;border-radius:8px;cursor:pointer;font-size:0.88rem;color:var(--muted);transition:all 0.15s;margin-bottom:0.25rem}
+.sidebar-item:hover,.sidebar-item.active{background:rgba(108,99,255,0.12);color:var(--primary)}
+.sidebar-item .si{font-size:1rem}
+.sidebar-section{font-size:0.72rem;text-transform:uppercase;letter-spacing:1px;color:var(--muted);padding:0.75rem 0.75rem 0.3rem;margin-top:0.5rem}
+.main{flex:1;padding:2rem;overflow-y:auto}
+/* PANELS */
+.panel{display:none}.panel.active{display:block}
+/* CARDS */
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.5rem;margin-bottom:1.25rem}
+.card h3{font-size:1rem;font-weight:700;margin-bottom:0.75rem}
+.card-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;margin-bottom:1.5rem}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:1.25rem}
+.stat-card .label{font-size:0.78rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px}
+.stat-card .value{font-size:1.8rem;font-weight:900;color:var(--primary);margin-top:0.2rem}
+.stat-card .sub{font-size:0.8rem;color:var(--muted);margin-top:0.2rem}
+/* FORM */
+input,textarea,select{background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:0.6rem 0.9rem;font-size:0.9rem;width:100%;outline:none;transition:border-color 0.2s;font-family:inherit}
+input:focus,textarea:focus,select:focus{border-color:var(--primary)}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;margin-bottom:0.75rem}
+.form-group{margin-bottom:0.75rem}
+label{font-size:0.82rem;color:var(--muted);display:block;margin-bottom:0.3rem}
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:0.4rem;padding:0.6rem 1.25rem;border-radius:8px;font-weight:700;font-size:0.88rem;cursor:pointer;border:none;transition:all 0.2s}
+.btn-primary{background:var(--primary);color:#fff}.btn-primary:hover{background:#5a52e0}
+.btn-danger{background:rgba(255,107,107,0.15);color:var(--accent);border:1px solid rgba(255,107,107,0.3)}.btn-danger:hover{background:rgba(255,107,107,0.25)}
+.btn-ghost{background:transparent;border:1px solid var(--border);color:var(--text)}.btn-ghost:hover{border-color:var(--primary);color:var(--primary)}
+.btn-sm{padding:0.35rem 0.75rem;font-size:0.8rem}
+/* TABLE */
+table{width:100%;border-collapse:collapse;font-size:0.88rem}
+th{text-align:left;padding:0.6rem 0.75rem;font-size:0.75rem;text-transform:uppercase;letter-spacing:0.5px;color:var(--muted);border-bottom:1px solid var(--border)}
+td{padding:0.75rem;border-bottom:1px solid rgba(255,255,255,0.04)}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(255,255,255,0.02)}
+/* BADGE */
+.badge{display:inline-block;padding:0.2rem 0.6rem;border-radius:20px;font-size:0.75rem;font-weight:700}
+.badge-green{background:rgba(81,207,102,0.15);color:var(--success)}
+.badge-red{background:rgba(255,107,107,0.15);color:var(--accent)}
+.badge-yellow{background:rgba(255,212,59,0.15);color:var(--warn)}
+.badge-blue{background:rgba(108,99,255,0.15);color:var(--primary)}
+/* PROGRESS */
+.progress-wrap{background:var(--border);border-radius:4px;height:8px;overflow:hidden;margin-top:0.5rem}
+.progress-bar{height:100%;border-radius:4px;background:var(--primary);transition:width 0.4s}
+/* CHECKLIST */
+.checklist-item{display:flex;align-items:center;gap:0.75rem;padding:0.75rem;border-radius:8px;cursor:pointer;transition:background 0.15s}
+.checklist-item:hover{background:rgba(255,255,255,0.03)}
+.checklist-item input[type=checkbox]{width:16px;height:16px;accent-color:var(--primary);cursor:pointer;flex-shrink:0}
+.checklist-item .cl-text{font-size:0.9rem}.checklist-item .cl-due{font-size:0.78rem;color:var(--muted);margin-left:auto}
+.checklist-item.done .cl-text{text-decoration:line-through;color:var(--muted)}
+/* ESSAY */
+textarea{resize:vertical;min-height:140px;line-height:1.6}
+.word-count{font-size:0.78rem;color:var(--muted);text-align:right;margin-top:0.3rem}
+/* SCORE */
+.score-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.score-input-wrap{display:flex;align-items:center;gap:0.5rem}
+.score-input-wrap input{width:90px}
+.score-result{background:var(--surface);border-radius:8px;padding:1rem;text-align:center;margin-top:1rem}
+.score-result .big{font-size:2rem;font-weight:900;color:var(--primary)}
+/* SCHOLARSHIP */
+.scholarship-item{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1.25rem;margin-bottom:1rem;display:flex;justify-content:space-between;align-items:flex-start;gap:1rem}
+.scholarship-item h4{font-size:0.95rem;font-weight:700;margin-bottom:0.3rem}
+.scholarship-item .amount{font-size:1.1rem;font-weight:800;color:var(--success)}
+.scholarship-item .meta{font-size:0.8rem;color:var(--muted);margin-top:0.25rem}
+/* FAFSA */
+.fafsa-step{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1.25rem;margin-bottom:0.75rem;display:flex;align-items:flex-start;gap:1rem;cursor:pointer;transition:border-color 0.2s}
+.fafsa-step:hover{border-color:var(--primary)}
+.fafsa-step .step-num{width:32px;height:32px;border-radius:50%;background:rgba(108,99,255,0.15);color:var(--primary);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:0.85rem;flex-shrink:0}
+.fafsa-step.done .step-num{background:rgba(81,207,102,0.15);color:var(--success)}
+.fafsa-step h4{font-size:0.92rem;font-weight:700;margin-bottom:0.25rem}
+.fafsa-step p{font-size:0.82rem;color:var(--muted);line-height:1.5}
+/* SAT */
+.subject-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1.25rem;margin-bottom:0.75rem}
+.subject-card h4{font-size:0.9rem;font-weight:700;margin-bottom:0.75rem;display:flex;justify-content:space-between}
+.subject-card h4 span{color:var(--primary);font-size:0.85rem}
+.tip-list{list-style:none}
+.tip-list li{padding:0.4rem 0;border-bottom:1px solid rgba(255,255,255,0.04);font-size:0.85rem;color:var(--muted);display:flex;gap:0.5rem}
+.tip-list li::before{content:"→";color:var(--primary)}
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:200;display:flex;align-items:center;justify-content:center;padding:1rem}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:2rem;width:100%;max-width:520px;max-height:90vh;overflow-y:auto}
+.modal h2{font-size:1.2rem;font-weight:800;margin-bottom:1.25rem}
+.modal-actions{display:flex;gap:0.75rem;justify-content:flex-end;margin-top:1.25rem}
+.hidden{display:none!important}
+/* EMPTY */
+.empty{text-align:center;padding:3rem;color:var(--muted)}
+.empty .ei{font-size:2.5rem;margin-bottom:0.75rem}
+/* SECTION HEADER */
+.section-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem}
+.section-header h2{font-size:1.4rem;font-weight:800}
+/* TIPS BOX */
+.tip-box{background:rgba(108,99,255,0.08);border:1px solid rgba(108,99,255,0.2);border-radius:10px;padding:1rem 1.25rem;font-size:0.85rem;color:var(--muted);line-height:1.6;margin-bottom:1.25rem}
+.tip-box strong{color:var(--primary)}
+/* ── Responsive + accessibility + motion ── */
+.dash-split{display:grid;grid-template-columns:1fr 1fr;gap:1.25rem}
+.sidebar-item:focus-visible,.logo:focus-visible,.nav-links button:focus-visible,.btn:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+@media (max-width:860px){
+  nav{padding:0.75rem 1rem}
+  .nav-links{overflow-x:auto;-webkit-overflow-scrolling:touch;white-space:nowrap;max-width:60%}
+  .nav-links button{flex:0 0 auto}
+  .app{flex-direction:column}
+  .sidebar{display:none}
+  .main{padding:1rem}
+  .dash-split,.score-grid{grid-template-columns:1fr}
+  .form-row{grid-template-columns:1fr}
+  .scholarship-item{flex-direction:column}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo" onclick="showPanel('dashboard')">College<span>Confused</span></div>
+  <div class="nav-links">
+    <button onclick="showPanel('dashboard')" id="nav-dashboard" class="active">Dashboard</button>
+    <button onclick="showPanel('timeline')" id="nav-timeline">Timeline</button>
+    <button onclick="showPanel('scholarships')" id="nav-scholarships">Scholarships</button>
+    <button onclick="showPanel('essays')" id="nav-essays">Essay Station</button>
+    <button onclick="showPanel('fafsa')" id="nav-fafsa">FAFSA Guide</button>
+    <button onclick="showPanel('sat')" id="nav-sat">SAT/ACT Prep</button>
+  </div>
+</nav>
+
+<div class="app">
+  <div class="sidebar">
+    <div class="sidebar-section">Overview</div>
+    <div class="sidebar-item active" onclick="showPanel('dashboard')" id="sb-dashboard"><span class="si">🏠</span> Dashboard</div>
+    <div class="sidebar-section">Tools</div>
+    <div class="sidebar-item" onclick="showPanel('timeline')" id="sb-timeline"><span class="si">📅</span> App Timeline</div>
+    <div class="sidebar-item" onclick="showPanel('scholarships')" id="sb-scholarships"><span class="si">💰</span> Scholarships</div>
+    <div class="sidebar-item" onclick="showPanel('essays')" id="sb-essays"><span class="si">✍️</span> Essay Station</div>
+    <div class="sidebar-item" onclick="showPanel('fafsa')" id="sb-fafsa"><span class="si">📋</span> FAFSA Guide</div>
+    <div class="sidebar-item" onclick="showPanel('sat')" id="sb-sat"><span class="si">📊</span> SAT/ACT Prep</div>
+  </div>
+
+  <div class="main">
+
+    <!-- DASHBOARD -->
+    <div class="panel active" id="panel-dashboard">
+      <div class="section-header">
+        <h2>Your College Dashboard</h2>
+        <span style="font-size:0.85rem;color:var(--muted)" id="dash-date"></span>
+      </div>
+      <div class="card-grid" id="dash-stats"></div>
+      <div class="dash-split">
+        <div class="card">
+          <h3>⏰ Upcoming Deadlines</h3>
+          <div id="dash-deadlines"></div>
+        </div>
+        <div class="card">
+          <h3>📝 Recent Essays</h3>
+          <div id="dash-essays-preview"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TIMELINE -->
+    <div class="panel" id="panel-timeline">
+      <div class="section-header">
+        <h2>Application Timeline</h2>
+        <button class="btn btn-primary btn-sm" onclick="openTaskModal()">+ Add Task</button>
+      </div>
+      <div class="tip-box"><strong>Tip:</strong> Check off tasks as you complete them. Stay ahead of deadlines — most colleges open applications August–September.</div>
+      <div id="timeline-list"></div>
+    </div>
+
+    <!-- SCHOLARSHIPS -->
+    <div class="panel" id="panel-scholarships">
+      <div class="section-header">
+        <h2>Scholarship Tracker</h2>
+        <button class="btn btn-primary btn-sm" onclick="openScholarshipModal()">+ Add Scholarship</button>
+      </div>
+      <div class="card-grid" id="scholarship-stats"></div>
+      <div id="scholarship-list"></div>
+    </div>
+
+    <!-- ESSAYS -->
+    <div class="panel" id="panel-essays">
+      <div class="section-header">
+        <h2>Essay Station</h2>
+        <button class="btn btn-primary btn-sm" onclick="openEssayModal()">+ New Essay</button>
+      </div>
+      <div class="tip-box"><strong>Common App Tips:</strong> Main essay is 650 words. Show don't tell. Pick a story that's specific to you — admissions officers read thousands of generic essays.</div>
+      <div id="essay-list"></div>
+    </div>
+
+    <!-- FAFSA -->
+    <div class="panel" id="panel-fafsa">
+      <div class="section-header"><h2>FAFSA Guide</h2></div>
+      <div class="card-grid">
+        <div class="stat-card">
+          <div class="label">FAFSA Opens</div>
+          <div class="value" style="font-size:1.1rem">Oct 1</div>
+          <div class="sub">Every year for next aid year</div>
+        </div>
+        <div class="stat-card">
+          <div class="label">Federal Deadline</div>
+          <div class="value" style="font-size:1.1rem">June 30</div>
+          <div class="sub">State/school deadlines earlier</div>
+        </div>
+        <div class="stat-card">
+          <div class="label">Max Pell Grant</div>
+          <div class="value" style="font-size:1.1rem">$7,395</div>
+          <div class="sub">2024–2025 award year</div>
+        </div>
+      </div>
+      <div id="fafsa-steps"></div>
+    </div>
+
+    <!-- SAT/ACT -->
+    <div class="panel" id="panel-sat">
+      <div class="section-header"><h2>SAT / ACT Prep</h2></div>
+      <div class="card" style="margin-bottom:1.25rem">
+        <h3>Score Calculator</h3>
+        <div class="score-grid">
+          <div>
+            <div class="form-group"><label>SAT Reading & Writing (200–800)</label><input type="number" id="sat-rw" min="200" max="800" placeholder="e.g. 550" oninput="calcScores()"></div>
+            <div class="form-group"><label>SAT Math (200–800)</label><input type="number" id="sat-math" min="200" max="800" placeholder="e.g. 600" oninput="calcScores()"></div>
+          </div>
+          <div>
+            <div class="form-group"><label>ACT Composite (1–36)</label><input type="number" id="act-comp" min="1" max="36" placeholder="e.g. 24" oninput="calcScores()"></div>
+          </div>
+        </div>
+        <div class="score-result hidden" id="score-result"></div>
+      </div>
+      <div id="sat-subjects"></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- MODALS -->
+<div class="modal-overlay hidden" id="task-modal">
+  <div class="modal">
+    <h2 id="task-modal-title">Add Timeline Task</h2>
+    <div class="form-group"><label>Task Name</label><input id="task-name" placeholder="e.g. Request teacher recommendation"></div>
+    <div class="form-row">
+      <div><label>Due Date</label><input type="date" id="task-due"></div>
+      <div><label>Category</label>
+        <select id="task-cat">
+          <option>Application</option><option>Test Prep</option><option>Financial Aid</option>
+          <option>Scholarship</option><option>Essay</option><option>Visit</option><option>Other</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group"><label>Notes (optional)</label><textarea id="task-notes" style="min-height:80px"></textarea></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('task-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveTask()">Save Task</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay hidden" id="scholarship-modal">
+  <div class="modal">
+    <h2>Add Scholarship</h2>
+    <div class="form-group"><label>Scholarship Name</label><input id="sch-name" placeholder="e.g. Gates Scholarship"></div>
+    <div class="form-row">
+      <div><label>Amount ($)</label><input type="number" id="sch-amount" placeholder="5000"></div>
+      <div><label>Deadline</label><input type="date" id="sch-deadline"></div>
+    </div>
+    <div class="form-group"><label>Website / Link</label><input id="sch-link" placeholder="https://..."></div>
+    <div class="form-group"><label>Requirements</label><textarea id="sch-req" style="min-height:80px" placeholder="GPA, essay, etc."></textarea></div>
+    <div class="form-group"><label>Status</label>
+      <select id="sch-status">
+        <option>Not Started</option><option>In Progress</option><option>Applied</option><option>Won</option><option>Rejected</option>
+      </select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('scholarship-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveScholarship()">Save</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay hidden" id="essay-modal">
+  <div class="modal">
+    <h2 id="essay-modal-title">New Essay</h2>
+    <div class="form-group"><label>Essay Title / Prompt</label><input id="essay-title" placeholder="e.g. Common App Essay — Prompt #1"></div>
+    <div class="form-row">
+      <div><label>School</label><input id="essay-school" placeholder="e.g. Georgia Tech"></div>
+      <div><label>Word Limit</label><input type="number" id="essay-limit" placeholder="650"></div>
+    </div>
+    <div class="form-group">
+      <label>Essay Content</label>
+      <textarea id="essay-content" style="min-height:200px" oninput="updateWordCount(this,'essay-wc')"></textarea>
+      <div class="word-count" id="essay-wc">0 words</div>
+    </div>
+    <div class="form-group"><label>Status</label>
+      <select id="essay-status"><option>Drafting</option><option>Reviewing</option><option>Final</option><option>Submitted</option></select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('essay-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveEssay()">Save Essay</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay hidden" id="essay-view-modal">
+  <div class="modal" style="max-width:680px">
+    <h2 id="ev-title"></h2>
+    <div style="font-size:0.82rem;color:var(--muted);margin-bottom:1rem" id="ev-meta"></div>
+    <div style="background:var(--card);border-radius:8px;padding:1.25rem;font-size:0.9rem;line-height:1.7;white-space:pre-wrap;max-height:400px;overflow-y:auto" id="ev-content"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('essay-view-modal')">Close</button>
+      <button class="btn btn-primary" onclick="editEssayFromView()">Edit</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── DATA ───────────────────────────────────────
+const KEYS = { tasks:'cc_tasks', scholarships:'cc_scholarships', essays:'cc_essays', fafsa:'cc_fafsa' };
+const load = k => JSON.parse(localStorage.getItem(k)||'[]');
+const save = (k,v) => localStorage.setItem(k, JSON.stringify(v));
+
+let editingEssayId = null;
+let viewingEssayId = null;
+
+// ─── NAV ────────────────────────────────────────
+function showPanel(id){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-links button').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.sidebar-item').forEach(s=>s.classList.remove('active'));
+  document.getElementById('panel-'+id).classList.add('active');
+  const nb = document.getElementById('nav-'+id);
+  const sb = document.getElementById('sb-'+id);
+  if(nb) nb.classList.add('active');
+  if(sb) sb.classList.add('active');
+  renderAll();
+}
+
+// ─── MODAL ──────────────────────────────────────
+function openModal(id){ document.getElementById(id).classList.remove('hidden') }
+function closeModal(id){ document.getElementById(id).classList.add('hidden') }
+document.querySelectorAll('.modal-overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.add('hidden')}));
+
+// ─── TIMELINE ───────────────────────────────────
+const DEFAULT_TASKS = [
+  {id:'t1',name:'Register for SAT/ACT',due:'2026-08-15',cat:'Test Prep',done:false,notes:''},
+  {id:'t2',name:'Start Common App account',due:'2026-08-01',cat:'Application',done:false,notes:'commonapp.org'},
+  {id:'t3',name:'Request teacher recommendations',due:'2026-09-01',cat:'Application',done:false,notes:'Ask 2 teachers early'},
+  {id:'t4',name:'Request school counselor recommendation',due:'2026-09-15',cat:'Application',done:false,notes:''},
+  {id:'t5',name:'Complete FAFSA',due:'2026-10-01',cat:'Financial Aid',done:false,notes:'Opens Oct 1'},
+  {id:'t6',name:'Write Common App main essay',due:'2026-09-30',cat:'Essay',done:false,notes:'650 words max'},
+  {id:'t7',name:'Submit Early Decision applications',due:'2026-11-01',cat:'Application',done:false,notes:'Binding commitment'},
+  {id:'t8',name:'Submit Early Action applications',due:'2026-11-15',cat:'Application',done:false,notes:'Non-binding'},
+  {id:'t9',name:'Submit Regular Decision applications',due:'2027-01-01',cat:'Application',done:false,notes:'Most common deadline'},
+  {id:'t10',name:'Apply for CSS Profile (private schools)',due:'2026-10-15',cat:'Financial Aid',done:false,notes:'cssprofile.collegeboard.org'},
+];
+
+function initTasks(){
+  if(!localStorage.getItem(KEYS.tasks)) save(KEYS.tasks, DEFAULT_TASKS);
+}
+
+function openTaskModal(id=null){
+  if(id){
+    const tasks = load(KEYS.tasks);
+    const t = tasks.find(x=>x.id===id);
+    document.getElementById('task-modal-title').textContent = 'Edit Task';
+    document.getElementById('task-name').value = t.name;
+    document.getElementById('task-due').value = t.due;
+    document.getElementById('task-cat').value = t.cat;
+    document.getElementById('task-notes').value = t.notes||'';
+    document.getElementById('task-modal').dataset.editId = id;
+  } else {
+    document.getElementById('task-modal-title').textContent = 'Add Timeline Task';
+    document.getElementById('task-name').value='';
+    document.getElementById('task-due').value='';
+    document.getElementById('task-cat').value='Application';
+    document.getElementById('task-notes').value='';
+    delete document.getElementById('task-modal').dataset.editId;
+  }
+  openModal('task-modal');
+}
+
+function saveTask(){
+  const name = document.getElementById('task-name').value.trim();
+  if(!name) return;
+  const tasks = load(KEYS.tasks);
+  const editId = document.getElementById('task-modal').dataset.editId;
+  const task = {
+    id: editId||'t'+Date.now(),
+    name, due:document.getElementById('task-due').value,
+    cat:document.getElementById('task-cat').value,
+    notes:document.getElementById('task-notes').value, done:false
+  };
+  if(editId){ const i=tasks.findIndex(x=>x.id===editId); task.done=tasks[i].done; tasks[i]=task; }
+  else tasks.push(task);
+  save(KEYS.tasks,tasks);
+  closeModal('task-modal');
+  renderTimeline();
+}
+
+function toggleTask(id){
+  const tasks=load(KEYS.tasks); const t=tasks.find(x=>x.id===id);
+  if(t){ t.done=!t.done; save(KEYS.tasks,tasks); renderTimeline(); renderDashboard(); }
+}
+
+function deleteTask(id){
+  save(KEYS.tasks,load(KEYS.tasks).filter(x=>x.id!==id));
+  renderTimeline(); renderDashboard();
+}
+
+function renderTimeline(){
+  const tasks=load(KEYS.tasks);
+  const cats=[...new Set(tasks.map(t=>t.cat))].sort();
+  let html='';
+  cats.forEach(cat=>{
+    const catTasks=tasks.filter(t=>t.cat===cat).sort((a,b)=>a.due.localeCompare(b.due));
+    html+=`<div class="card"><h3>${catIcon(cat)} ${cat}</h3>`;
+    catTasks.forEach(t=>{
+      const overdue=t.due&&new Date(t.due)<new Date()&&!t.done;
+      html+=`<div class="checklist-item ${t.done?'done':''}">
+        <input type="checkbox" ${t.done?'checked':''} onchange="toggleTask('${t.id}')">
+        <span class="cl-text">${t.name}${t.notes?`<div style="font-size:0.78rem;color:var(--muted);margin-top:2px">${t.notes}</div>`:''}</span>
+        <span class="cl-due" style="${overdue?'color:var(--accent)':''}">${t.due||''}</span>
+        <button class="btn btn-ghost btn-sm" onclick="openTaskModal('${t.id}')">Edit</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteTask('${t.id}')">✕</button>
+      </div>`;
+    });
+    html+='</div>';
+  });
+  document.getElementById('timeline-list').innerHTML = html||'<div class="empty"><div class="ei">📅</div><p>No tasks yet. Add your first!</p></div>';
+}
+
+function catIcon(c){ return {Application:'🎓',Essay:'✍️','Test Prep':'📊','Financial Aid':'💰',Scholarship:'🏆',Visit:'🏫',Other:'📌'}[c]||'📌' }
+
+// ─── SCHOLARSHIPS ────────────────────────────────
+function openScholarshipModal(id=null){
+  if(id){
+    const s=load(KEYS.scholarships).find(x=>x.id===id);
+    document.getElementById('sch-name').value=s.name;
+    document.getElementById('sch-amount').value=s.amount;
+    document.getElementById('sch-deadline').value=s.deadline;
+    document.getElementById('sch-link').value=s.link||'';
+    document.getElementById('sch-req').value=s.req||'';
+    document.getElementById('sch-status').value=s.status;
+    document.getElementById('scholarship-modal').dataset.editId=id;
+  } else {
+    ['sch-name','sch-amount','sch-deadline','sch-link','sch-req'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('sch-status').value='Not Started';
+    delete document.getElementById('scholarship-modal').dataset.editId;
+  }
+  openModal('scholarship-modal');
+}
+
+function saveScholarship(){
+  const name=document.getElementById('sch-name').value.trim(); if(!name) return;
+  const scholarships=load(KEYS.scholarships);
+  const editId=document.getElementById('scholarship-modal').dataset.editId;
+  const s={id:editId||'s'+Date.now(),name,amount:document.getElementById('sch-amount').value,
+    deadline:document.getElementById('sch-deadline').value,link:document.getElementById('sch-link').value,
+    req:document.getElementById('sch-req').value,status:document.getElementById('sch-status').value};
+  if(editId) scholarships[scholarships.findIndex(x=>x.id===editId)]=s;
+  else scholarships.push(s);
+  save(KEYS.scholarships,scholarships);
+  closeModal('scholarship-modal');
+  renderScholarships();
+}
+
+function deleteScholarship(id){ save(KEYS.scholarships,load(KEYS.scholarships).filter(x=>x.id!==id)); renderScholarships(); }
+
+const SCH_STATUS_BADGE={'Not Started':'badge-yellow','In Progress':'badge-blue','Applied':'badge-blue','Won':'badge-green','Rejected':'badge-red'};
+
+function renderScholarships(){
+  const list=load(KEYS.scholarships);
+  const total=list.reduce((s,x)=>s+Number(x.amount||0),0);
+  const won=list.filter(x=>x.status==='Won').reduce((s,x)=>s+Number(x.amount||0),0);
+  document.getElementById('scholarship-stats').innerHTML=`
+    <div class="stat-card"><div class="label">Tracked</div><div class="value">${list.length}</div></div>
+    <div class="stat-card"><div class="label">Potential Awards</div><div class="value">$${total.toLocaleString()}</div></div>
+    <div class="stat-card"><div class="label">Won So Far</div><div class="value" style="color:var(--success)">$${won.toLocaleString()}</div></div>
+  `;
+  if(!list.length){ document.getElementById('scholarship-list').innerHTML='<div class="empty"><div class="ei">💰</div><p>No scholarships tracked yet.</p></div>'; return; }
+  document.getElementById('scholarship-list').innerHTML=list.map(s=>`
+    <div class="scholarship-item">
+      <div>
+        <h4>${s.name}</h4>
+        <div class="amount">$${Number(s.amount||0).toLocaleString()}</div>
+        <div class="meta">${s.deadline?`Due: ${s.deadline}`:''} ${s.req?`· ${s.req.substring(0,80)}...`:''}</div>
+        ${s.link?`<div class="meta"><a href="${s.link}" target="_blank" style="color:var(--primary)">${s.link}</a></div>`:''}
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:0.5rem;flex-shrink:0">
+        <span class="badge ${SCH_STATUS_BADGE[s.status]||'badge-blue'}">${s.status}</span>
+        <div style="display:flex;gap:0.5rem">
+          <button class="btn btn-ghost btn-sm" onclick="openScholarshipModal('${s.id}')">Edit</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteScholarship('${s.id}')">✕</button>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+// ─── ESSAYS ─────────────────────────────────────
+function openEssayModal(id=null){
+  editingEssayId=id;
+  if(id){
+    const e=load(KEYS.essays).find(x=>x.id===id);
+    document.getElementById('essay-modal-title').textContent='Edit Essay';
+    document.getElementById('essay-title').value=e.title;
+    document.getElementById('essay-school').value=e.school||'';
+    document.getElementById('essay-limit').value=e.limit||'';
+    document.getElementById('essay-content').value=e.content||'';
+    document.getElementById('essay-status').value=e.status||'Drafting';
+    updateWordCount(document.getElementById('essay-content'),'essay-wc');
+  } else {
+    document.getElementById('essay-modal-title').textContent='New Essay';
+    ['essay-title','essay-school','essay-limit','essay-content'].forEach(i=>document.getElementById(i).value='');
+    document.getElementById('essay-status').value='Drafting';
+    document.getElementById('essay-wc').textContent='0 words';
+  }
+  closeModal('essay-view-modal');
+  openModal('essay-modal');
+}
+
+function saveEssay(){
+  const title=document.getElementById('essay-title').value.trim(); if(!title) return;
+  const essays=load(KEYS.essays);
+  const e={id:editingEssayId||'e'+Date.now(),title,school:document.getElementById('essay-school').value,
+    limit:document.getElementById('essay-limit').value,content:document.getElementById('essay-content').value,
+    status:document.getElementById('essay-status').value,updated:new Date().toLocaleDateString()};
+  if(editingEssayId) essays[essays.findIndex(x=>x.id===editingEssayId)]=e;
+  else essays.push(e);
+  save(KEYS.essays,essays);
+  closeModal('essay-modal');
+  renderEssays();
+}
+
+function viewEssay(id){
+  const e=load(KEYS.essays).find(x=>x.id===id);
+  viewingEssayId=id;
+  document.getElementById('ev-title').textContent=e.title;
+  document.getElementById('ev-meta').textContent=`${e.school||'General'} · ${wordCount(e.content||'')} words · ${e.status} · Updated ${e.updated||''}`;
+  document.getElementById('ev-content').textContent=e.content||'(empty)';
+  openModal('essay-view-modal');
+}
+
+function editEssayFromView(){ openEssayModal(viewingEssayId); }
+
+function deleteEssay(id){ if(confirm('Delete this essay?')){ save(KEYS.essays,load(KEYS.essays).filter(x=>x.id!==id)); renderEssays(); } }
+
+const ESSAY_STATUS_BADGE={Drafting:'badge-yellow',Reviewing:'badge-blue',Final:'badge-green',Submitted:'badge-green'};
+
+function renderEssays(){
+  const list=load(KEYS.essays);
+  if(!list.length){ document.getElementById('essay-list').innerHTML='<div class="empty"><div class="ei">✍️</div><p>No essays yet. Start writing!</p></div>'; return; }
+  document.getElementById('essay-list').innerHTML=list.map(e=>{
+    const wc=wordCount(e.content||'');
+    const lim=Number(e.limit||0);
+    const pct=lim?Math.min(100,Math.round(wc/lim*100)):0;
+    return `<div class="card" style="cursor:pointer" onclick="viewEssay('${e.id}')">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start">
+        <div>
+          <h3>${e.title}</h3>
+          <div style="font-size:0.82rem;color:var(--muted);margin-top:0.25rem">${e.school||'General'} · Updated ${e.updated||''}</div>
+        </div>
+        <div style="display:flex;gap:0.5rem;align-items:center" onclick="event.stopPropagation()">
+          <span class="badge ${ESSAY_STATUS_BADGE[e.status]||'badge-blue'}">${e.status}</span>
+          <button class="btn btn-ghost btn-sm" onclick="openEssayModal('${e.id}')">Edit</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteEssay('${e.id}')">✕</button>
+        </div>
+      </div>
+      ${lim?`<div style="margin-top:0.75rem"><div style="display:flex;justify-content:space-between;font-size:0.78rem;color:var(--muted)"><span>${wc} / ${lim} words</span><span>${pct}%</span></div><div class="progress-wrap"><div class="progress-bar" style="width:${pct}%;background:${pct>100?'var(--accent)':'var(--primary)'}"></div></div></div>`:''}
+    </div>`;
+  }).join('');
+}
+
+function wordCount(t){ return t.trim()?t.trim().split(/\s+/).length:0 }
+function updateWordCount(el,targetId){ document.getElementById(targetId).textContent=wordCount(el.value)+' words' }
+
+// ─── FAFSA ──────────────────────────────────────
+const FAFSA_STEPS=[
+  {num:1,title:'Create your FSA ID',desc:'Go to studentaid.gov and create your Federal Student Aid ID. You and a parent both need one. This is your login for FAFSA.',key:'fafsa_s1'},
+  {num:2,title:'Gather your documents',desc:'You need: Social Security numbers, tax returns (yours and parents\'), W-2 forms, bank statements, investment records, and untaxed income records.',key:'fafsa_s2'},
+  {num:3,title:'Open the FAFSA form',desc:'Go to studentaid.gov/h/apply-for-aid/fafsa. FAFSA opens October 1 for the next academic year. File as early as possible.',key:'fafsa_s3'},
+  {num:4,title:'Link your taxes (IRS DRT)',desc:'Use the IRS Data Retrieval Tool to pull your tax data automatically. This reduces errors and speeds up processing.',key:'fafsa_s4'},
+  {num:5,title:'List your colleges',desc:'Add up to 20 colleges to receive your FAFSA. List your state\'s schools first to meet state aid deadlines.',key:'fafsa_s5'},
+  {num:6,title:'Submit and sign',desc:'Review for errors, then submit. Both you and your parent must sign electronically using your FSA IDs.',key:'fafsa_s6'},
+  {num:7,title:'Review your SAR',desc:'After submitting you\'ll get a Student Aid Report (SAR). Check it for errors. Your EFC (Expected Family Contribution) is on this form.',key:'fafsa_s7'},
+  {num:8,title:'Compare financial aid packages',desc:'Colleges send award letters after acceptance. Compare grants, loans, and work-study offers. More grants = better. Loans must be repaid.',key:'fafsa_s8'},
+];
+
+function renderFAFSA(){
+  document.getElementById('fafsa-steps').innerHTML=FAFSA_STEPS.map(s=>{
+    const done=localStorage.getItem(s.key)==='done';
+    return `<div class="fafsa-step ${done?'done':''}" onclick="toggleFAFSA('${s.key}',this)">
+      <div class="step-num">${done?'✓':s.num}</div>
+      <div><h4>${s.title}</h4><p>${s.desc}</p></div>
+    </div>`;
+  }).join('');
+}
+
+function toggleFAFSA(key,el){
+  const done=localStorage.getItem(key)==='done';
+  localStorage.setItem(key,done?'':'done');
+  renderFAFSA();
+}
+
+// ─── SAT/ACT ─────────────────────────────────────
+function calcScores(){
+  const rw=Number(document.getElementById('sat-rw').value);
+  const m=Number(document.getElementById('sat-math').value);
+  const act=Number(document.getElementById('act-comp').value);
+  const res=document.getElementById('score-result');
+  let html='';
+  if(rw>=200&&m>=200){
+    const total=rw+m;
+    html+=`<div style="margin-bottom:0.75rem"><div class="big">${total}</div><div style="font-size:0.85rem;color:var(--muted)">SAT Total Score</div><div style="font-size:0.82rem;margin-top:0.5rem;color:${total>=1400?'var(--success)':total>=1200?'var(--warn)':'var(--accent)'}">${total>=1400?'Competitive for selective schools':total>=1200?'Solid — targets most schools':'Consider retesting'}</div></div>`;
+  }
+  if(act>=1&&act<=36){
+    html+=`<div><div class="big" style="font-size:1.5rem">${act} ACT</div><div style="font-size:0.82rem;color:var(--muted)">Equivalent SAT: ~${actToSAT(act)}</div><div style="font-size:0.82rem;margin-top:0.25rem;color:${act>=30?'var(--success)':act>=24?'var(--warn)':'var(--accent)'}">${act>=30?'Top 7% nationally':act>=24?'Above average':act>=18?'Average range':'Below average — retesting recommended'}</div></div>`;
+  }
+  if(html){ res.innerHTML=html; res.classList.remove('hidden'); }
+  else res.classList.add('hidden');
+}
+
+function actToSAT(a){ const map={36:1600,35:1590,34:1540,33:1500,32:1470,31:1430,30:1400,29:1370,28:1340,27:1310,26:1280,25:1260,24:1230,23:1200,22:1170,21:1130,20:1090,19:1050,18:1020,17:980,16:940,15:900,14:860,13:820,12:780}; return map[a]||'N/A' }
+
+const SAT_SUBJECTS=[
+  {name:'Reading & Writing',score:'200–800',tips:['Read actively — predict answers before looking at choices','Eliminate 2 wrong answers first','For evidence questions, find the line that proves your answer','Vocabulary in context: use the sentence, not the definition']},
+  {name:'Math (No Calc)',tips:['Know your algebra — linear equations, quadratics, systems','Plug in numbers for abstract problems','Watch for traps with negatives and fractions','Time: ~1.5 min per question']},
+  {name:'Math (Calculator)',tips:['Use the calculator strategically — don\'t over-rely on it','Data analysis: read graphs carefully, check axes','Percentages, ratios, and unit conversions show up often','Last 5 questions are hardest — skip and return']},
+  {name:'ACT English',tips:['Read the whole sentence in context before choosing','Know FANBOYS commas and semicolon rules','Shorter is usually better for conciseness questions','Don\'t add punctuation that isn\'t needed']},
+  {name:'ACT Science',tips:['You don\'t need to know science — you need to read graphs','Find the trend, then answer the question','Conflicting Viewpoints: read both scientists\' views first','Skip reading the passage — go straight to the questions']},
+];
+
+function renderSAT(){
+  document.getElementById('sat-subjects').innerHTML=SAT_SUBJECTS.map(s=>`
+    <div class="subject-card">
+      <h4>${s.name} ${s.score?`<span>${s.score}</span>`:''}</h4>
+      <ul class="tip-list">${s.tips.map(t=>`<li>${t}</li>`).join('')}</ul>
+    </div>`).join('');
+}
+
+// ─── DASHBOARD ───────────────────────────────────
+function renderDashboard(){
+  document.getElementById('dash-date').textContent=new Date().toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  const tasks=load(KEYS.tasks);
+  const essays=load(KEYS.essays);
+  const scholarships=load(KEYS.scholarships);
+  const done=tasks.filter(t=>t.done).length;
+  document.getElementById('dash-stats').innerHTML=`
+    <div class="stat-card"><div class="label">Tasks Done</div><div class="value">${done}/${tasks.length}</div><div class="progress-wrap" style="margin-top:0.5rem"><div class="progress-bar" style="width:${tasks.length?Math.round(done/tasks.length*100):0}%"></div></div></div>
+    <div class="stat-card"><div class="label">Scholarships</div><div class="value">${scholarships.length}</div><div class="sub">$${scholarships.reduce((s,x)=>s+Number(x.amount||0),0).toLocaleString()} potential</div></div>
+    <div class="stat-card"><div class="label">Essays</div><div class="value">${essays.length}</div><div class="sub">${essays.filter(e=>e.status==='Final'||e.status==='Submitted').length} finalized</div></div>
+    <div class="stat-card"><div class="label">FAFSA Progress</div><div class="value">${FAFSA_STEPS.filter(s=>localStorage.getItem(s.key)==='done').length}/${FAFSA_STEPS.length}</div><div class="sub">steps complete</div></div>
+  `;
+  const upcoming=tasks.filter(t=>!t.done&&t.due).sort((a,b)=>a.due.localeCompare(b.due)).slice(0,5);
+  document.getElementById('dash-deadlines').innerHTML=upcoming.length?upcoming.map(t=>`
+    <div style="display:flex;justify-content:space-between;padding:0.5rem 0;border-bottom:1px solid rgba(255,255,255,0.04);font-size:0.88rem">
+      <span>${catIcon(t.cat)} ${t.name}</span>
+      <span style="color:var(--muted);font-size:0.8rem">${t.due}</span>
+    </div>`).join(''):'<div style="color:var(--muted);font-size:0.88rem;padding:0.5rem 0">All tasks complete! 🎉</div>';
+  const recentEssays=essays.slice(-3).reverse();
+  document.getElementById('dash-essays-preview').innerHTML=recentEssays.length?recentEssays.map(e=>`
+    <div style="padding:0.5rem 0;border-bottom:1px solid rgba(255,255,255,0.04);cursor:pointer" onclick="showPanel('essays')">
+      <div style="font-size:0.88rem;font-weight:600">${e.title}</div>
+      <div style="font-size:0.78rem;color:var(--muted)">${e.school||'General'} · ${wordCount(e.content||'')} words · <span class="badge ${ESSAY_STATUS_BADGE[e.status]||'badge-blue'}" style="font-size:0.7rem">${e.status}</span></div>
+    </div>`).join(''):'<div style="color:var(--muted);font-size:0.88rem;padding:0.5rem 0">No essays yet. <span style="color:var(--primary);cursor:pointer" onclick="showPanel(\'essays\')">Start writing →</span></div>';
+}
+
+function renderAll(){ renderDashboard(); renderTimeline(); renderScholarships(); renderEssays(); renderFAFSA(); renderSAT(); }
+
+initTasks();
+renderAll();
+
+/* ── Accessibility: keyboard nav + Escape to close modals ── */
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){document.querySelectorAll('.modal-overlay:not(.hidden)').forEach(m=>m.classList.add('hidden'));}});
+document.querySelectorAll('.sidebar-item,.logo').forEach(el=>{el.setAttribute('role','button');el.setAttribute('tabindex','0');el.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();el.click();}});});
+</script>
+</body>
+</html>

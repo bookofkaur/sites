@@ -1,0 +1,13 @@
+# Personal media dumps — large, not referenced by the sites, keep out of the repo
+*/photos/
+photos/
+
+# OS / editor cruft
+.DS_Store
+Thumbs.db
+*.swp
+
+# Tooling
+node_modules/
+.lighthouseci/
+*.log

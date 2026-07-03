@@ -79,6 +79,13 @@ tr:hover td{background:rgba(255,255,255,0.02)}
 .donut-wrap{display:flex;align-items:center;gap:1.5rem;flex-wrap:wrap}
 .legend-item{display:flex;align-items:center;gap:0.5rem;font-size:0.82rem;margin-bottom:0.4rem}
 .legend-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+/* CROSS-LIST */
+.photo-thumbs{display:flex;gap:0.6rem;flex-wrap:wrap;margin-top:0.6rem}
+.photo-thumbs img{width:84px;height:84px;object-fit:cover;border-radius:8px;border:1px solid var(--border)}
+.spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(0,0,0,0.3);border-top-color:#000;border-radius:50%;animation:clspin 0.7s linear infinite;vertical-align:-2px}
+@keyframes clspin{to{transform:rotate(360deg)}}
+.cl-copy-block{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:0.75rem;font-size:0.82rem;white-space:pre-wrap;word-break:break-word;max-height:200px;overflow-y:auto;margin-bottom:0.6rem}
+.cl-tag{display:inline-block;padding:0.2rem 0.6rem;border-radius:4px;font-size:0.75rem;background:rgba(255,255,255,0.06);color:var(--text);margin:0 0.35rem 0.35rem 0}
 /* MONTH FILTER */
 .pill-tabs{display:flex;gap:0.5rem;margin-bottom:1.25rem;flex-wrap:wrap}
 .pill-tab{padding:0.35rem 0.9rem;border-radius:4px;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:0.78rem;cursor:pointer;transition:all 0.2s;letter-spacing:0.5px;text-transform:uppercase;font-weight:700}
@@ -107,6 +114,7 @@ tr:hover td{background:rgba(255,255,255,0.02)}
     <button onclick="showPanel('inventory')" id="nav-inventory">Inventory</button>
     <button onclick="showPanel('calc')" id="nav-calc">Profit Calc</button>
     <button onclick="showPanel('listings')" id="nav-listings">Listings</button>
+    <button onclick="showPanel('crosslist')" id="nav-crosslist">Cross-List</button>
     <button onclick="showPanel('analytics')" id="nav-analytics">Analytics</button>
   </div>
 </nav>
@@ -119,6 +127,7 @@ tr:hover td{background:rgba(255,255,255,0.02)}
     <div class="sidebar-item" onclick="showPanel('inventory')" id="sb-inventory">👟 Inventory</div>
     <div class="sidebar-item" onclick="showPanel('calc')" id="sb-calc">💸 Profit Calc</div>
     <div class="sidebar-item" onclick="showPanel('listings')" id="sb-listings">📦 Listings</div>
+    <div class="sidebar-item" onclick="showPanel('crosslist')" id="sb-crosslist">🚀 Cross-List</div>
     <div class="sidebar-item" onclick="showPanel('analytics')" id="sb-analytics">📈 Analytics</div>
   </div>
 
@@ -179,6 +188,55 @@ tr:hover td{background:rgba(255,255,255,0.02)}
       <div id="listings-list"></div>
     </div>
 
+    <!-- CROSS-LIST -->
+    <div class="panel" id="panel-crosslist">
+      <div class="section-header"><h2>Cross-List</h2><span style="color:var(--muted);font-size:0.82rem">eBay · Mercari · Depop</span></div>
+
+      <div class="card">
+        <h3>AI Setup</h3>
+        <div class="form-row">
+          <div><label for="cl-api-key">Anthropic API Key (stored only in this browser)</label><input type="password" id="cl-api-key" placeholder="sk-ant-..." autocomplete="off"></div>
+          <div style="display:flex;align-items:flex-end"><button class="btn btn-ghost" onclick="saveClKey()">Save Key</button></div>
+        </div>
+        <p style="font-size:0.78rem;color:var(--muted)">Powers the photo analyzer below. The key is kept in this browser's local storage and is sent only to the Claude API. Get one at console.anthropic.com.</p>
+      </div>
+
+      <div class="card">
+        <h3>Build Listing</h3>
+        <div class="form-group"><label for="cl-pair">From Inventory (optional)</label>
+          <select id="cl-pair" onchange="clFillFromPair()"><option value="">— manual entry —</option></select>
+        </div>
+        <div class="form-row">
+          <div><label for="cl-name">Shoe Name</label><input id="cl-name" placeholder="e.g. Jordan 4 Military Black"></div>
+          <div><label for="cl-size">Size (US)</label><input type="number" id="cl-size" step="0.5" placeholder="10"></div>
+        </div>
+        <div class="form-row">
+          <div><label for="cl-condition">Condition</label>
+            <select id="cl-condition"><option>DS / Brand New</option><option>VNDS / Like New</option><option>Used - Excellent</option><option>Used - Good</option><option>Used - Fair</option></select>
+          </div>
+          <div><label for="cl-price">List Price ($) — blank for AI suggestion</label><input type="number" id="cl-price" placeholder="0"></div>
+        </div>
+        <div class="form-group"><label for="cl-notes">Notes / Known Flaws</label><input id="cl-notes" placeholder="e.g. small crease on left toe, no box"></div>
+        <div class="form-group">
+          <label for="cl-photos">Photos (up to 4 — used by the AI analyzer)</label>
+          <input type="file" id="cl-photos" accept="image/*" multiple onchange="clLoadPhotos(this.files)">
+          <div class="photo-thumbs" id="cl-thumbs"></div>
+        </div>
+        <div style="display:flex;gap:0.75rem;flex-wrap:wrap">
+          <button class="btn btn-primary" id="cl-analyze-btn" onclick="clAnalyze()">🤖 Analyze Photos + Suggest Prices</button>
+          <button class="btn btn-ghost" onclick="clBuildCards()">Build Platform Listings</button>
+        </div>
+        <div id="cl-error" style="font-size:0.82rem;margin-top:0.6rem;min-height:1em" role="alert"></div>
+      </div>
+
+      <div class="card hidden" id="cl-ai-card">
+        <h3>AI Analysis</h3>
+        <div id="cl-ai-result"></div>
+      </div>
+
+      <div id="cl-platform-cards"></div>
+    </div>
+
     <!-- ANALYTICS -->
     <div class="panel" id="panel-analytics">
       <div class="section-header"><h2>Analytics</h2></div>
@@ -214,7 +272,7 @@ tr:hover td{background:rgba(255,255,255,0.02)}
     </div>
     <div class="form-group"><label>Sale Price ($) — if sold</label><input type="number" id="pair-sale" placeholder="0"></div>
     <div class="form-group"><label>Platform Sold On</label>
-      <select id="pair-platform"><option value="">—</option><option>StockX</option><option>GOAT</option><option>eBay</option><option>Local</option><option>Instagram</option><option>Other</option></select>
+      <select id="pair-platform"><option value="">—</option><option>StockX</option><option>GOAT</option><option>eBay</option><option>Mercari</option><option>Depop</option><option>Local</option><option>Instagram</option><option>Other</option></select>
     </div>
     <div class="form-group"><label>Notes</label><input id="pair-notes" placeholder="Optional"></div>
     <div class="modal-actions">
@@ -234,7 +292,7 @@ tr:hover td{background:rgba(255,255,255,0.02)}
     </div>
     <div class="form-row">
       <div><label>Platform</label>
-        <select id="lst-platform"><option>StockX</option><option>GOAT</option><option>eBay</option><option>Local</option><option>Instagram</option><option>Other</option></select>
+        <select id="lst-platform"><option>StockX</option><option>GOAT</option><option>eBay</option><option>Mercari</option><option>Depop</option><option>Local</option><option>Instagram</option><option>Other</option></select>
       </div>
       <div><label>Date Listed</label><input type="date" id="lst-date"></div>
     </div>
@@ -414,7 +472,7 @@ function updateListingStatus(id,status){
 function deleteListing(id){save(KEYS.listings,load(KEYS.listings).filter(x=>x.id!==id));renderListings();}
 
 const LST_STATUS_BADGE={Active:'badge-green',Sold:'badge-accent',Ended:'badge-red'};
-const PLATFORM_COLORS={StockX:'#00b840',GOAT:'#ff6347',eBay:'#e53238',Local:'#a78bfa',Instagram:'#e1306c'};
+const PLATFORM_COLORS={StockX:'#00b840',GOAT:'#ff6347',eBay:'#e53238',Mercari:'#7b7dff',Depop:'#ff5544',Local:'#a78bfa',Instagram:'#e1306c'};
 
 function renderListings(){
   const listings=load(KEYS.listings).sort((a,b)=>b.date?.localeCompare(a.date||'')||0);
@@ -514,7 +572,195 @@ function renderDashboard(){
     </div>`).join(''):'<div style="color:var(--muted);font-size:0.85rem;padding:0.5rem 0">No active listings.</div>';
 }
 
-function renderAll(){ renderDashboard(); renderInventory(); renderPlatforms(); renderListings(); renderAnalytics(); }
+// CROSS-LIST
+const CL_KEY='so_anthropic_key';
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const CL_PLATFORMS=[
+  {name:'eBay',color:'#e53238',fee:0.136,flat:0.30,titleMax:80,sellUrl:'https://www.ebay.com/sl/sell',feeDesc:'~13.6% final value fee + $0.30 (est.)'},
+  {name:'Mercari',color:'#7b7dff',fee:0.129,flat:0.50,titleMax:80,sellUrl:'https://www.mercari.com/sell/',feeDesc:'~10% selling + 2.9% + $0.50 processing (est.)'},
+  {name:'Depop',color:'#ff5544',fee:0.033,flat:0.45,titleMax:0,sellUrl:'https://www.depop.com/sell/',feeDesc:'~3.3% + $0.45 payment fee (est., US)'}
+];
+let clPhotos=[];
+let clAI=null;
+let clCards=[];
+
+function clFlash(msg,ok){const el=document.getElementById('cl-error');el.style.color=ok?'var(--success)':'var(--danger)';el.textContent=msg;if(msg)setTimeout(()=>{if(el.textContent===msg)el.textContent='';},6000);}
+function saveClKey(){const v=document.getElementById('cl-api-key').value.trim();if(v)localStorage.setItem(CL_KEY,v);else localStorage.removeItem(CL_KEY);clFlash(v?'Key saved to this browser.':'Key cleared.',true);}
+
+function renderCrosslist(){
+  const sel=document.getElementById('cl-pair');
+  const cur=sel.value;
+  const pairs=load(KEYS.pairs).filter(p=>p.status!=='Sold');
+  sel.innerHTML='<option value="">— manual entry —</option>'+pairs.map(p=>`<option value="${esc(p.id)}">${esc(p.name)} (Sz ${esc(p.size||'?')})</option>`).join('');
+  sel.value=cur;
+  const k=localStorage.getItem(CL_KEY);
+  if(k&&!document.getElementById('cl-api-key').value)document.getElementById('cl-api-key').value=k;
+}
+function clFillFromPair(){
+  const id=document.getElementById('cl-pair').value; if(!id)return;
+  const p=load(KEYS.pairs).find(x=>x.id===id); if(!p)return;
+  document.getElementById('cl-name').value=p.name;
+  document.getElementById('cl-size').value=p.size||'';
+  document.getElementById('cl-notes').value=p.notes||'';
+}
+function clLoadPhotos(files){
+  clPhotos=[];
+  document.getElementById('cl-thumbs').innerHTML='';
+  [...files].slice(0,4).forEach(f=>{
+    const img=new Image();
+    img.onload=()=>{
+      const scale=Math.min(1,1024/Math.max(img.width,img.height));
+      const c=document.createElement('canvas');
+      c.width=Math.round(img.width*scale);c.height=Math.round(img.height*scale);
+      c.getContext('2d').drawImage(img,0,0,c.width,c.height);
+      const dataUrl=c.toDataURL('image/jpeg',0.85);
+      clPhotos.push(dataUrl.split(',')[1]);
+      const t=document.createElement('img');t.src=dataUrl;t.alt='Listing photo preview';
+      document.getElementById('cl-thumbs').appendChild(t);
+      URL.revokeObjectURL(img.src);
+    };
+    img.src=URL.createObjectURL(f);
+  });
+}
+
+const CL_SCHEMA={type:'object',additionalProperties:false,required:['shoe','condition_grade','quality_notes','flaws','market_low','market_high','prices','title','description','confidence'],properties:{
+  shoe:{type:'string',description:'Identified brand, model, and colorway'},
+  condition_grade:{type:'string',enum:['DS / Brand New','VNDS / Like New','Used - Excellent','Used - Good','Used - Fair','Used - Poor']},
+  quality_notes:{type:'array',items:{type:'string'},description:'Observations about condition and quality from the photos'},
+  flaws:{type:'array',items:{type:'string'},description:'Specific flaws visible in the photos or reported by the seller'},
+  market_low:{type:'number',description:'Low end of realistic USD resale range'},
+  market_high:{type:'number',description:'High end of realistic USD resale range'},
+  prices:{type:'object',additionalProperties:false,required:['ebay','mercari','depop'],properties:{ebay:{type:'number'},mercari:{type:'number'},depop:{type:'number'}}},
+  title:{type:'string',description:'Keyword-rich listing title, 80 characters max'},
+  description:{type:'string',description:'Honest, detailed listing description mentioning all flaws'},
+  confidence:{type:'string',enum:['high','medium','low']}
+}};
+
+async function clAnalyze(){
+  const key=(document.getElementById('cl-api-key').value.trim())||localStorage.getItem(CL_KEY);
+  if(!key){clFlash('Add your Anthropic API key in AI Setup first.');return;}
+  if(!clPhotos.length){clFlash('Upload at least one photo to analyze.');return;}
+  const btn=document.getElementById('cl-analyze-btn');
+  const orig=btn.innerHTML;
+  btn.disabled=true;btn.innerHTML='<span class="spinner"></span> Analyzing…';
+  try{
+    const details=[
+      'Name: '+(document.getElementById('cl-name').value||'(unknown — identify from photos)'),
+      'Size (US): '+(document.getElementById('cl-size').value||'unknown'),
+      'Seller-stated condition: '+document.getElementById('cl-condition').value,
+      document.getElementById('cl-notes').value?'Seller notes/flaws: '+document.getElementById('cl-notes').value:''
+    ].filter(Boolean).join('\n');
+    const content=clPhotos.map(b64=>({type:'image',source:{type:'base64',media_type:'image/jpeg',data:b64}}));
+    content.push({type:'text',text:`You are an expert sneaker reseller and authenticator. Analyze the attached photos of a pair being listed for resale.\n\nSeller-provided details:\n${details}\n\nTasks:\n1. Identify the shoe (brand, model, colorway) from the photos; cross-check against the seller's name.\n2. Grade the condition from what you can see: creasing, sole wear, yellowing, scuffs, box condition, and any authenticity red flags.\n3. Estimate a realistic USD resale price range for this shoe in this size and condition.\n4. Recommend a listing price for each platform (eBay, Mercari, Depop), accounting for typical buyer expectations and seller fees on each.\n5. Write a keyword-rich listing title (80 characters max: brand, model, colorway, size, condition) and an honest, detailed description that mentions every flaw.`});
+    const resp=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'content-type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:'claude-opus-4-8',max_tokens:8000,thinking:{type:'adaptive'},
+        output_config:{format:{type:'json_schema',schema:CL_SCHEMA}},
+        messages:[{role:'user',content}]})
+    });
+    if(!resp.ok){
+      const err=await resp.json().catch(()=>null);
+      throw new Error(err&&err.error&&err.error.message?err.error.message:'API error '+resp.status);
+    }
+    const data=await resp.json();
+    if(data.stop_reason==='refusal')throw new Error('The model declined to analyze these photos.');
+    const textBlock=(data.content||[]).find(b=>b.type==='text');
+    if(!textBlock)throw new Error('No analysis returned — try again.');
+    clAI=JSON.parse(textBlock.text);
+    clRenderAI();
+    if(!parseFloat(document.getElementById('cl-price').value))document.getElementById('cl-price').value=clAI.prices.ebay;
+    clBuildCards();
+    clFlash('Analysis complete.',true);
+  }catch(e){clFlash(e.message||'Analysis failed.');}
+  btn.disabled=false;btn.innerHTML=orig;
+}
+
+function clRenderAI(){
+  const a=clAI; if(!a)return;
+  document.getElementById('cl-ai-card').classList.remove('hidden');
+  document.getElementById('cl-ai-result').innerHTML=`
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem;margin-bottom:1rem">
+      <div style="font-weight:800;font-size:1.05rem">${esc(a.shoe)}</div>
+      <div><span class="badge badge-accent">${esc(a.condition_grade)}</span> <span class="badge badge-gray">confidence: ${esc(a.confidence)}</span></div>
+    </div>
+    <div class="card-grid" style="margin-bottom:1rem">
+      <div class="stat-card"><div class="label">Market Range</div><div class="value" style="font-size:1.3rem">${fmt(a.market_low)}–${fmt(a.market_high)}</div></div>
+      <div class="stat-card"><div class="label">eBay Price</div><div class="value" style="font-size:1.3rem;color:var(--accent)">${fmt(a.prices.ebay)}</div></div>
+      <div class="stat-card"><div class="label">Mercari Price</div><div class="value" style="font-size:1.3rem;color:var(--accent)">${fmt(a.prices.mercari)}</div></div>
+      <div class="stat-card"><div class="label">Depop Price</div><div class="value" style="font-size:1.3rem;color:var(--accent)">${fmt(a.prices.depop)}</div></div>
+    </div>
+    ${a.quality_notes.length?`<div style="margin-bottom:0.75rem"><div style="font-size:0.72rem;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:0.4rem">Quality Notes</div>${a.quality_notes.map(n=>`<span class="cl-tag">${esc(n)}</span>`).join('')}</div>`:''}
+    ${a.flaws.length?`<div><div style="font-size:0.72rem;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:0.4rem">Flaws</div>${a.flaws.map(n=>`<span class="cl-tag" style="color:var(--warn)">${esc(n)}</span>`).join('')}</div>`:''}`;
+}
+
+function clComposeManual(){
+  const name=document.getElementById('cl-name').value.trim();
+  const size=document.getElementById('cl-size').value;
+  const cond=document.getElementById('cl-condition').value;
+  const notes=document.getElementById('cl-notes').value.trim();
+  return {
+    title:[name,size?'Size '+size:'',cond.split(' / ')[0]].filter(Boolean).join(' — '),
+    description:[name,size?'US Men’s Size '+size:'','Condition: '+cond,notes?'Notes: '+notes:'','100% authentic. Ships fast and double-boxed. No returns — ask any questions before buying!'].filter(Boolean).join('\n')
+  };
+}
+
+function clBuildCards(){
+  const name=document.getElementById('cl-name').value.trim();
+  if(!name&&!clAI){clFlash('Enter a shoe name (or run the AI analyzer) first.');return;}
+  const price=parseFloat(document.getElementById('cl-price').value)||0;
+  const base=clAI?{title:clAI.title,description:clAI.description}:clComposeManual();
+  const hashtags=(clAI?clAI.shoe:name).toLowerCase().split(/\s+/).filter(w=>/^[a-z0-9]+$/.test(w)).slice(0,4).map(w=>'#'+w).concat(['#sneakers','#kicks']).join(' ');
+  clCards=CL_PLATFORMS.map(pl=>{
+    const p=price||(clAI?clAI.prices[pl.name.toLowerCase()]:0);
+    const fees=p*pl.fee+pl.flat;
+    return {platform:pl,price:p,net:p-fees,
+      title:pl.titleMax?base.title.slice(0,pl.titleMax):'',
+      description:pl.name==='Depop'?base.description+'\n\n'+hashtags:base.description};
+  });
+  document.getElementById('cl-platform-cards').innerHTML=`
+    <div class="section-header" style="margin-top:0.5rem"><h2 style="font-size:1.05rem">Platform Listings</h2>
+      <button class="btn btn-ghost btn-sm" onclick="clOpenAll()">Open All Sell Pages</button>
+    </div>`+clCards.map((c,i)=>`
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem;margin-bottom:0.75rem">
+        <div>
+          <span style="font-weight:900;font-size:1rem;color:${c.platform.color}">${c.platform.name}</span>
+          <span style="font-size:0.75rem;color:var(--muted);margin-left:0.5rem">${esc(c.platform.feeDesc)}</span>
+        </div>
+        <div style="font-size:0.85rem">List <span style="font-weight:900;color:var(--accent)">${fmt(c.price)}</span> · Est. net <span style="font-weight:900;color:var(--success)">${fmt(c.net)}</span></div>
+      </div>
+      ${c.title?`<label>Title (${c.title.length}/${c.platform.titleMax})</label><div class="cl-copy-block">${esc(c.title)}</div>`:''}
+      <label>Description${c.platform.name==='Depop'?' (with hashtags)':''}</label>
+      <div class="cl-copy-block">${esc(c.description)}</div>
+      <div style="display:flex;gap:0.5rem;flex-wrap:wrap">
+        ${c.title?`<button class="btn btn-ghost btn-sm" onclick="clCopy(${i},'title',this)">Copy Title</button>`:''}
+        <button class="btn btn-ghost btn-sm" onclick="clCopy(${i},'description',this)">Copy Description</button>
+        <button class="btn btn-ghost btn-sm" onclick="window.open('${c.platform.sellUrl}','_blank','noopener')">Open ${c.platform.name} Sell Page</button>
+        <button class="btn btn-primary btn-sm" onclick="clMarkListed(${i})">Mark Listed</button>
+      </div>
+    </div>`).join('');
+}
+function clCopy(i,field,btn){
+  navigator.clipboard.writeText(clCards[i][field]).then(()=>{
+    const t=btn.textContent;btn.textContent='Copied ✓';setTimeout(()=>btn.textContent=t,1500);
+  }).catch(()=>clFlash('Copy failed — select and copy manually.'));
+}
+function clOpenAll(){clCards.forEach(c=>window.open(c.platform.sellUrl,'_blank','noopener'));clFlash('If only one tab opened, allow pop-ups for this site.',true);}
+function clMarkListed(i){
+  const c=clCards[i];
+  const listings=load(KEYS.listings);
+  listings.push({id:'l'+Date.now(),name:document.getElementById('cl-name').value.trim()||(clAI?clAI.shoe:''),
+    size:document.getElementById('cl-size').value,price:c.price,platform:c.platform.name,
+    date:new Date().toISOString().split('T')[0],status:'Active'});
+  save(KEYS.listings,listings);
+  const pairId=document.getElementById('cl-pair').value;
+  if(pairId){const pairs=load(KEYS.pairs);const p=pairs.find(x=>x.id===pairId);if(p&&p.status==='Hold'){p.status='Listed';save(KEYS.pairs,pairs);}}
+  renderAll();
+  clFlash('Tracked as listed on '+c.platform.name+'.',true);
+}
+
+function renderAll(){ renderDashboard(); renderInventory(); renderPlatforms(); renderListings(); renderCrosslist(); renderAnalytics(); }
 renderAll();
 
 /* ── Accessibility: keyboard nav + Escape to close modals ── */

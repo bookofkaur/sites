@@ -32,7 +32,10 @@ d.getElementById('cl-size').value = '10';
 d.getElementById('cl-condition').value = 'VNDS / Like New';
 d.getElementById('cl-notes').value = 'worn twice, light crease left toe, OG box';
 d.getElementById('cl-api-key').value = 'sk-ant-mock-key-for-ci';
-window.clPhotos = ['bW9jay1waG90by1ieXRlcw==']; // skip canvas resize (no canvas in jsdom)
+// The page script declares clPhotos with `let` (lexical scope, not a window
+// property), so it must be set from inside the page context — skip the canvas
+// resize path, which jsdom doesn't support.
+window.eval(`clPhotos = ['bW9jay1waG90by1ieXRlcw=='];`);
 
 // Stub the Claude API and capture the request the app builds
 let captured = null;
@@ -63,15 +66,18 @@ assert.match(prompt, /worn twice, light crease left toe/, 'prompt carries seller
 assert.match(prompt, /Size \(US\): 10/, 'prompt carries size');
 
 // ── UI output assertions ─────────────────────────────────────────────────────
-assert.equal(window.clAI.shoe, MOCK_ANALYSIS.shoe, 'analysis parsed');
+// clAI / clCards are also `let`-bound in the page script — read via page eval.
+const clAI = window.eval('clAI');
+const clCards = window.eval('clCards');
+assert.equal(clAI.shoe, MOCK_ANALYSIS.shoe, 'analysis parsed');
 assert.ok(!d.getElementById('cl-ai-card').classList.contains('hidden'), 'AI card visible');
 assert.match(d.getElementById('cl-ai-result').textContent, /Panda/, 'AI card shows shoe');
 assert.equal(d.getElementById('cl-price').value, '119', 'price auto-filled from eBay suggestion');
 assert.equal(d.querySelectorAll('#cl-platform-cards .card').length, 3, 'three platform cards');
-assert.equal(window.clCards[0].platform.name, 'eBay');
-assert.equal(Math.round(window.clCards[0].net * 100) / 100, 102.52, 'eBay net payout math');
-assert.equal(window.clCards[1].title.length <= 80, true, 'Mercari title within limit');
-assert.match(window.clCards[2].description, /#sneakers/, 'Depop description carries hashtags');
+assert.equal(clCards[0].platform.name, 'eBay');
+assert.equal(Math.round(clCards[0].net * 100) / 100, 102.52, 'eBay net payout math');
+assert.equal(clCards[1].title.length <= 80, true, 'Mercari title within limit');
+assert.match(clCards[2].description, /#sneakers/, 'Depop description carries hashtags');
 
 // ── Mark Listed feeds the tracker ────────────────────────────────────────────
 window.clMarkListed(0);

@@ -148,6 +148,7 @@ tr:hover td{background:rgba(255,255,255,0.02)}
       <div class="section-header"><h2>Inventory</h2>
         <div style="display:flex;gap:0.5rem;flex-wrap:wrap">
           <button class="btn btn-ghost btn-sm" onclick="copySyncLink()">📲 Sync Link</button>
+          <button class="btn btn-ghost btn-sm" onclick="importSyncPrompt()">Import</button>
           <button class="btn btn-primary btn-sm" onclick="openPairModal()">+ Add Pair</button>
         </div>
       </div>
@@ -766,28 +767,38 @@ function clMarkListed(i){
 function renderAll(){ renderDashboard(); renderInventory(); renderPlatforms(); renderListings(); renderCrosslist(); renderAnalytics(); }
 renderAll();
 
-// DEVICE SYNC — localStorage is per-device, so a sync link carries inventory+listings to another browser
+// DEVICE SYNC — localStorage is per-device, so a sync link/code carries inventory+listings to another browser
 const syncEncode=o=>btoa(unescape(encodeURIComponent(JSON.stringify(o)))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
-const syncDecode=s=>JSON.parse(decodeURIComponent(escape(atob(s.replace(/-/g,'+').replace(/_/g,'/')))));
+const syncDecode=s=>JSON.parse(decodeURIComponent(escape(atob(s.replace(/[^A-Za-z0-9_-]/g,'').replace(/-/g,'+').replace(/_/g,'/')))));
 function copySyncLink(){
   const url=location.origin+location.pathname+'#sync='+syncEncode({pairs:load(KEYS.pairs),listings:load(KEYS.listings)});
   navigator.clipboard.writeText(url).then(
-    ()=>alert('Sync link copied — open it on your other device to import this inventory.'),
+    ()=>alert('Sync link copied — open it on your other device, or paste it into Import there.'),
     ()=>prompt('Copy this link and open it on your other device:',url));
 }
-(function importFromSyncLink(){
-  if(!location.hash.startsWith('#sync='))return;
+function importSync(raw){
+  if(!raw)return;
+  const m=String(raw).match(/sync=([\s\S]+)/);
   try{
-    const data=syncDecode(location.hash.slice(6));
-    const merge=(a,b)=>{const m=new Map(a.map(x=>[x.id,x]));(b||[]).forEach(x=>m.set(x.id,x));return[...m.values()]};
-    if(confirm('Import '+(data.pairs||[]).length+' pair(s) and '+(data.listings||[]).length+' listing(s) from this sync link?')){
+    const data=syncDecode(m?m[1]:String(raw));
+    const merge=(a,b)=>{const map=new Map(a.map(x=>[x.id,x]));(b||[]).forEach(x=>map.set(x.id,x));return[...map.values()]};
+    if(confirm('Import '+(data.pairs||[]).length+' pair(s) and '+(data.listings||[]).length+' listing(s) onto this device?')){
       save(KEYS.pairs,merge(load(KEYS.pairs),data.pairs));
       save(KEYS.listings,merge(load(KEYS.listings),data.listings));
       renderAll();
+      alert('Imported — inventory is up to date on this device.');
     }
-  }catch(e){alert('Sync link could not be read.')}
+  }catch(e){alert('That sync link could not be read — tap Import and paste the whole link manually.')}
+}
+function importSyncPrompt(){importSync(prompt('Paste the sync link (or just the code after #sync=):'))}
+function handleSyncHash(){
+  if(!location.hash.startsWith('#sync='))return;
+  const payload=location.hash.slice(6);
   history.replaceState(null,'',location.pathname+location.search);
-})();
+  importSync(payload);
+}
+window.addEventListener('hashchange',handleSyncHash);
+handleSyncHash();
 
 /* ── Accessibility: keyboard nav + Escape to close modals ── */
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){document.querySelectorAll('.modal-overlay:not(.hidden)').forEach(m=>m.classList.add('hidden'));}});

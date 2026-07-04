@@ -146,7 +146,10 @@ tr:hover td{background:rgba(255,255,255,0.02)}
     <!-- INVENTORY -->
     <div class="panel" id="panel-inventory">
       <div class="section-header"><h2>Inventory</h2>
-        <button class="btn btn-primary btn-sm" onclick="openPairModal()">+ Add Pair</button>
+        <div style="display:flex;gap:0.5rem;flex-wrap:wrap">
+          <button class="btn btn-ghost btn-sm" onclick="copySyncLink()">📲 Sync Link</button>
+          <button class="btn btn-primary btn-sm" onclick="openPairModal()">+ Add Pair</button>
+        </div>
       </div>
       <div class="pill-tabs">
         <button class="pill-tab active" onclick="filterInv('all',this)">All</button>
@@ -762,6 +765,29 @@ function clMarkListed(i){
 
 function renderAll(){ renderDashboard(); renderInventory(); renderPlatforms(); renderListings(); renderCrosslist(); renderAnalytics(); }
 renderAll();
+
+// DEVICE SYNC — localStorage is per-device, so a sync link carries inventory+listings to another browser
+const syncEncode=o=>btoa(unescape(encodeURIComponent(JSON.stringify(o)))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+const syncDecode=s=>JSON.parse(decodeURIComponent(escape(atob(s.replace(/-/g,'+').replace(/_/g,'/')))));
+function copySyncLink(){
+  const url=location.origin+location.pathname+'#sync='+syncEncode({pairs:load(KEYS.pairs),listings:load(KEYS.listings)});
+  navigator.clipboard.writeText(url).then(
+    ()=>alert('Sync link copied — open it on your other device to import this inventory.'),
+    ()=>prompt('Copy this link and open it on your other device:',url));
+}
+(function importFromSyncLink(){
+  if(!location.hash.startsWith('#sync='))return;
+  try{
+    const data=syncDecode(location.hash.slice(6));
+    const merge=(a,b)=>{const m=new Map(a.map(x=>[x.id,x]));(b||[]).forEach(x=>m.set(x.id,x));return[...m.values()]};
+    if(confirm('Import '+(data.pairs||[]).length+' pair(s) and '+(data.listings||[]).length+' listing(s) from this sync link?')){
+      save(KEYS.pairs,merge(load(KEYS.pairs),data.pairs));
+      save(KEYS.listings,merge(load(KEYS.listings),data.listings));
+      renderAll();
+    }
+  }catch(e){alert('Sync link could not be read.')}
+  history.replaceState(null,'',location.pathname+location.search);
+})();
 
 /* ── Accessibility: keyboard nav + Escape to close modals ── */
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){document.querySelectorAll('.modal-overlay:not(.hidden)').forEach(m=>m.classList.add('hidden'));}});

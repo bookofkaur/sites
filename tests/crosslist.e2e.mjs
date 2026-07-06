@@ -8,7 +8,7 @@ import { readFileSync } from 'node:fs';
 import assert from 'node:assert/strict';
 import { JSDOM } from 'jsdom';
 
-const html = readFileSync(new URL('../sole-ops/index.html', import.meta.url), 'utf8');
+const html = readFileSync(new URL('../sole-ops/app.html', import.meta.url), 'utf8');
 const dom = new JSDOM(html, { runScripts: 'dangerously', url: 'https://soleops.test/' });
 const { window } = dom;
 const d = window.document;

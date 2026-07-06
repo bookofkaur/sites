@@ -350,6 +350,7 @@ const KEYS={txns:'pss_txns',budget:'pss_budget',goals:'pss_goals',assets:'pss_as
 const load=k=>JSON.parse(localStorage.getItem(k)||'[]');
 const save=(k,v)=>localStorage.setItem(k,JSON.stringify(v));
 const fmt=n=>'$'+Math.abs(Number(n)).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+const todayStr=()=>{const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;};
 
 let txnFilter='all';
 let editingGoalId=null;
@@ -385,7 +386,7 @@ function openTxnModal(id=null){
   if(!id){
     ['txn-desc','txn-notes'].forEach(i=>document.getElementById(i).value='');
     document.getElementById('txn-amount').value='';
-    document.getElementById('txn-date').value=new Date().toISOString().split('T')[0];
+    document.getElementById('txn-date').value=todayStr();
     document.getElementById('txn-type').value='expense';
     document.getElementById('txn-cat').value='Food & Dining';
     delete document.getElementById('txn-modal').dataset.editId;
@@ -656,7 +657,7 @@ function payCard(id){
   c.balance=Math.max(0,c.balance-amt);
   save(KEYS.cards,cards);
   const txns=load(KEYS.txns);
-  txns.push({id:'tx'+Date.now(),desc:'Card payment — '+c.name,amount:amt,type:'expense',date:new Date().toISOString().split('T')[0],cat:'Debt',notes:''});
+  txns.push({id:'tx'+Date.now(),desc:'Card payment — '+c.name,amount:amt,type:'expense',date:todayStr(),cat:'Debt',notes:''});
   save(KEYS.txns,txns);
   renderAll();
 }

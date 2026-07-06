@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="Sole Ops — a sneaker reselling operations dashboard to track inventory, calculate profit across StockX/GOAT/eBay, manage listings, and see analytics." />
+<meta name="color-scheme" content="dark" />
+<meta name="theme-color" content="#0a0a0a" />
+<title>Sole Ops — Sneaker Resell Operations</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --accent:#e8ff3c;--accent2:#a3ff4e;--bg:#0a0a0a;--surface:#111;--card:#1a1a1a;--border:#2a2a2a;
+  --text:#f9f9f9;--muted:#777;--success:#4ade80;--danger:#f87171;--warn:#fbbf24;
+}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);display:flex;flex-direction:column;min-height:100vh}
+nav{display:flex;align-items:center;justify-content:space-between;padding:0.9rem 2rem;border-bottom:1px solid var(--border);position:sticky;top:0;background:rgba(10,10,10,0.97);backdrop-filter:blur(8px);z-index:100}
+.logo{font-size:1.2rem;font-weight:900;letter-spacing:2px;text-transform:uppercase;cursor:pointer}.logo span{color:var(--accent)}
+.nav-links button{background:none;border:none;color:var(--muted);cursor:pointer;padding:0.4rem 0.8rem;border-radius:6px;font-size:0.85rem;letter-spacing:0.5px;text-transform:uppercase;transition:all 0.2s}
+.nav-links button:hover,.nav-links button.active{background:rgba(232,255,60,0.1);color:var(--accent)}
+.app{display:flex;flex:1}
+.sidebar{width:210px;border-right:1px solid var(--border);padding:1.5rem 1rem;flex-shrink:0;background:var(--surface)}
+.sidebar-item{display:flex;align-items:center;gap:0.6rem;padding:0.6rem 0.75rem;border-radius:8px;cursor:pointer;font-size:0.85rem;color:var(--muted);transition:all 0.15s;margin-bottom:0.25rem;letter-spacing:0.5px}
+.sidebar-item:hover,.sidebar-item.active{background:rgba(232,255,60,0.08);color:var(--accent)}
+.sidebar-section{font-size:0.68rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);padding:0.75rem 0.75rem 0.3rem;margin-top:0.5rem}
+.main{flex:1;padding:2rem;overflow-y:auto}
+.panel{display:none}.panel.active{display:block}
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.5rem;margin-bottom:1.25rem}
+.card h3{font-size:0.85rem;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:1rem}
+.card-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1rem;margin-bottom:1.5rem}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:1.25rem}
+.stat-card .label{font-size:0.7rem;text-transform:uppercase;letter-spacing:1px;color:var(--muted)}
+.stat-card .value{font-size:1.8rem;font-weight:900;margin-top:0.25rem}
+.stat-card .sub{font-size:0.78rem;color:var(--muted);margin-top:0.2rem}
+input,textarea,select{background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:0.6rem 0.9rem;font-size:0.9rem;width:100%;outline:none;transition:border-color 0.2s;font-family:inherit}
+input:focus,select:focus{border-color:var(--accent)}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;margin-bottom:0.75rem}
+.form-group{margin-bottom:0.75rem}
+label{font-size:0.78rem;text-transform:uppercase;letter-spacing:0.5px;color:var(--muted);display:block;margin-bottom:0.3rem}
+.btn{display:inline-flex;align-items:center;gap:0.4rem;padding:0.55rem 1.1rem;border-radius:8px;font-weight:800;font-size:0.82rem;cursor:pointer;border:none;transition:all 0.2s;letter-spacing:0.5px;text-transform:uppercase}
+.btn-primary{background:var(--accent);color:#000}.btn-primary:hover{background:var(--accent2)}
+.btn-danger{background:rgba(248,113,113,0.1);color:var(--danger);border:1px solid rgba(248,113,113,0.2)}.btn-danger:hover{background:rgba(248,113,113,0.2)}
+.btn-ghost{background:transparent;border:1px solid var(--border);color:var(--text)}.btn-ghost:hover{border-color:var(--accent);color:var(--accent)}
+.btn-sm{padding:0.3rem 0.65rem;font-size:0.75rem}
+table{width:100%;border-collapse:collapse;font-size:0.88rem}
+th{text-align:left;padding:0.6rem 0.75rem;font-size:0.68rem;text-transform:uppercase;letter-spacing:1px;color:var(--muted);border-bottom:1px solid var(--border)}
+td{padding:0.75rem;border-bottom:1px solid rgba(255,255,255,0.04);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(255,255,255,0.02)}
+.badge{display:inline-block;padding:0.2rem 0.65rem;border-radius:4px;font-size:0.72rem;font-weight:800;letter-spacing:0.5px;text-transform:uppercase}
+.badge-green{background:rgba(74,222,128,0.12);color:var(--success)}
+.badge-red{background:rgba(248,113,113,0.12);color:var(--danger)}
+.badge-yellow{background:rgba(251,191,36,0.12);color:var(--warn)}
+.badge-accent{background:rgba(232,255,60,0.12);color:var(--accent)}
+.badge-gray{background:rgba(255,255,255,0.06);color:var(--muted)}
+.section-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem}
+.section-header h2{font-size:1.4rem;font-weight:900;letter-spacing:-0.5px}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:200;display:flex;align-items:center;justify-content:center;padding:1rem}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:2rem;width:100%;max-width:500px;max-height:90vh;overflow-y:auto}
+.modal h2{font-size:1.1rem;font-weight:900;letter-spacing:1px;text-transform:uppercase;margin-bottom:1.25rem}
+.modal-actions{display:flex;gap:0.75rem;justify-content:flex-end;margin-top:1.25rem}
+.hidden{display:none!important}
+.empty{text-align:center;padding:3rem;color:var(--muted)}
+.empty .ei{font-size:2.5rem;margin-bottom:0.75rem}
+/* PROFIT CALC */
+.calc-result{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1.5rem;margin-top:1rem}
+.calc-row{display:flex;justify-content:space-between;padding:0.45rem 0;font-size:0.88rem;border-bottom:1px solid rgba(255,255,255,0.04)}
+.calc-row:last-child{border-bottom:none;padding-top:0.75rem;font-weight:800;font-size:1rem}
+.calc-row span:last-child{font-weight:700}
+/* PLATFORM FEES */
+.platform-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;margin-bottom:1.5rem}
+.platform-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1.25rem;cursor:pointer;transition:border-color 0.2s}
+.platform-card:hover,.platform-card.selected{border-color:var(--accent)}
+.platform-card h4{font-size:0.85rem;font-weight:800;text-transform:uppercase;letter-spacing:1px;margin-bottom:0.25rem}
+.platform-card .fee{font-size:1.3rem;font-weight:900;color:var(--accent)}
+.platform-card p{font-size:0.78rem;color:var(--muted);margin-top:0.25rem}
+/* ANALYTICS */
+.analytics-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.25rem}
+.donut-wrap{display:flex;align-items:center;gap:1.5rem;flex-wrap:wrap}
+.legend-item{display:flex;align-items:center;gap:0.5rem;font-size:0.82rem;margin-bottom:0.4rem}
+.legend-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+/* CROSS-LIST */
+.photo-thumbs{display:flex;gap:0.6rem;flex-wrap:wrap;margin-top:0.6rem}
+.photo-thumbs img{width:84px;height:84px;object-fit:cover;border-radius:8px;border:1px solid var(--border)}
+.spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(0,0,0,0.3);border-top-color:#000;border-radius:50%;animation:clspin 0.7s linear infinite;vertical-align:-2px}
+@keyframes clspin{to{transform:rotate(360deg)}}
+.cl-copy-block{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:0.75rem;font-size:0.82rem;white-space:pre-wrap;word-break:break-word;max-height:200px;overflow-y:auto;margin-bottom:0.6rem}
+.cl-tag{display:inline-block;padding:0.2rem 0.6rem;border-radius:4px;font-size:0.75rem;background:rgba(255,255,255,0.06);color:var(--text);margin:0 0.35rem 0.35rem 0}
+/* MONTH FILTER */
+.pill-tabs{display:flex;gap:0.5rem;margin-bottom:1.25rem;flex-wrap:wrap}
+.pill-tab{padding:0.35rem 0.9rem;border-radius:4px;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:0.78rem;cursor:pointer;transition:all 0.2s;letter-spacing:0.5px;text-transform:uppercase;font-weight:700}
+.pill-tab.active,.pill-tab:hover{background:rgba(232,255,60,0.1);color:var(--accent);border-color:rgba(232,255,60,0.3)}
+/* ── Responsive + accessibility + motion ── */
+.dash-split{display:grid;grid-template-columns:1fr 1fr;gap:1.25rem}
+.sidebar-item:focus-visible,.logo:focus-visible,.nav-links button:focus-visible,.btn:focus-visible,.pill-tab:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+@media (max-width:860px){
+  nav{padding:0.75rem 1rem}
+  .nav-links{overflow-x:auto;-webkit-overflow-scrolling:touch;white-space:nowrap;max-width:62%}
+  .nav-links button{flex:0 0 auto}
+  .app{flex-direction:column}
+  .sidebar{display:none}
+  .main{padding:1rem}
+  .dash-split,.analytics-grid{grid-template-columns:1fr}
+  .form-row{grid-template-columns:1fr}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+<nav>
+  <div class="logo" onclick="showPanel('dashboard')">Sole<span>Ops</span> <span style="font-size:0.6rem;font-weight:400;color:var(--muted);letter-spacing:0">v3</span></div>
+  <div class="nav-links">
+    <button onclick="showPanel('dashboard')" id="nav-dashboard" class="active">Dashboard</button>
+    <button onclick="showPanel('inventory')" id="nav-inventory">Inventory</button>
+    <button onclick="showPanel('calc')" id="nav-calc">Profit Calc</button>
+    <button onclick="showPanel('listings')" id="nav-listings">Listings</button>
+    <button onclick="showPanel('crosslist')" id="nav-crosslist">Cross-List</button>
+    <button onclick="showPanel('analytics')" id="nav-analytics">Analytics</button>
+  </div>
+</nav>
+
+<div class="app">
+  <div class="sidebar">
+    <div class="sidebar-section">Overview</div>
+    <div class="sidebar-item active" onclick="showPanel('dashboard')" id="sb-dashboard">📊 Dashboard</div>
+    <div class="sidebar-section">Tools</div>
+    <div class="sidebar-item" onclick="showPanel('inventory')" id="sb-inventory">👟 Inventory</div>
+    <div class="sidebar-item" onclick="showPanel('calc')" id="sb-calc">💸 Profit Calc</div>
+    <div class="sidebar-item" onclick="showPanel('listings')" id="sb-listings">📦 Listings</div>
+    <div class="sidebar-item" onclick="showPanel('crosslist')" id="sb-crosslist">🚀 Cross-List</div>
+    <div class="sidebar-item" onclick="showPanel('analytics')" id="sb-analytics">📈 Analytics</div>
+  </div>
+
+  <div class="main">
+
+    <!-- DASHBOARD -->
+    <div class="panel active" id="panel-dashboard">
+      <div class="section-header"><h2>Operations Dashboard</h2><span style="color:var(--muted);font-size:0.82rem" id="dash-date"></span></div>
+      <div class="card-grid" id="dash-stats"></div>
+      <div class="dash-split">
+        <div class="card"><h3>Recent Sales</h3><div id="dash-recent-sales"></div></div>
+        <div class="card"><h3>Active Listings</h3><div id="dash-active-listings"></div></div>
+      </div>
+    </div>
+
+    <!-- INVENTORY -->
+    <div class="panel" id="panel-inventory">
+      <div class="section-header"><h2>Inventory</h2>
+        <div style="display:flex;gap:0.5rem;flex-wrap:wrap">
+          <button class="btn btn-ghost btn-sm" onclick="copySyncLink()">📲 Sync Link</button>
+          <button class="btn btn-ghost btn-sm" onclick="importSyncPrompt()">Import</button>
+          <button class="btn btn-primary btn-sm" onclick="openPairModal()">+ Add Pair</button>
+        </div>
+      </div>
+      <div class="pill-tabs">
+        <button class="pill-tab active" onclick="filterInv('all',this)">All</button>
+        <button class="pill-tab" onclick="filterInv('hold',this)">Hold</button>
+        <button class="pill-tab" onclick="filterInv('listed',this)">Listed</button>
+        <button class="pill-tab" onclick="filterInv('sold',this)">Sold</button>
+      </div>
+      <div class="card" style="padding:0;overflow:hidden">
+        <table>
+          <thead><tr><th>Shoe</th><th>Size</th><th>Cost</th><th>Source</th><th>Status</th><th>Date</th><th></th></tr></thead>
+          <tbody id="inv-table"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- PROFIT CALC -->
+    <div class="panel" id="panel-calc">
+      <div class="section-header"><h2>Profit Calculator</h2></div>
+      <div class="platform-grid" id="platform-grid"></div>
+      <div class="card">
+        <h3>Calculate Your Profit</h3>
+        <div class="form-row">
+          <div><label>Purchase Price ($)</label><input type="number" id="calc-cost" placeholder="110" oninput="calcProfit()"></div>
+          <div><label>Sale Price ($)</label><input type="number" id="calc-sale" placeholder="185" oninput="calcProfit()"></div>
+        </div>
+        <div class="form-row">
+          <div><label>Shipping Cost ($)</label><input type="number" id="calc-ship" placeholder="0" oninput="calcProfit()"></div>
+          <div><label>Other Fees ($)</label><input type="number" id="calc-other" placeholder="0" oninput="calcProfit()"></div>
+        </div>
+        <div id="calc-result" class="hidden"></div>
+      </div>
+    </div>
+
+    <!-- LISTINGS -->
+    <div class="panel" id="panel-listings">
+      <div class="section-header"><h2>Listing Tracker</h2>
+        <button class="btn btn-primary btn-sm" onclick="openListingModal()">+ Add Listing</button>
+      </div>
+      <div id="listings-list"></div>
+    </div>
+
+    <!-- CROSS-LIST -->
+    <div class="panel" id="panel-crosslist">
+      <div class="section-header"><h2>Cross-List</h2><span style="color:var(--muted);font-size:0.82rem">eBay · Mercari · Depop</span></div>
+
+      <div class="card">
+        <h3>AI Setup</h3>
+        <div class="form-row">
+          <div><label for="cl-api-key">Anthropic API Key (stored only in this browser)</label><input type="password" id="cl-api-key" placeholder="sk-ant-..." autocomplete="off"></div>
+          <div style="display:flex;align-items:flex-end"><button class="btn btn-ghost" onclick="saveClKey()">Save Key</button></div>
+        </div>
+        <p style="font-size:0.78rem;color:var(--muted)">Powers the photo analyzer below. The key is kept in this browser's local storage and is sent only to the Claude API. Get one at console.anthropic.com.</p>
+      </div>
+
+      <div class="card">
+        <h3>Build Listing</h3>
+        <div class="form-group"><label for="cl-pair">From Inventory (optional)</label>
+          <select id="cl-pair" onchange="clFillFromPair()"><option value="">— manual entry —</option></select>
+        </div>
+        <div class="form-row">
+          <div><label for="cl-name">Shoe Name</label><input id="cl-name" placeholder="e.g. Jordan 4 Military Black"></div>
+          <div><label for="cl-size">Size (US)</label><input type="number" id="cl-size" step="0.5" placeholder="10"></div>
+        </div>
+        <div class="form-row">
+          <div><label for="cl-condition">Condition</label>
+            <select id="cl-condition"><option>DS / Brand New</option><option>VNDS / Like New</option><option>Used - Excellent</option><option>Used - Good</option><option>Used - Fair</option></select>
+          </div>
+          <div><label for="cl-price">List Price ($) — blank for AI suggestion</label><input type="number" id="cl-price" placeholder="0"></div>
+        </div>
+        <div class="form-group"><label for="cl-notes">Notes / Known Flaws</label><input id="cl-notes" placeholder="e.g. small crease on left toe, no box"></div>
+        <div class="form-group">
+          <label for="cl-photos">Photos (up to 4 — used by the AI analyzer)</label>
+          <input type="file" id="cl-photos" accept="image/*" multiple onchange="clLoadPhotos(this.files)">
+          <div class="photo-thumbs" id="cl-thumbs"></div>
+        </div>
+        <div style="display:flex;gap:0.75rem;flex-wrap:wrap">
+          <button class="btn btn-primary" id="cl-analyze-btn" onclick="clAnalyze()">🤖 Analyze Photos + Suggest Prices</button>
+          <button class="btn btn-ghost" onclick="clBuildCards()">Build Platform Listings</button>
+        </div>
+        <div id="cl-error" style="font-size:0.82rem;margin-top:0.6rem;min-height:1em" role="alert"></div>
+      </div>
+
+      <div class="card hidden" id="cl-ai-card">
+        <h3>AI Analysis</h3>
+        <div id="cl-ai-result"></div>
+      </div>
+
+      <div id="cl-platform-cards"></div>
+    </div>
+
+    <!-- ANALYTICS -->
+    <div class="panel" id="panel-analytics">
+      <div class="section-header"><h2>Analytics</h2></div>
+      <div class="card-grid" id="analytics-stats"></div>
+      <div class="analytics-grid">
+        <div class="card"><h3>Revenue by Platform</h3><div id="analytics-platform"></div></div>
+        <div class="card"><h3>Top Silhouettes</h3><div id="analytics-silhouettes"></div></div>
+      </div>
+      <div class="card"><h3>Monthly P&L</h3><div id="analytics-monthly"></div></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- MODALS -->
+<div class="modal-overlay hidden" id="pair-modal">
+  <div class="modal">
+    <h2 id="pair-modal-title">Add Pair</h2>
+    <div class="form-group"><label>Shoe Name</label><input id="pair-name" placeholder="e.g. Nike Dunk Low Panda"></div>
+    <div class="form-row">
+      <div><label>Size (US)</label><input type="number" id="pair-size" placeholder="10" step="0.5"></div>
+      <div><label>Colorway</label><input id="pair-color" placeholder="e.g. Black/White"></div>
+    </div>
+    <div class="form-row">
+      <div><label>Purchase Price ($)</label><input type="number" id="pair-cost" placeholder="110"></div>
+      <div><label>Source</label><input id="pair-source" placeholder="e.g. SNKRS, StockX, Retail"></div>
+    </div>
+    <div class="form-row">
+      <div><label>Purchase Date</label><input type="date" id="pair-date"></div>
+      <div><label>Status</label>
+        <select id="pair-status"><option>Hold</option><option>Listed</option><option>Sold</option></select>
+      </div>
+    </div>
+    <div class="form-group"><label>Sale Price ($) — if sold</label><input type="number" id="pair-sale" placeholder="0"></div>
+    <div class="form-group"><label>Platform Sold On</label>
+      <select id="pair-platform"><option value="">—</option><option>StockX</option><option>GOAT</option><option>eBay</option><option>Mercari</option><option>Depop</option><option>Local</option><option>Instagram</option><option>Other</option></select>
+    </div>
+    <div class="form-group"><label>Notes</label><input id="pair-notes" placeholder="Optional"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('pair-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="savePair()">Save</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay hidden" id="listing-modal">
+  <div class="modal">
+    <h2>Add Listing</h2>
+    <div class="form-group"><label>Shoe Name</label><input id="lst-name" placeholder="e.g. Jordan 4 Thunder"></div>
+    <div class="form-row">
+      <div><label>Size</label><input type="number" id="lst-size" placeholder="10" step="0.5"></div>
+      <div><label>List Price ($)</label><input type="number" id="lst-price" placeholder="300"></div>
+    </div>
+    <div class="form-row">
+      <div><label>Platform</label>
+        <select id="lst-platform"><option>StockX</option><option>GOAT</option><option>eBay</option><option>Mercari</option><option>Depop</option><option>Local</option><option>Instagram</option><option>Other</option></select>
+      </div>
+      <div><label>Date Listed</label><input type="date" id="lst-date"></div>
+    </div>
+    <div class="form-group"><label>Status</label>
+      <select id="lst-status"><option>Active</option><option>Sold</option><option>Ended</option></select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('listing-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveListing()">Save</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const KEYS={pairs:'so_pairs',listings:'so_listings'};
+const load=k=>JSON.parse(localStorage.getItem(k)||'[]');
+const save=(k,v)=>localStorage.setItem(k,JSON.stringify(v));
+const fmt=n=>'$'+Number(n).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+const fmtP=n=>(n>=0?'+':'')+fmt(n);
+
+let invFilter='all';
+let editingPairId=null;
+
+const PLATFORMS=[
+  {name:'StockX',fee:0.09,extra:0.03,ship:0,desc:'9% seller fee + 3% payment processing'},
+  {name:'GOAT',fee:0.095,extra:0.029,ship:5,desc:'9.5% commission + 2.9% cash out fee + $5 ship'},
+  {name:'eBay',fee:0.1287,extra:0.029,ship:0,desc:'12.87% final value fee + 2.9% PayPal (est)'},
+  {name:'Local / In-Person',fee:0,extra:0,ship:0,desc:'No fees — cash or Venmo deals'},
+];
+let selectedPlatform=PLATFORMS[0];
+
+function showPanel(id){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-links button').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.sidebar-item').forEach(s=>s.classList.remove('active'));
+  document.getElementById('panel-'+id).classList.add('active');
+  ['nav-','sb-'].forEach(p=>{const el=document.getElementById(p+id);if(el)el.classList.add('active')});
+  renderAll();
+}
+function openModal(id){document.getElementById(id).classList.remove('hidden')}
+function closeModal(id){document.getElementById(id).classList.add('hidden')}
+document.querySelectorAll('.modal-overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.add('hidden')}));
+
+// PLATFORMS
+function renderPlatforms(){
+  document.getElementById('platform-grid').innerHTML=PLATFORMS.map((p,i)=>`
+    <div class="platform-card ${p===selectedPlatform?'selected':''}" onclick="selectPlatform(${i})">
+      <h4>${p.name}</h4>
+      <div class="fee">${p.fee===0?'0%':Math.round((p.fee+p.extra)*100)+'%'}</div>
+      <p>${p.desc}</p>
+    </div>`).join('');
+}
+function selectPlatform(i){selectedPlatform=PLATFORMS[i];renderPlatforms();calcProfit();}
+
+function calcProfit(){
+  const cost=parseFloat(document.getElementById('calc-cost').value)||0;
+  const sale=parseFloat(document.getElementById('calc-sale').value)||0;
+  const ship=parseFloat(document.getElementById('calc-ship').value)||0;
+  const other=parseFloat(document.getElementById('calc-other').value)||0;
+  const res=document.getElementById('calc-result');
+  if(!sale){res.classList.add('hidden');return;}
+  const platformFee=sale*(selectedPlatform.fee+selectedPlatform.extra);
+  const shipping=ship+selectedPlatform.ship;
+  const totalCost=cost+shipping+other+platformFee;
+  const profit=sale-totalCost;
+  const roi=cost>0?((profit/cost)*100):0;
+  res.classList.remove('hidden');
+  res.innerHTML=`<div class="calc-result">
+    <div class="calc-row"><span>Sale Price</span><span>${fmt(sale)}</span></div>
+    <div class="calc-row"><span>Purchase Price</span><span>- ${fmt(cost)}</span></div>
+    <div class="calc-row"><span>${selectedPlatform.name} Fees (${Math.round((selectedPlatform.fee+selectedPlatform.extra)*100)}%)</span><span>- ${fmt(platformFee)}</span></div>
+    <div class="calc-row"><span>Shipping</span><span>- ${fmt(shipping)}</span></div>
+    ${other?`<div class="calc-row"><span>Other Fees</span><span>- ${fmt(other)}</span></div>`:''}
+    <div class="calc-row" style="color:${profit>=0?'var(--success)':'var(--danger)'}"><span>Net Profit</span><span>${fmtP(profit)}</span></div>
+    <div style="text-align:center;margin-top:1rem;font-size:0.82rem;color:var(--muted)">ROI: <span style="color:${roi>=0?'var(--success)':'var(--danger)'};font-weight:800">${roi.toFixed(1)}%</span></div>
+  </div>`;
+}
+
+// INVENTORY
+function openPairModal(id=null){
+  editingPairId=id;
+  if(id){
+    const p=load(KEYS.pairs).find(x=>x.id===id);
+    document.getElementById('pair-modal-title').textContent='Edit Pair';
+    document.getElementById('pair-name').value=p.name;
+    document.getElementById('pair-size').value=p.size;
+    document.getElementById('pair-color').value=p.color||'';
+    document.getElementById('pair-cost').value=p.cost;
+    document.getElementById('pair-source').value=p.source||'';
+    document.getElementById('pair-date').value=p.date||'';
+    document.getElementById('pair-status').value=p.status;
+    document.getElementById('pair-sale').value=p.sale||'';
+    document.getElementById('pair-platform').value=p.platform||'';
+    document.getElementById('pair-notes').value=p.notes||'';
+  } else {
+    document.getElementById('pair-modal-title').textContent='Add Pair';
+    ['pair-name','pair-color','pair-source','pair-notes'].forEach(i=>document.getElementById(i).value='');
+    document.getElementById('pair-size').value='';
+    document.getElementById('pair-cost').value='';
+    document.getElementById('pair-date').value=new Date().toISOString().split('T')[0];
+    document.getElementById('pair-status').value='Hold';
+    document.getElementById('pair-sale').value='';
+    document.getElementById('pair-platform').value='';
+  }
+  openModal('pair-modal');
+}
+
+function savePair(){
+  const name=document.getElementById('pair-name').value.trim(); if(!name) return;
+  const pairs=load(KEYS.pairs);
+  const p={id:editingPairId||'p'+Date.now(),name,size:document.getElementById('pair-size').value,
+    color:document.getElementById('pair-color').value,cost:parseFloat(document.getElementById('pair-cost').value)||0,
+    source:document.getElementById('pair-source').value,date:document.getElementById('pair-date').value,
+    status:document.getElementById('pair-status').value,sale:parseFloat(document.getElementById('pair-sale').value)||0,
+    platform:document.getElementById('pair-platform').value,notes:document.getElementById('pair-notes').value};
+  if(editingPairId) pairs[pairs.findIndex(x=>x.id===editingPairId)]=p; else pairs.push(p);
+  save(KEYS.pairs,pairs); closeModal('pair-modal'); renderAll();
+}
+
+function deletePair(id){if(confirm('Delete this pair?')){save(KEYS.pairs,load(KEYS.pairs).filter(x=>x.id!==id));renderAll();}}
+
+function filterInv(f,btn){
+  invFilter=f;
+  document.querySelectorAll('.pill-tab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderInventory();
+}
+
+const STATUS_BADGE={Hold:'badge-yellow',Listed:'badge-accent',Sold:'badge-green'};
+
+function renderInventory(){
+  let pairs=load(KEYS.pairs).sort((a,b)=>b.date?.localeCompare(a.date||'')||0);
+  if(invFilter!=='all') pairs=pairs.filter(p=>p.status.toLowerCase()===invFilter);
+  if(!pairs.length){document.getElementById('inv-table').innerHTML=`<tr><td colspan="7" style="text-align:center;padding:2rem;color:var(--muted)">No pairs ${invFilter==='all'?'in inventory':invFilter}.</td></tr>`;return;}
+  document.getElementById('inv-table').innerHTML=pairs.map(p=>{
+    const profit=p.status==='Sold'&&p.sale?p.sale-p.cost:null;
+    return `<tr>
+      <td><div style="font-weight:700">${p.name}</div><div style="font-size:0.75rem;color:var(--muted)">${p.color||''} ${p.notes?'· '+p.notes:''}</div></td>
+      <td>${p.size||'—'}</td>
+      <td style="font-weight:700">${fmt(p.cost)}</td>
+      <td style="color:var(--muted);font-size:0.82rem">${p.source||'—'}</td>
+      <td><span class="badge ${STATUS_BADGE[p.status]||'badge-gray'}">${p.status}</span>${p.platform?`<div style="font-size:0.72rem;color:var(--muted);margin-top:2px">${p.platform}</div>`:''}</td>
+      <td style="color:var(--muted);font-size:0.82rem">${p.date||'—'}</td>
+      <td>
+        ${profit!==null?`<div style="font-weight:800;color:${profit>=0?'var(--success)':'var(--danger)'};font-size:0.85rem;margin-bottom:4px">${fmtP(profit)}</div>`:''}
+        <div style="display:flex;gap:4px">
+          <button class="btn btn-ghost btn-sm" onclick="openPairModal('${p.id}')">Edit</button>
+          <button class="btn btn-danger btn-sm" onclick="deletePair('${p.id}')">✕</button>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+// LISTINGS
+function openListingModal(){
+  ['lst-name','lst-size','lst-price'].forEach(i=>document.getElementById(i).value='');
+  document.getElementById('lst-date').value=new Date().toISOString().split('T')[0];
+  document.getElementById('lst-platform').value='StockX';
+  document.getElementById('lst-status').value='Active';
+  openModal('listing-modal');
+}
+function saveListing(){
+  const name=document.getElementById('lst-name').value.trim(); if(!name) return;
+  const listings=load(KEYS.listings);
+  listings.push({id:'l'+Date.now(),name,size:document.getElementById('lst-size').value,
+    price:parseFloat(document.getElementById('lst-price').value)||0,
+    platform:document.getElementById('lst-platform').value,
+    date:document.getElementById('lst-date').value,
+    status:document.getElementById('lst-status').value});
+  save(KEYS.listings,listings); closeModal('listing-modal'); renderListings();
+}
+function updateListingStatus(id,status){
+  const listings=load(KEYS.listings); const l=listings.find(x=>x.id===id);
+  if(l){l.status=status;save(KEYS.listings,listings);renderListings();}
+}
+function deleteListing(id){save(KEYS.listings,load(KEYS.listings).filter(x=>x.id!==id));renderListings();}
+
+const LST_STATUS_BADGE={Active:'badge-green',Sold:'badge-accent',Ended:'badge-red'};
+const PLATFORM_COLORS={StockX:'#00b840',GOAT:'#ff6347',eBay:'#e53238',Mercari:'#7b7dff',Depop:'#ff5544',Local:'#a78bfa',Instagram:'#e1306c'};
+
+function renderListings(){
+  const listings=load(KEYS.listings).sort((a,b)=>b.date?.localeCompare(a.date||'')||0);
+  if(!listings.length){document.getElementById('listings-list').innerHTML='<div class="empty"><div class="ei">📦</div><p>No listings tracked yet.</p></div>';return;}
+  document.getElementById('listings-list').innerHTML=listings.map(l=>`
+    <div class="card" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem">
+      <div>
+        <div style="font-weight:800;font-size:1rem">${l.name} <span style="font-weight:400;color:var(--muted)">Sz ${l.size||'?'}</span></div>
+        <div style="font-size:0.8rem;color:var(--muted);margin-top:0.2rem">Listed ${l.date||''} · <span style="color:${PLATFORM_COLORS[l.platform]||'var(--muted)'};font-weight:700">${l.platform}</span></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap">
+        <span style="font-size:1.2rem;font-weight:900;color:var(--accent)">${fmt(l.price)}</span>
+        <span class="badge ${LST_STATUS_BADGE[l.status]||'badge-gray'}">${l.status}</span>
+        <select onchange="updateListingStatus('${l.id}',this.value)" style="width:auto;padding:0.3rem 0.5rem;font-size:0.78rem">
+          <option ${l.status==='Active'?'selected':''}>Active</option>
+          <option ${l.status==='Sold'?'selected':''}>Sold</option>
+          <option ${l.status==='Ended'?'selected':''}>Ended</option>
+        </select>
+        <button class="btn btn-danger btn-sm" onclick="deleteListing('${l.id}')">✕</button>
+      </div>
+    </div>`).join('');
+}
+
+// ANALYTICS
+function renderAnalytics(){
+  const pairs=load(KEYS.pairs);
+  const sold=pairs.filter(p=>p.status==='Sold');
+  const totalRevenue=sold.reduce((s,p)=>s+p.sale,0);
+  const totalCost=sold.reduce((s,p)=>s+p.cost,0);
+  const totalProfit=totalRevenue-totalCost;
+  const avgProfit=sold.length?totalProfit/sold.length:0;
+  document.getElementById('analytics-stats').innerHTML=`
+    <div class="stat-card"><div class="label">Total Revenue</div><div class="value" style="color:var(--accent)">${fmt(totalRevenue)}</div></div>
+    <div class="stat-card"><div class="label">Total Profit</div><div class="value" style="color:var(--success)">${fmt(totalProfit)}</div></div>
+    <div class="stat-card"><div class="label">Units Sold</div><div class="value">${sold.length}</div></div>
+    <div class="stat-card"><div class="label">Avg Profit/Pair</div><div class="value" style="color:var(--success)">${fmt(avgProfit)}</div></div>
+  `;
+  // By platform
+  const byPlatform={};
+  sold.forEach(p=>{const pl=p.platform||'Unknown';byPlatform[pl]=(byPlatform[pl]||0)+(p.sale-p.cost);});
+  const colors=['#e8ff3c','#4ade80','#60a5fa','#f472b6','#fb923c','#a78bfa'];
+  const entries=Object.entries(byPlatform).sort((a,b)=>b[1]-a[1]);
+  document.getElementById('analytics-platform').innerHTML=entries.length?entries.map((e,i)=>`
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:0.5rem 0;border-bottom:1px solid var(--border)">
+      <div class="legend-item"><div class="legend-dot" style="background:${colors[i%colors.length]}"></div><span>${e[0]}</span></div>
+      <span style="font-weight:800;color:${e[1]>=0?'var(--success)':'var(--danger)'}">${fmtP(e[1])}</span>
+    </div>`).join(''):'<div style="color:var(--muted);font-size:0.85rem;padding:1rem 0">No sales data yet.</div>';
+  // Top silhouettes (first 2 words of name)
+  const bySilo={};
+  sold.forEach(p=>{const silo=p.name.split(' ').slice(0,3).join(' ');bySilo[silo]=(bySilo[silo]||{count:0,profit:0});bySilo[silo].count++;bySilo[silo].profit+=p.sale-p.cost;});
+  const siloEntries=Object.entries(bySilo).sort((a,b)=>b[1].profit-a[1].profit).slice(0,5);
+  document.getElementById('analytics-silhouettes').innerHTML=siloEntries.length?siloEntries.map((e,i)=>`
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:0.5rem 0;border-bottom:1px solid var(--border);font-size:0.85rem">
+      <span>${i+1}. ${e[0]}</span>
+      <span style="color:var(--success);font-weight:700">${fmtP(e[1].profit)} (${e[1].count}x)</span>
+    </div>`).join(''):'<div style="color:var(--muted);font-size:0.85rem;padding:1rem 0">No sales data yet.</div>';
+  // Monthly P&L
+  const byMonth={};
+  sold.forEach(p=>{if(!p.date) return; const m=p.date.substring(0,7); byMonth[m]=(byMonth[m]||{rev:0,cost:0}); byMonth[m].rev+=p.sale; byMonth[m].cost+=p.cost;});
+  const monthEntries=Object.entries(byMonth).sort((a,b)=>a[0].localeCompare(b[0]));
+  document.getElementById('analytics-monthly').innerHTML=monthEntries.length?`<table>
+    <thead><tr><th>Month</th><th>Revenue</th><th>Cost</th><th>Profit</th></tr></thead>
+    <tbody>${monthEntries.map(([m,d])=>{const profit=d.rev-d.cost;return `<tr>
+      <td>${m}</td><td>${fmt(d.rev)}</td><td>${fmt(d.cost)}</td>
+      <td style="font-weight:800;color:${profit>=0?'var(--success)':'var(--danger)'}">${fmtP(profit)}</td>
+    </tr>`;}).join('')}</tbody></table>`:'<div style="color:var(--muted);font-size:0.85rem;padding:1rem 0">No sales data yet. Mark pairs as Sold with a sale price to see analytics.</div>';
+}
+
+// DASHBOARD
+function renderDashboard(){
+  document.getElementById('dash-date').textContent=new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
+  const pairs=load(KEYS.pairs);
+  const sold=pairs.filter(p=>p.status==='Sold');
+  const listed=pairs.filter(p=>p.status==='Listed');
+  const hold=pairs.filter(p=>p.status==='Hold');
+  const totalProfit=sold.reduce((s,p)=>s+(p.sale-p.cost),0);
+  const inventoryValue=pairs.filter(p=>p.status!=='Sold').reduce((s,p)=>s+p.cost,0);
+  document.getElementById('dash-stats').innerHTML=`
+    <div class="stat-card"><div class="label">Total Profit</div><div class="value" style="color:var(--success)">${fmt(totalProfit)}</div><div class="sub">${sold.length} pairs sold</div></div>
+    <div class="stat-card"><div class="label">Inventory Value</div><div class="value" style="color:var(--accent)">${fmt(inventoryValue)}</div><div class="sub">${hold.length} hold · ${listed.length} listed</div></div>
+    <div class="stat-card"><div class="label">Active Listings</div><div class="value">${load(KEYS.listings).filter(l=>l.status==='Active').length}</div></div>
+    <div class="stat-card"><div class="label">Total Pairs</div><div class="value">${pairs.length}</div></div>
+  `;
+  const recentSales=sold.slice(-5).reverse();
+  document.getElementById('dash-recent-sales').innerHTML=recentSales.length?recentSales.map(p=>{
+    const profit=p.sale-p.cost;
+    return `<div style="display:flex;justify-content:space-between;padding:0.5rem 0;border-bottom:1px solid var(--border);font-size:0.85rem">
+      <div><div style="font-weight:700">${p.name}</div><div style="font-size:0.75rem;color:var(--muted)">Sz ${p.size||'?'} · ${p.platform||'—'}</div></div>
+      <span style="font-weight:800;color:${profit>=0?'var(--success)':'var(--danger)'}">${fmtP(profit)}</span>
+    </div>`;
+  }).join(''):'<div style="color:var(--muted);font-size:0.85rem;padding:0.5rem 0">No sales yet. Mark pairs as Sold.</div>';
+  const activeLst=load(KEYS.listings).filter(l=>l.status==='Active').slice(0,5);
+  document.getElementById('dash-active-listings').innerHTML=activeLst.length?activeLst.map(l=>`
+    <div style="display:flex;justify-content:space-between;padding:0.5rem 0;border-bottom:1px solid var(--border);font-size:0.85rem">
+      <div><div style="font-weight:700">${l.name}</div><div style="font-size:0.75rem;color:${PLATFORM_COLORS[l.platform]||'var(--muted)'};font-weight:700">${l.platform}</div></div>
+      <span style="font-weight:800;color:var(--accent)">${fmt(l.price)}</span>
+    </div>`).join(''):'<div style="color:var(--muted);font-size:0.85rem;padding:0.5rem 0">No active listings.</div>';
+}
+
+// CROSS-LIST
+const CL_KEY='so_anthropic_key';
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const CL_PLATFORMS=[
+  {name:'eBay',color:'#e53238',fee:0.136,flat:0.30,titleMax:80,sellUrl:'https://www.ebay.com/sl/sell',feeDesc:'~13.6% final value fee + $0.30 (est.)'},
+  {name:'Mercari',color:'#7b7dff',fee:0.129,flat:0.50,titleMax:80,sellUrl:'https://www.mercari.com/sell/',feeDesc:'~10% selling + 2.9% + $0.50 processing (est.)'},
+  {name:'Depop',color:'#ff5544',fee:0.033,flat:0.45,titleMax:0,sellUrl:'https://www.depop.com/sell/',feeDesc:'~3.3% + $0.45 payment fee (est., US)'}
+];
+let clPhotos=[];
+let clAI=null;
+let clCards=[];
+
+function clFlash(msg,ok){const el=document.getElementById('cl-error');el.style.color=ok?'var(--success)':'var(--danger)';el.textContent=msg;if(msg)setTimeout(()=>{if(el.textContent===msg)el.textContent='';},6000);}
+function saveClKey(){const v=document.getElementById('cl-api-key').value.trim();if(v)localStorage.setItem(CL_KEY,v);else localStorage.removeItem(CL_KEY);clFlash(v?'Key saved to this browser.':'Key cleared.',true);}
+
+function renderCrosslist(){
+  const sel=document.getElementById('cl-pair');
+  const cur=sel.value;
+  const pairs=load(KEYS.pairs).filter(p=>p.status!=='Sold');
+  sel.innerHTML='<option value="">— manual entry —</option>'+pairs.map(p=>`<option value="${esc(p.id)}">${esc(p.name)} (Sz ${esc(p.size||'?')})</option>`).join('');
+  sel.value=cur;
+  const k=localStorage.getItem(CL_KEY);
+  if(k&&!document.getElementById('cl-api-key').value)document.getElementById('cl-api-key').value=k;
+}
+function clFillFromPair(){
+  const id=document.getElementById('cl-pair').value; if(!id)return;
+  const p=load(KEYS.pairs).find(x=>x.id===id); if(!p)return;
+  document.getElementById('cl-name').value=p.name;
+  document.getElementById('cl-size').value=p.size||'';
+  document.getElementById('cl-notes').value=p.notes||'';
+}
+function clLoadPhotos(files){
+  clPhotos=[];
+  document.getElementById('cl-thumbs').innerHTML='';
+  [...files].slice(0,4).forEach(f=>{
+    const img=new Image();
+    img.onload=()=>{
+      const scale=Math.min(1,1024/Math.max(img.width,img.height));
+      const c=document.createElement('canvas');
+      c.width=Math.round(img.width*scale);c.height=Math.round(img.height*scale);
+      c.getContext('2d').drawImage(img,0,0,c.width,c.height);
+      const dataUrl=c.toDataURL('image/jpeg',0.85);
+      clPhotos.push(dataUrl.split(',')[1]);
+      const t=document.createElement('img');t.src=dataUrl;t.alt='Listing photo preview';
+      document.getElementById('cl-thumbs').appendChild(t);
+      URL.revokeObjectURL(img.src);
+    };
+    img.src=URL.createObjectURL(f);
+  });
+}
+
+const CL_SCHEMA={type:'object',additionalProperties:false,required:['shoe','condition_grade','quality_notes','flaws','market_low','market_high','prices','title','description','confidence'],properties:{
+  shoe:{type:'string',description:'Identified brand, model, and colorway'},
+  condition_grade:{type:'string',enum:['DS / Brand New','VNDS / Like New','Used - Excellent','Used - Good','Used - Fair','Used - Poor']},
+  quality_notes:{type:'array',items:{type:'string'},description:'Observations about condition and quality from the photos'},
+  flaws:{type:'array',items:{type:'string'},description:'Specific flaws visible in the photos or reported by the seller'},
+  market_low:{type:'number',description:'Low end of realistic USD resale range'},
+  market_high:{type:'number',description:'High end of realistic USD resale range'},
+  prices:{type:'object',additionalProperties:false,required:['ebay','mercari','depop'],properties:{ebay:{type:'number'},mercari:{type:'number'},depop:{type:'number'}}},
+  title:{type:'string',description:'Keyword-rich listing title, 80 characters max'},
+  description:{type:'string',description:'Honest, detailed listing description mentioning all flaws'},
+  confidence:{type:'string',enum:['high','medium','low']}
+}};
+
+async function clAnalyze(){
+  const key=(document.getElementById('cl-api-key').value.trim())||localStorage.getItem(CL_KEY);
+  if(!key){clFlash('Add your Anthropic API key in AI Setup first.');return;}
+  if(!clPhotos.length){clFlash('Upload at least one photo to analyze.');return;}
+  const btn=document.getElementById('cl-analyze-btn');
+  const orig=btn.innerHTML;
+  btn.disabled=true;btn.innerHTML='<span class="spinner"></span> Analyzing…';
+  try{
+    const details=[
+      'Name: '+(document.getElementById('cl-name').value||'(unknown — identify from photos)'),
+      'Size (US): '+(document.getElementById('cl-size').value||'unknown'),
+      'Seller-stated condition: '+document.getElementById('cl-condition').value,
+      document.getElementById('cl-notes').value?'Seller notes/flaws: '+document.getElementById('cl-notes').value:''
+    ].filter(Boolean).join('\n');
+    const content=clPhotos.map(b64=>({type:'image',source:{type:'base64',media_type:'image/jpeg',data:b64}}));
+    content.push({type:'text',text:`You are an expert sneaker reseller and authenticator. Analyze the attached photos of a pair being listed for resale.\n\nSeller-provided details:\n${details}\n\nTasks:\n1. Identify the shoe (brand, model, colorway) from the photos; cross-check against the seller's name.\n2. Grade the condition from what you can see: creasing, sole wear, yellowing, scuffs, box condition, and any authenticity red flags.\n3. Estimate a realistic USD resale price range for this shoe in this size and condition.\n4. Recommend a listing price for each platform (eBay, Mercari, Depop), accounting for typical buyer expectations and seller fees on each.\n5. Write a keyword-rich listing title (80 characters max: brand, model, colorway, size, condition) and an honest, detailed description that mentions every flaw.`});
+    const resp=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'content-type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:'claude-opus-4-8',max_tokens:8000,thinking:{type:'adaptive'},
+        output_config:{format:{type:'json_schema',schema:CL_SCHEMA}},
+        messages:[{role:'user',content}]})
+    });
+    if(!resp.ok){
+      const err=await resp.json().catch(()=>null);
+      throw new Error(err&&err.error&&err.error.message?err.error.message:'API error '+resp.status);
+    }
+    const data=await resp.json();
+    if(data.stop_reason==='refusal')throw new Error('The model declined to analyze these photos.');
+    const textBlock=(data.content||[]).find(b=>b.type==='text');
+    if(!textBlock)throw new Error('No analysis returned — try again.');
+    clAI=JSON.parse(textBlock.text);
+    clRenderAI();
+    if(!parseFloat(document.getElementById('cl-price').value))document.getElementById('cl-price').value=clAI.prices.ebay;
+    clBuildCards();
+    clFlash('Analysis complete.',true);
+  }catch(e){clFlash(e.message||'Analysis failed.');}
+  btn.disabled=false;btn.innerHTML=orig;
+}
+
+function clRenderAI(){
+  const a=clAI; if(!a)return;
+  document.getElementById('cl-ai-card').classList.remove('hidden');
+  document.getElementById('cl-ai-result').innerHTML=`
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem;margin-bottom:1rem">
+      <div style="font-weight:800;font-size:1.05rem">${esc(a.shoe)}</div>
+      <div><span class="badge badge-accent">${esc(a.condition_grade)}</span> <span class="badge badge-gray">confidence: ${esc(a.confidence)}</span></div>
+    </div>
+    <div class="card-grid" style="margin-bottom:1rem">
+      <div class="stat-card"><div class="label">Market Range</div><div class="value" style="font-size:1.3rem">${fmt(a.market_low)}–${fmt(a.market_high)}</div></div>
+      <div class="stat-card"><div class="label">eBay Price</div><div class="value" style="font-size:1.3rem;color:var(--accent)">${fmt(a.prices.ebay)}</div></div>
+      <div class="stat-card"><div class="label">Mercari Price</div><div class="value" style="font-size:1.3rem;color:var(--accent)">${fmt(a.prices.mercari)}</div></div>
+      <div class="stat-card"><div class="label">Depop Price</div><div class="value" style="font-size:1.3rem;color:var(--accent)">${fmt(a.prices.depop)}</div></div>
+    </div>
+    ${a.quality_notes.length?`<div style="margin-bottom:0.75rem"><div style="font-size:0.72rem;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:0.4rem">Quality Notes</div>${a.quality_notes.map(n=>`<span class="cl-tag">${esc(n)}</span>`).join('')}</div>`:''}
+    ${a.flaws.length?`<div><div style="font-size:0.72rem;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:0.4rem">Flaws</div>${a.flaws.map(n=>`<span class="cl-tag" style="color:var(--warn)">${esc(n)}</span>`).join('')}</div>`:''}`;
+}
+
+function clComposeManual(){
+  const name=document.getElementById('cl-name').value.trim();
+  const size=document.getElementById('cl-size').value;
+  const cond=document.getElementById('cl-condition').value;
+  const notes=document.getElementById('cl-notes').value.trim();
+  return {
+    title:[name,size?'Size '+size:'',cond.split(' / ')[0]].filter(Boolean).join(' — '),
+    description:[name,size?'US Men’s Size '+size:'','Condition: '+cond,notes?'Notes: '+notes:'','100% authentic. Ships fast and double-boxed. No returns — ask any questions before buying!'].filter(Boolean).join('\n')
+  };
+}
+
+function clBuildCards(){
+  const name=document.getElementById('cl-name').value.trim();
+  if(!name&&!clAI){clFlash('Enter a shoe name (or run the AI analyzer) first.');return;}
+  const price=parseFloat(document.getElementById('cl-price').value)||0;
+  const base=clAI?{title:clAI.title,description:clAI.description}:clComposeManual();
+  const hashtags=(clAI?clAI.shoe:name).toLowerCase().split(/\s+/).filter(w=>/^[a-z0-9]+$/.test(w)).slice(0,4).map(w=>'#'+w).concat(['#sneakers','#kicks']).join(' ');
+  clCards=CL_PLATFORMS.map(pl=>{
+    const p=price||(clAI?clAI.prices[pl.name.toLowerCase()]:0);
+    const fees=p*pl.fee+pl.flat;
+    return {platform:pl,price:p,net:p-fees,
+      title:pl.titleMax?base.title.slice(0,pl.titleMax):'',
+      description:pl.name==='Depop'?base.description+'\n\n'+hashtags:base.description};
+  });
+  document.getElementById('cl-platform-cards').innerHTML=`
+    <div class="section-header" style="margin-top:0.5rem"><h2 style="font-size:1.05rem">Platform Listings</h2>
+      <button class="btn btn-ghost btn-sm" onclick="clOpenAll()">Open All Sell Pages</button>
+    </div>`+clCards.map((c,i)=>`
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem;margin-bottom:0.75rem">
+        <div>
+          <span style="font-weight:900;font-size:1rem;color:${c.platform.color}">${c.platform.name}</span>
+          <span style="font-size:0.75rem;color:var(--muted);margin-left:0.5rem">${esc(c.platform.feeDesc)}</span>
+        </div>
+        <div style="font-size:0.85rem">List <span style="font-weight:900;color:var(--accent)">${fmt(c.price)}</span> · Est. net <span style="font-weight:900;color:var(--success)">${fmt(c.net)}</span></div>
+      </div>
+      ${c.title?`<label>Title (${c.title.length}/${c.platform.titleMax})</label><div class="cl-copy-block">${esc(c.title)}</div>`:''}
+      <label>Description${c.platform.name==='Depop'?' (with hashtags)':''}</label>
+      <div class="cl-copy-block">${esc(c.description)}</div>
+      <div style="display:flex;gap:0.5rem;flex-wrap:wrap">
+        ${c.title?`<button class="btn btn-ghost btn-sm" onclick="clCopy(${i},'title',this)">Copy Title</button>`:''}
+        <button class="btn btn-ghost btn-sm" onclick="clCopy(${i},'description',this)">Copy Description</button>
+        <button class="btn btn-ghost btn-sm" onclick="window.open('${c.platform.sellUrl}','_blank','noopener')">Open ${c.platform.name} Sell Page</button>
+        <button class="btn btn-primary btn-sm" onclick="clMarkListed(${i})">Mark Listed</button>
+      </div>
+    </div>`).join('');
+}
+function clCopy(i,field,btn){
+  navigator.clipboard.writeText(clCards[i][field]).then(()=>{
+    const t=btn.textContent;btn.textContent='Copied ✓';setTimeout(()=>btn.textContent=t,1500);
+  }).catch(()=>clFlash('Copy failed — select and copy manually.'));
+}
+function clOpenAll(){clCards.forEach(c=>window.open(c.platform.sellUrl,'_blank','noopener'));clFlash('If only one tab opened, allow pop-ups for this site.',true);}
+function clMarkListed(i){
+  const c=clCards[i];
+  const listings=load(KEYS.listings);
+  listings.push({id:'l'+Date.now(),name:document.getElementById('cl-name').value.trim()||(clAI?clAI.shoe:''),
+    size:document.getElementById('cl-size').value,price:c.price,platform:c.platform.name,
+    date:new Date().toISOString().split('T')[0],status:'Active'});
+  save(KEYS.listings,listings);
+  const pairId=document.getElementById('cl-pair').value;
+  if(pairId){const pairs=load(KEYS.pairs);const p=pairs.find(x=>x.id===pairId);if(p&&p.status==='Hold'){p.status='Listed';save(KEYS.pairs,pairs);}}
+  renderAll();
+  clFlash('Tracked as listed on '+c.platform.name+'.',true);
+}
+
+function renderAll(){ renderDashboard(); renderInventory(); renderPlatforms(); renderListings(); renderCrosslist(); renderAnalytics(); }
+renderAll();
+
+// DEVICE SYNC — localStorage is per-device, so a sync link/code carries inventory+listings to another browser
+const syncEncode=o=>btoa(unescape(encodeURIComponent(JSON.stringify(o)))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+const syncDecode=s=>JSON.parse(decodeURIComponent(escape(atob(s.replace(/[^A-Za-z0-9_-]/g,'').replace(/-/g,'+').replace(/_/g,'/')))));
+function copySyncLink(){
+  const url=location.origin+location.pathname+'#sync='+syncEncode({pairs:load(KEYS.pairs),listings:load(KEYS.listings)});
+  navigator.clipboard.writeText(url).then(
+    ()=>alert('Sync link copied — open it on your other device, or paste it into Import there.'),
+    ()=>prompt('Copy this link and open it on your other device:',url));
+}
+function importSync(raw){
+  if(!raw)return;
+  const m=String(raw).match(/sync=([\s\S]+)/);
+  try{
+    const data=syncDecode(m?m[1]:String(raw));
+    const merge=(a,b)=>{const map=new Map(a.map(x=>[x.id,x]));(b||[]).forEach(x=>map.set(x.id,x));return[...map.values()]};
+    if(confirm('Import '+(data.pairs||[]).length+' pair(s) and '+(data.listings||[]).length+' listing(s) onto this device?')){
+      save(KEYS.pairs,merge(load(KEYS.pairs),data.pairs));
+      save(KEYS.listings,merge(load(KEYS.listings),data.listings));
+      renderAll();
+      alert('Imported — inventory is up to date on this device.');
+    }
+  }catch(e){alert('That sync link could not be read — tap Import and paste the whole link manually.')}
+}
+function importSyncPrompt(){importSync(prompt('Paste the sync link (or just the code after #sync=):'))}
+function handleSyncHash(){
+  if(!location.hash.startsWith('#sync='))return;
+  const payload=location.hash.slice(6);
+  history.replaceState(null,'',location.pathname+location.search);
+  importSync(payload);
+}
+window.addEventListener('hashchange',handleSyncHash);
+handleSyncHash();
+
+/* ── Accessibility: keyboard nav + Escape to close modals ── */
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){document.querySelectorAll('.modal-overlay:not(.hidden)').forEach(m=>m.classList.add('hidden'));}});
+document.querySelectorAll('.sidebar-item,.logo').forEach(el=>{el.setAttribute('role','button');el.setAttribute('tabindex','0');el.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();el.click();}});});
+</script>
+</body>
+</html>

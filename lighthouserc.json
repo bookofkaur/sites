@@ -5,6 +5,9 @@
       "url": [
         "http://localhost/index.html",
         "http://localhost/sole-ops/index.html",
+        "http://localhost/sole-ops/app.html",
+        "http://localhost/sole-ops/signup.html",
+        "http://localhost/college-confused/app.html",
         "http://localhost/peach-state-savings/index.html",
         "http://localhost/college-confused/index.html",
         "http://localhost/college-confused/blog.html"
@@ -16,10 +19,30 @@
     },
     "assert": {
       "assertions": {
-        "categories:accessibility": ["error", { "minScore": 0.9 }],
-        "categories:performance": ["warn", { "minScore": 0.9 }],
-        "categories:best-practices": ["warn", { "minScore": 0.9 }],
-        "categories:seo": ["warn", { "minScore": 0.9 }]
+        "categories:accessibility": [
+          "error",
+          {
+            "minScore": 0.9
+          }
+        ],
+        "categories:performance": [
+          "warn",
+          {
+            "minScore": 0.9
+          }
+        ],
+        "categories:best-practices": [
+          "warn",
+          {
+            "minScore": 0.9
+          }
+        ],
+        "categories:seo": [
+          "warn",
+          {
+            "minScore": 0.9
+          }
+        ]
       }
     },
     "upload": {

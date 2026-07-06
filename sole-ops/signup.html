@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="Sign up for Sole Ops — free lite version, AI pricing from $4.99/mo ($2.99 for students), full plans from $9.99/mo." />
+<meta name="color-scheme" content="dark" />
+<meta name="theme-color" content="#0a0a0a" />
+<title>Sign Up — Sole Ops</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--accent:#e8ff3c;--accent2:#a3ff4e;--bg:#0a0a0a;--card:#1a1a1a;--border:#2a2a2a;--text:#f9f9f9;--muted:#8a8a8a;--success:#4ade80}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column}
+nav{display:flex;align-items:center;justify-content:space-between;padding:1rem 2rem;border-bottom:1px solid var(--border)}
+.logo{font-size:1.15rem;font-weight:900;letter-spacing:2px;text-transform:uppercase}.logo a{color:var(--text);text-decoration:none}.logo span{color:var(--accent)}
+nav .back{color:var(--muted);text-decoration:none;font-size:0.85rem;text-transform:uppercase;letter-spacing:0.5px;padding:0.4rem 0.8rem;border-radius:6px}
+nav .back:hover,nav .back:focus-visible{color:var(--accent);outline:none}
+nav .back:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+main{flex:1;width:100%;max-width:1080px;margin:0 auto;padding:3rem 1.5rem}
+h1{font-size:clamp(1.7rem,5vw,2.6rem);font-weight:900;letter-spacing:-1px;text-transform:uppercase;text-align:center}
+.sub{color:var(--muted);text-align:center;max-width:36rem;margin:0.75rem auto 2.5rem;line-height:1.6}
+.plans{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:1.25rem}
+.plan{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:1.75rem 1.5rem;display:flex;flex-direction:column}
+.plan.featured{border-color:var(--accent)}
+.plan h2{font-size:0.9rem;font-weight:800;text-transform:uppercase;letter-spacing:1px}
+.plan .price{font-size:2rem;font-weight:900;margin:0.75rem 0 0.25rem}.plan .price small{font-size:0.85rem;font-weight:400;color:var(--muted)}
+.plan .tag{font-size:0.75rem;color:var(--accent);font-weight:700;text-transform:uppercase;letter-spacing:0.5px;min-height:1.1em}
+.plan ul{list-style:none;margin:1.1rem 0 1.5rem;flex:1}
+.plan li{font-size:0.85rem;color:var(--muted);padding:0.3rem 0;line-height:1.45}
+.plan li::before{content:"✓ ";color:var(--success);font-weight:800}
+.btn{display:block;text-align:center;background:var(--accent);color:#000;font-weight:900;font-size:0.9rem;padding:0.8rem 1rem;border-radius:10px;text-decoration:none;letter-spacing:1px;text-transform:uppercase;border:none;cursor:pointer;width:100%;font-family:inherit;transition:background .2s}
+.btn:hover{background:var(--accent2)}
+.btn:focus-visible{outline:2px solid var(--text);outline-offset:3px}
+.btn.ghost{background:transparent;border:1px solid var(--border);color:var(--text)}
+.btn.ghost:hover{border-color:var(--accent);color:var(--accent)}
+.note{text-align:center;color:var(--muted);font-size:0.8rem;margin-top:2rem;line-height:1.7;max-width:44rem;margin-left:auto;margin-right:auto}
+.note a{color:var(--muted)}.note a:hover{color:var(--accent)}
+footer{text-align:center;color:var(--muted);font-size:0.8rem;padding:2rem 1rem;border-top:1px solid var(--border)}
+footer a{color:var(--muted)}footer a:hover,footer a:focus-visible{color:var(--accent)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<nav>
+  <div class="logo"><a href="index.html">Sole<span>Ops</span></a></div>
+  <a class="back" href="index.html">← Back</a>
+</nav>
+<main>
+  <h1>Pick your plan</h1>
+  <p class="sub">Start free. Upgrade when the AI starts paying for itself. Cancel anytime — no contracts, no gotchas.</p>
+  <section class="plans" aria-label="Plans">
+    <div class="plan">
+      <h2>Lite</h2>
+      <div class="tag"></div>
+      <div class="price">$0 <small>forever</small></div>
+      <ul>
+        <li>Inventory tracker</li>
+        <li>Profit calculator with real fees</li>
+        <li>Listing + sold-order tracking</li>
+        <li>Runs in your browser — no account</li>
+      </ul>
+      <a class="btn ghost" href="app.html">Launch Free</a>
+    </div>
+    <div class="plan featured">
+      <h2>AI Pricing</h2>
+      <div class="tag">Most popular</div>
+      <div class="price">$4.99 <small>/mo</small></div>
+      <ul>
+        <li>Everything in Lite</li>
+        <li>Photo-based condition grading</li>
+        <li>Market-aware price recommendations</li>
+        <li>Titles &amp; descriptions written for you</li>
+        <li>Cross-list copy for eBay, Mercari, Depop</li>
+      </ul>
+      <button class="btn" data-plan="ai">Get AI Pricing</button>
+    </div>
+    <div class="plan">
+      <h2>Student AI</h2>
+      <div class="tag">HS or younger</div>
+      <div class="price">$2.99 <small>/mo</small></div>
+      <ul>
+        <li>Everything in AI Pricing</li>
+        <li>For sellers in high school or younger</li>
+        <li>Because that's who I was when I started</li>
+      </ul>
+      <button class="btn" data-plan="student">Get Student AI</button>
+    </div>
+    <div class="plan">
+      <h2>Pro</h2>
+      <div class="tag"></div>
+      <div class="price">$9.99 <small>/mo</small></div>
+      <ul>
+        <li>Everything in AI Pricing</li>
+        <li>Price alerts to your Telegram</li>
+        <li>Full profit analytics &amp; monthly P&amp;L</li>
+        <li>Priority support from an actual reseller</li>
+      </ul>
+      <button class="btn" data-plan="pro">Go Pro</button>
+    </div>
+  </section>
+  <p class="note">
+    Payments are processed securely by Stripe. Student pricing is honor-system at launch — pick it if it's true, that's the whole deal.
+    Questions? <a href="mailto:dbelcher003@gmail.com?subject=Sole%20Ops">Email me</a> — you'll get the founder, not a bot.
+  </p>
+</main>
+<footer>
+  <p>Built by a reseller, for resellers · <a href="index.html">soleops home</a> · <a href="app.html">free lite version</a></p>
+</footer>
+<script>
+// Stripe Payment Links — paste live links from the Stripe dashboard to go live.
+// Create at: dashboard.stripe.com → Products → Payment Links (one per plan).
+const STRIPE_LINKS = {
+  ai:      '', // e.g. 'https://buy.stripe.com/xxxx'  — AI Pricing $4.99/mo
+  student: '', // e.g. 'https://buy.stripe.com/yyyy'  — Student AI $2.99/mo
+  pro:     ''  // e.g. 'https://buy.stripe.com/zzzz'  — Pro $9.99/mo
+};
+document.querySelectorAll('[data-plan]').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    const link=STRIPE_LINKS[btn.dataset.plan];
+    if(link){location.href=link;return;}
+    btn.textContent='Launching this week — email me for early access';
+    setTimeout(()=>{location.href='mailto:dbelcher003@gmail.com?subject=Sole%20Ops%20early%20access%20('+btn.dataset.plan+')';},600);
+  });
+});
+</script>
+</body>
+</html>

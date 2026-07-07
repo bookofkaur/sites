@@ -18,6 +18,8 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:0.9rem
 .logo{font-size:1.2rem;font-weight:900;letter-spacing:2px;text-transform:uppercase;cursor:pointer}.logo span{color:var(--accent)}
 .nav-links button{background:none;border:none;color:var(--muted);cursor:pointer;padding:0.4rem 0.8rem;border-radius:6px;font-size:0.85rem;letter-spacing:0.5px;text-transform:uppercase;transition:all 0.2s}
 .nav-links button:hover,.nav-links button.active{background:rgba(232,255,60,0.1);color:var(--accent)}
+.nav-burger{display:none;background:none;border:none;color:var(--text);font-size:1.5rem;line-height:1;cursor:pointer;padding:0.2rem 0.6rem;border-radius:6px}
+.nav-burger:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .app{display:flex;flex:1}
 .sidebar{width:210px;border-right:1px solid var(--border);padding:1.5rem 1rem;flex-shrink:0;background:var(--surface)}
 .sidebar-item{display:flex;align-items:center;gap:0.6rem;padding:0.6rem 0.75rem;border-radius:8px;cursor:pointer;font-size:0.85rem;color:var(--muted);transition:all 0.15s;margin-bottom:0.25rem;letter-spacing:0.5px}
@@ -95,8 +97,10 @@ tr:hover td{background:rgba(255,255,255,0.02)}
 .sidebar-item:focus-visible,.logo:focus-visible,.nav-links button:focus-visible,.btn:focus-visible,.pill-tab:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 @media (max-width:860px){
   nav{padding:0.75rem 1rem}
-  .nav-links{overflow-x:auto;-webkit-overflow-scrolling:touch;white-space:nowrap;max-width:62%}
-  .nav-links button{flex:0 0 auto}
+  .nav-burger{display:block}
+  .nav-links{display:none;position:absolute;top:100%;left:0;right:0;flex-direction:column;align-items:stretch;background:var(--surface);border-bottom:1px solid var(--border);padding:0.4rem 1rem 0.8rem;z-index:99}
+  nav.mobile-open .nav-links{display:flex}
+  .nav-links button{width:100%;text-align:left;padding:0.7rem 0.8rem;font-size:0.95rem}
   .app{flex-direction:column}
   .sidebar{display:none}
   .main{padding:1rem}
@@ -117,6 +121,7 @@ tr:hover td{background:rgba(255,255,255,0.02)}
     <button onclick="showPanel('crosslist')" id="nav-crosslist">Cross-List</button>
     <button onclick="showPanel('analytics')" id="nav-analytics">Analytics</button>
   </div>
+  <button class="nav-burger" aria-label="Menu" aria-expanded="false" onclick="toggleMobileNav(this)">☰</button>
 </nav>
 
 <div class="app">
@@ -334,8 +339,18 @@ function showPanel(id){
   document.querySelectorAll('.sidebar-item').forEach(s=>s.classList.remove('active'));
   document.getElementById('panel-'+id).classList.add('active');
   ['nav-','sb-'].forEach(p=>{const el=document.getElementById(p+id);if(el)el.classList.add('active')});
+  closeMobileNav();
   renderAll();
 }
+function toggleMobileNav(btn){
+  const open=document.querySelector('nav').classList.toggle('mobile-open');
+  btn.setAttribute('aria-expanded',open);
+}
+function closeMobileNav(){
+  document.querySelector('nav').classList.remove('mobile-open');
+  const b=document.querySelector('.nav-burger');if(b)b.setAttribute('aria-expanded','false');
+}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeMobileNav()});
 function openModal(id){document.getElementById(id).classList.remove('hidden')}
 function closeModal(id){document.getElementById(id).classList.add('hidden')}
 document.querySelectorAll('.modal-overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.add('hidden')}));

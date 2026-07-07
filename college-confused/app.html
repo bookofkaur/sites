@@ -20,6 +20,8 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:0.9rem
 .logo{font-size:1.2rem;font-weight:800;cursor:pointer}.logo span{color:var(--primary)}
 .nav-links button{background:none;border:none;color:var(--muted);cursor:pointer;padding:0.4rem 0.8rem;border-radius:6px;font-size:0.88rem;transition:all 0.2s}
 .nav-links button:hover,.nav-links button.active{background:rgba(108,99,255,0.15);color:var(--primary)}
+.nav-burger{display:none;background:none;border:none;color:var(--text);font-size:1.5rem;line-height:1;cursor:pointer;padding:0.2rem 0.6rem;border-radius:6px}
+.nav-burger:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
 /* LAYOUT */
 .app{display:flex;flex:1}
 .sidebar{width:220px;border-right:1px solid var(--border);padding:1.5rem 1rem;flex-shrink:0;background:var(--surface)}
@@ -119,8 +121,10 @@ textarea{resize:vertical;min-height:140px;line-height:1.6}
 .sidebar-item:focus-visible,.logo:focus-visible,.nav-links button:focus-visible,.btn:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
 @media (max-width:860px){
   nav{padding:0.75rem 1rem}
-  .nav-links{overflow-x:auto;-webkit-overflow-scrolling:touch;white-space:nowrap;max-width:60%}
-  .nav-links button{flex:0 0 auto}
+  .nav-burger{display:block}
+  .nav-links{display:none;position:absolute;top:100%;left:0;right:0;flex-direction:column;align-items:stretch;background:var(--surface);border-bottom:1px solid var(--border);padding:0.4rem 1rem 0.8rem;z-index:99}
+  nav.mobile-open .nav-links{display:flex}
+  .nav-links button{width:100%;text-align:left;padding:0.7rem 0.8rem;font-size:0.95rem}
   .app{flex-direction:column}
   .sidebar{display:none}
   .main{padding:1rem}
@@ -143,6 +147,7 @@ textarea{resize:vertical;min-height:140px;line-height:1.6}
     <button onclick="showPanel('fafsa')" id="nav-fafsa">FAFSA Guide</button>
     <button onclick="showPanel('sat')" id="nav-sat">SAT/ACT Prep</button>
   </div>
+  <button class="nav-burger" aria-label="Menu" aria-expanded="false" onclick="toggleMobileNav(this)">☰</button>
 </nav>
 
 <div class="app">
@@ -351,8 +356,18 @@ function showPanel(id){
   const sb = document.getElementById('sb-'+id);
   if(nb) nb.classList.add('active');
   if(sb) sb.classList.add('active');
+  closeMobileNav();
   renderAll();
 }
+function toggleMobileNav(btn){
+  const open=document.querySelector('nav').classList.toggle('mobile-open');
+  btn.setAttribute('aria-expanded',open);
+}
+function closeMobileNav(){
+  document.querySelector('nav').classList.remove('mobile-open');
+  const b=document.querySelector('.nav-burger');if(b)b.setAttribute('aria-expanded','false');
+}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeMobileNav()});
 
 // ─── MODAL ──────────────────────────────────────
 function openModal(id){ document.getElementById(id).classList.remove('hidden') }

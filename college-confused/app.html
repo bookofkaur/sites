@@ -6,6 +6,16 @@
 <meta name="description" content="College Confused — free college-prep tools: application timeline, scholarship tracker, essay station, FAFSA guide, and SAT/ACT prep. Built to help students who feel lost in the process." />
 <meta name="color-scheme" content="dark" />
 <meta name="theme-color" content="#0d0d1a" />
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="College Confused" />
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js'); });
+}
+</script>
 <title>College Confused — Free AI College Prep</title>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}

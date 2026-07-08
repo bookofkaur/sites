@@ -39,6 +39,7 @@ footer a{color:var(--muted)}
 footer a:hover,footer a:focus-visible{color:var(--accent)}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
+<script src="analytics.js" defer></script>
 </head>
 <body>
 <nav>
@@ -50,7 +51,7 @@ footer a:hover,footer a:focus-visible{color:var(--accent)}
     <div class="kick" aria-hidden="true">👟</div>
     <h1>Resell like an <em>operation</em>, not a hobby</h1>
     <p>Sole Ops is the back office for sneaker resellers — inventory, AI pricing, one-click cross-listing to eBay, Mercari, and Depop, and analytics that show your real margins.</p>
-    <a class="cta" href="signup.html">Get Started</a>
+    <a class="cta" href="signup.html" onclick="soTrack&&soTrack('cta-get-started')">Get Started</a>
     <span class="sub-cta"><a href="signup.html">AI pricing $4.99/mo · $2.99/mo for students (high school or younger) · plans from $9.99/mo</a> · <a href="app.html">or try the free lite version</a></span>
   </section>
   <section class="grid" aria-label="Features">

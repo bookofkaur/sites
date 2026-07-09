@@ -112,7 +112,7 @@ tr:hover td{background:rgba(255,255,255,0.02)}
     <button onclick="showPanel('budget')" id="nav-budget">Budget</button>
     <button onclick="showPanel('goals')" id="nav-goals">Goals</button>
     <button onclick="showPanel('networth')" id="nav-networth">Net Worth</button>
-    <button onclick="showPanel('cards')" id="nav-cards">Cards</button>
+    <button onclick="showPanel('cards')" id="nav-cards">Cards & Debt</button>
     <button onclick="showPanel('bills')" id="nav-bills">Bills</button>
   </div>
   <button class="nav-burger" aria-label="Menu" aria-expanded="false" onclick="toggleMobileNav(this)">☰</button>
@@ -127,7 +127,7 @@ tr:hover td{background:rgba(255,255,255,0.02)}
     <div class="sidebar-item" onclick="showPanel('budget')" id="sb-budget">📊 Budget</div>
     <div class="sidebar-item" onclick="showPanel('goals')" id="sb-goals">🎯 Goals</div>
     <div class="sidebar-item" onclick="showPanel('networth')" id="sb-networth">📈 Net Worth</div>
-    <div class="sidebar-item" onclick="showPanel('cards')" id="sb-cards">💳 Cards</div>
+    <div class="sidebar-item" onclick="showPanel('cards')" id="sb-cards">💳 Cards & Debt</div>
     <div class="sidebar-item" onclick="showPanel('bills')" id="sb-bills">📅 Bills</div>
   </div>
 
@@ -206,8 +206,8 @@ tr:hover td{background:rgba(255,255,255,0.02)}
 
     <!-- CARDS -->
     <div class="panel" id="panel-cards">
-      <div class="section-header"><h2>Credit Cards</h2>
-        <button class="btn btn-primary btn-sm" onclick="openCardModal()">+ Add Card</button>
+      <div class="section-header"><h2>Cards & Debt</h2>
+        <button class="btn btn-primary btn-sm" onclick="openCardModal()">+ Add Account</button>
       </div>
       <div class="card-grid" id="cards-stats"></div>
       <div id="cards-list"></div>
@@ -314,11 +314,23 @@ tr:hover td{background:rgba(255,255,255,0.02)}
 
 <div class="modal-overlay hidden" id="card-modal">
   <div class="modal">
-    <h2 id="card-modal-title">Add Credit Card</h2>
-    <div class="form-group"><label>Card Name</label><input id="card-name" placeholder="e.g. Chase Freedom"></div>
+    <h2 id="card-modal-title">Add Account</h2>
+    <div class="form-group"><label>Account Name</label><input id="card-name" placeholder="e.g. Chase Freedom"></div>
+    <div class="form-group"><label>Account Type</label>
+      <select id="card-type" onchange="syncCardModalLabels()">
+        <option value="credit-card">💳 Credit Card</option>
+        <option value="line-of-credit">🏦 Line of Credit / HELOC</option>
+        <option value="bnpl">🛍️ Buy Now Pay Later</option>
+        <option value="auto-loan">🚗 Auto Loan</option>
+        <option value="student-loan">🎓 Student Loan</option>
+        <option value="personal-loan">💰 Personal Loan</option>
+        <option value="medical">🏥 Medical Debt</option>
+        <option value="other">📌 Other Debt</option>
+      </select>
+    </div>
     <div class="form-row">
       <div><label>Current Balance ($)</label><input type="number" id="card-balance" placeholder="0.00" step="0.01" min="0"></div>
-      <div><label>Credit Limit ($)</label><input type="number" id="card-limit" placeholder="1000" min="0"></div>
+      <div><label id="card-limit-label">Credit Limit ($)</label><input type="number" id="card-limit" placeholder="1000" min="0"></div>
     </div>
     <div class="form-row">
       <div><label>APR (%)</label><input type="number" id="card-apr" placeholder="24.99" step="0.01" min="0"></div>
@@ -327,7 +339,40 @@ tr:hover td{background:rgba(255,255,255,0.02)}
     <div class="form-group"><label>Payment Due Day (1-31)</label><input type="number" id="card-dueday" min="1" max="31" placeholder="15"></div>
     <div class="modal-actions">
       <button class="btn btn-ghost" onclick="closeModal('card-modal')">Cancel</button>
-      <button class="btn btn-primary" onclick="saveCard()">Save Card</button>
+      <button class="btn btn-primary" onclick="saveCard()">Save Account</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay hidden" id="charge-modal">
+  <div class="modal">
+    <h2 id="charge-modal-title">New Charge</h2>
+    <div class="form-group"><label>Description</label><input id="charge-desc" placeholder="e.g. Groceries at Kroger"></div>
+    <div class="form-row">
+      <div><label>Amount ($)</label><input type="number" id="charge-amount" placeholder="0.00" step="0.01" min="0"></div>
+      <div><label>Date</label><input type="date" id="charge-date"></div>
+    </div>
+    <div class="form-group"><label>Category</label>
+      <select id="charge-cat"><option>Food & Dining</option><option>Transport</option><option>Housing</option><option>Utilities</option><option>Entertainment</option><option>Shopping</option><option>Health</option><option>Other</option></select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('charge-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveCharge()">Add Charge</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay hidden" id="payment-modal">
+  <div class="modal">
+    <h2 id="payment-modal-title">Make a Payment</h2>
+    <div class="form-row">
+      <div><label>Amount ($)</label><input type="number" id="payment-amount" placeholder="0.00" step="0.01" min="0"></div>
+      <div><label>Date</label><input type="date" id="payment-date"></div>
+    </div>
+    <div style="font-size:0.8rem;color:var(--muted);margin-bottom:1rem">Payments are logged as transfers — they lower the balance here but don't count as new spending, since charges are already tracked when they happen.</div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('payment-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="savePayment()">Log Payment</button>
     </div>
   </div>
 </div>
@@ -471,8 +516,8 @@ function renderTransactions(){
     <tr>
       <td style="color:var(--muted)">${t.date}</td>
       <td>${t.desc}${t.notes?`<div style="font-size:0.75rem;color:var(--muted)">${t.notes}</div>`:''}</td>
-      <td><span class="badge badge-orange">${CAT_ICONS[t.cat]||'📌'} ${t.cat}</span></td>
-      <td style="font-weight:700;color:${t.type==='income'?'var(--success)':'var(--danger)'}">${t.type==='income'?'+':'-'}${fmt(t.amount)}</td>
+      <td><span class="badge badge-orange">${CAT_ICONS[t.cat]||'📌'} ${t.cat}</span>${t.transfer?' <span class="badge badge-green">🔁 Transfer</span>':''}</td>
+      <td style="font-weight:700;color:${t.transfer?'var(--muted)':t.type==='income'?'var(--success)':'var(--danger)'}">${t.type==='income'?'+':'-'}${fmt(t.amount)}</td>
       <td><button class="btn btn-ghost btn-sm" onclick="openTxnModal('${t.id}')">Edit</button> <button class="btn btn-danger btn-sm" onclick="deleteTxn('${t.id}')">✕</button></td>
     </tr>`).join('');
 }
@@ -492,7 +537,7 @@ function deleteBudgetCat(id){save(KEYS.budget,load(KEYS.budget).filter(x=>x.id!=
 
 function renderBudget(){
   const cats=load(KEYS.budget);
-  const txns=load(KEYS.txns).filter(t=>t.type==='expense');
+  const txns=load(KEYS.txns).filter(t=>t.type==='expense'&&!t.transfer);
   document.getElementById('budget-month').textContent=monthLabel(selectedMonth);
   const monthTxns=txns.filter(t=>(t.date||'').startsWith(selectedMonth));
   const totalBudget=cats.reduce((s,c)=>s+c.amount,0);
@@ -653,17 +698,34 @@ function renderBills(){
   }).join('');
 }
 
-// CREDIT CARDS
+// CARDS & DEBT
+const ACCT_TYPES={
+  'credit-card':{icon:'💳',label:'Credit Card',revolving:true},
+  'line-of-credit':{icon:'🏦',label:'Line of Credit',revolving:true},
+  'bnpl':{icon:'🛍️',label:'Buy Now Pay Later',revolving:true},
+  'auto-loan':{icon:'🚗',label:'Auto Loan',revolving:false},
+  'student-loan':{icon:'🎓',label:'Student Loan',revolving:false},
+  'personal-loan':{icon:'💰',label:'Personal Loan',revolving:false},
+  'medical':{icon:'🏥',label:'Medical Debt',revolving:false},
+  'other':{icon:'📌',label:'Other Debt',revolving:false}
+};
+const acctType=c=>ACCT_TYPES[c.type]||ACCT_TYPES['credit-card'];
+function syncCardModalLabels(){
+  const t=ACCT_TYPES[document.getElementById('card-type').value];
+  document.getElementById('card-limit-label').textContent=t.revolving?'Credit Limit ($)':'Original Amount ($)';
+}
 function openCardModal(id=null){
   const modal=document.getElementById('card-modal');
   if(!id){
-    document.getElementById('card-modal-title').textContent='Add Credit Card';
+    document.getElementById('card-modal-title').textContent='Add Account';
     ['card-name','card-balance','card-limit','card-apr','card-minpay','card-dueday'].forEach(i=>document.getElementById(i).value='');
+    document.getElementById('card-type').value='credit-card';
     delete modal.dataset.editId;
   } else {
     const c=load(KEYS.cards).find(x=>x.id===id);
-    document.getElementById('card-modal-title').textContent='Edit Card';
+    document.getElementById('card-modal-title').textContent='Edit Account';
     document.getElementById('card-name').value=c.name;
+    document.getElementById('card-type').value=c.type||'credit-card';
     document.getElementById('card-balance').value=c.balance;
     document.getElementById('card-limit').value=c.limit;
     document.getElementById('card-apr').value=c.apr;
@@ -671,32 +733,82 @@ function openCardModal(id=null){
     document.getElementById('card-dueday').value=c.dueDay||'';
     modal.dataset.editId=id;
   }
+  syncCardModalLabels();
   openModal('card-modal');
 }
 function saveCard(){
   const name=document.getElementById('card-name').value.trim(); if(!name) return;
   const cards=load(KEYS.cards);
   const editId=document.getElementById('card-modal').dataset.editId;
+  const prev=editId?cards.find(x=>x.id===editId):null;
   const c={id:editId||'cc'+Date.now(),name,
+    type:document.getElementById('card-type').value,
     balance:parseFloat(document.getElementById('card-balance').value)||0,
     limit:parseFloat(document.getElementById('card-limit').value)||0,
     apr:parseFloat(document.getElementById('card-apr').value)||0,
     minPay:parseFloat(document.getElementById('card-minpay').value)||0,
-    dueDay:parseInt(document.getElementById('card-dueday').value)||null};
+    dueDay:parseInt(document.getElementById('card-dueday').value)||null,
+    history:prev?.history||[]};
   if(editId) cards[cards.findIndex(x=>x.id===editId)]=c; else cards.push(c);
   save(KEYS.cards,cards); closeModal('card-modal'); renderAll();
 }
-function deleteCard(id){save(KEYS.cards,load(KEYS.cards).filter(x=>x.id!==id));renderAll();}
-function payCard(id){
-  const amt=parseFloat(prompt('Payment amount ($)?'));
-  if(isNaN(amt)||amt<=0) return;
-  const cards=load(KEYS.cards); const c=cards.find(x=>x.id===id);
-  c.balance=Math.max(0,c.balance-amt);
+function deleteCard(id){
+  const c=load(KEYS.cards).find(x=>x.id===id);
+  if(!confirm(`Delete ${c?.name||'this account'}? Its activity history goes with it (transactions stay).`)) return;
+  save(KEYS.cards,load(KEYS.cards).filter(x=>x.id!==id));renderAll();
+}
+function pushHistory(c,entry){
+  c.history=c.history||[];
+  c.history.unshift(entry);
+  if(c.history.length>50) c.history.length=50;
+}
+function openChargeModal(id){
+  const c=load(KEYS.cards).find(x=>x.id===id);
+  document.getElementById('charge-modal-title').textContent=`New Charge — ${c.name}`;
+  document.getElementById('charge-desc').value='';
+  document.getElementById('charge-amount').value='';
+  document.getElementById('charge-date').value=todayStr();
+  document.getElementById('charge-cat').value='Food & Dining';
+  document.getElementById('charge-modal').dataset.acctId=id;
+  openModal('charge-modal');
+}
+function saveCharge(){
+  const desc=document.getElementById('charge-desc').value.trim();
+  const amt=parseFloat(document.getElementById('charge-amount').value);
+  if(!desc||isNaN(amt)||amt<=0) return;
+  const date=document.getElementById('charge-date').value||todayStr();
+  const cat=document.getElementById('charge-cat').value;
+  const id=document.getElementById('charge-modal').dataset.acctId;
+  const cards=load(KEYS.cards); const c=cards.find(x=>x.id===id); if(!c) return;
+  c.balance=(c.balance||0)+amt;
+  pushHistory(c,{date,desc,amount:amt,kind:'charge'});
   save(KEYS.cards,cards);
   const txns=load(KEYS.txns);
-  txns.push({id:'tx'+Date.now(),desc:'Card payment — '+c.name,amount:amt,type:'expense',date:todayStr(),cat:'Debt',notes:''});
+  txns.push({id:'tx'+Date.now(),desc,amount:amt,type:'expense',date,cat,notes:`${acctType(c).icon} ${c.name}`});
   save(KEYS.txns,txns);
-  renderAll();
+  closeModal('charge-modal'); renderAll();
+}
+function openPaymentModal(id){
+  const c=load(KEYS.cards).find(x=>x.id===id);
+  document.getElementById('payment-modal-title').textContent=`Make a Payment — ${c.name}`;
+  document.getElementById('payment-amount').value='';
+  document.getElementById('payment-date').value=todayStr();
+  document.getElementById('payment-modal').dataset.acctId=id;
+  openModal('payment-modal');
+}
+function savePayment(){
+  const amt=parseFloat(document.getElementById('payment-amount').value);
+  if(isNaN(amt)||amt<=0) return;
+  const date=document.getElementById('payment-date').value||todayStr();
+  const id=document.getElementById('payment-modal').dataset.acctId;
+  const cards=load(KEYS.cards); const c=cards.find(x=>x.id===id); if(!c) return;
+  c.balance=Math.max(0,(c.balance||0)-amt);
+  pushHistory(c,{date,desc:'Payment',amount:amt,kind:'payment'});
+  save(KEYS.cards,cards);
+  const txns=load(KEYS.txns);
+  txns.push({id:'tx'+Date.now(),desc:'Payment — '+c.name,amount:amt,type:'expense',transfer:true,date,cat:'Debt',notes:''});
+  save(KEYS.txns,txns);
+  closeModal('payment-modal'); renderAll();
 }
 
 function utilInfo(pct){
@@ -734,54 +846,82 @@ function renderCards(){
   document.getElementById('payoff-extra').value=plan.extra||'';
   document.getElementById('payoff-strategy').value=plan.strategy;
   const totalDebt=cards.reduce((s,c)=>s+c.balance,0);
-  const totalLimit=cards.reduce((s,c)=>s+c.limit,0);
-  const util=totalLimit?Math.round(totalDebt/totalLimit*100):0;
+  const revolving=cards.filter(c=>acctType(c).revolving);
+  const revDebt=revolving.reduce((s,c)=>s+c.balance,0);
+  const totalLimit=revolving.reduce((s,c)=>s+c.limit,0);
+  const util=totalLimit?Math.round(revDebt/totalLimit*100):0;
   const monthlyInterest=cards.reduce((s,c)=>s+c.balance*(c.apr/100/12),0);
   const ui=utilInfo(util);
   document.getElementById('cards-stats').innerHTML=`
-    <div class="stat-card"><div class="label">Total Card Debt</div><div class="value" style="color:var(--danger)">${fmt(totalDebt)}</div></div>
-    <div class="stat-card"><div class="label">Total Credit Limit</div><div class="value" style="color:var(--peach)">${fmt(totalLimit)}</div></div>
-    <div class="stat-card"><div class="label">Overall Utilization</div><div class="value" style="color:${ui.color}">${util}%</div><div class="sub">Keep it under 30%</div></div>
+    <div class="stat-card"><div class="label">Total Debt</div><div class="value" style="color:var(--danger)">${fmt(totalDebt)}</div></div>
+    <div class="stat-card"><div class="label">Credit Limit (revolving)</div><div class="value" style="color:var(--peach)">${fmt(totalLimit)}</div></div>
+    <div class="stat-card"><div class="label">Credit Utilization</div><div class="value" style="color:${ui.color}">${util}%</div><div class="sub">Cards & lines of credit · keep under 30%</div></div>
     <div class="stat-card"><div class="label">Interest Cost / Month</div><div class="value" style="color:var(--warn)">${fmt(monthlyInterest)}</div><div class="sub">At current balances</div></div>
   `;
   if(!cards.length){
-    document.getElementById('cards-list').innerHTML='<div class="empty"><div class="ei">💳</div><p>No cards yet. Add one to start tracking your debt payoff.</p></div>';
-    document.getElementById('payoff-result').innerHTML='<div style="color:var(--muted);font-size:0.85rem;padding:0.5rem 0">Add cards to see your debt-free date.</div>';
-    document.getElementById('credit-health').innerHTML='<div style="color:var(--muted);font-size:0.85rem;padding:0.5rem 0">Add cards to see credit health tips.</div>';
+    document.getElementById('cards-list').innerHTML='<div class="empty"><div class="ei">💳</div><p>No accounts yet. Add a credit card, loan, or line of credit to start tracking your debt payoff.</p></div>';
+    document.getElementById('payoff-result').innerHTML='<div style="color:var(--muted);font-size:0.85rem;padding:0.5rem 0">Add accounts to see your debt-free date.</div>';
+    document.getElementById('credit-health').innerHTML='<div style="color:var(--muted);font-size:0.85rem;padding:0.5rem 0">Add accounts to see credit health tips.</div>';
     return;
   }
   const order=[...cards].filter(c=>c.balance>0).sort((a,b)=>plan.strategy==='avalanche'?b.apr-a.apr:a.balance-b.balance);
   const targetId=order.length?order[0].id:null;
   const today=new Date().getDate();
   document.getElementById('cards-list').innerHTML=cards.map(c=>{
-    const pct=c.limit?Math.min(100,Math.round(c.balance/c.limit*100)):0;
-    const cui=utilInfo(pct);
+    const t=acctType(c);
     const daysUntil=c.dueDay?(c.dueDay>=today?c.dueDay-today:30-(today-c.dueDay)):null;
-    return `<div class="card">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:0.5rem">
-        <div>
-          <h3>💳 ${c.name} ${c.id===targetId&&plan.extra>0?'<span class="badge badge-orange">🎯 Pay this first</span>':''}</h3>
-          <div style="font-size:0.82rem;color:var(--muted);margin-top:0.2rem">${c.apr}% APR · Min ${fmt(c.minPay)}${c.dueDay?` · Due day ${c.dueDay} (${daysUntil===0?'today!':daysUntil+' days'})`:''}</div>
-        </div>
-        <div style="display:flex;gap:0.5rem">
-          <button class="btn btn-primary btn-sm" onclick="payCard('${c.id}')">💵 Pay</button>
-          <button class="btn btn-ghost btn-sm" onclick="openCardModal('${c.id}')">Edit</button>
-          <button class="btn btn-danger btn-sm" onclick="deleteCard('${c.id}')">✕</button>
-        </div>
-      </div>
+    // Revolving: bar shows utilization of the limit. Loans: bar shows % of original amount paid off.
+    let barHtml='';
+    if(t.revolving){
+      const pct=c.limit?Math.min(100,Math.round(c.balance/c.limit*100)):0;
+      const cui=utilInfo(pct);
+      barHtml=`
       <div style="display:flex;justify-content:space-between;font-size:0.85rem;margin-top:1rem">
         <span style="font-size:1.2rem;font-weight:800;color:${c.balance>0?'var(--danger)':'var(--success)'}">${fmt(c.balance)}</span>
         <span style="color:var(--muted)">of ${fmt(c.limit)} limit · <span class="badge ${cui.badge}">${pct}% used</span></span>
       </div>
-      <div class="progress-wrap" style="margin-top:0.5rem"><div class="progress-bar" style="width:${pct}%;background:${cui.color}"></div></div>
+      <div class="progress-wrap" style="margin-top:0.5rem"><div class="progress-bar" style="width:${pct}%;background:${cui.color}"></div></div>`;
+    } else {
+      const paidPct=c.limit?Math.max(0,Math.min(100,Math.round((c.limit-c.balance)/c.limit*100))):0;
+      barHtml=`
+      <div style="display:flex;justify-content:space-between;font-size:0.85rem;margin-top:1rem">
+        <span style="font-size:1.2rem;font-weight:800;color:${c.balance>0?'var(--danger)':'var(--success)'}">${fmt(c.balance)}</span>
+        <span style="color:var(--muted)">${c.limit?`of ${fmt(c.limit)} original · <span class="badge badge-green">${paidPct}% paid off</span>`:'remaining'}</span>
+      </div>
+      ${c.limit?`<div class="progress-wrap" style="margin-top:0.5rem"><div class="progress-bar" style="width:${paidPct}%;background:var(--success)"></div></div>`:''}`;
+    }
+    const hist=(c.history||[]).slice(0,5);
+    const histHtml=hist.length?`
+      <details style="margin-top:0.75rem">
+        <summary style="cursor:pointer;font-size:0.8rem;color:var(--muted)">Recent activity (${(c.history||[]).length})</summary>
+        ${hist.map(h=>`<div style="display:flex;justify-content:space-between;font-size:0.82rem;padding:0.35rem 0;border-bottom:1px solid rgba(255,255,255,0.04)">
+          <span>${h.kind==='payment'?'💵':'🛒'} ${h.desc}<span style="color:var(--muted)"> · ${h.date}</span></span>
+          <span style="font-weight:700;color:${h.kind==='payment'?'var(--success)':'var(--danger)'}">${h.kind==='payment'?'−':'+'}${fmt(h.amount)}</span>
+        </div>`).join('')}
+      </details>`:'';
+    return `<div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:0.5rem">
+        <div>
+          <h3>${t.icon} ${c.name} <span class="badge badge-orange" style="font-weight:600">${t.label}</span> ${c.id===targetId&&plan.extra>0?'<span class="badge badge-orange">🎯 Pay this first</span>':''}</h3>
+          <div style="font-size:0.82rem;color:var(--muted);margin-top:0.2rem">${c.apr}% APR · Min ${fmt(c.minPay)}${c.dueDay?` · Due day ${c.dueDay} (${daysUntil===0?'today!':daysUntil+' days'})`:''}</div>
+        </div>
+        <div style="display:flex;gap:0.5rem;flex-wrap:wrap">
+          ${t.revolving?`<button class="btn btn-ghost btn-sm" onclick="openChargeModal('${c.id}')">🛒 Charge</button>`:''}
+          <button class="btn btn-primary btn-sm" onclick="openPaymentModal('${c.id}')">💵 Pay</button>
+          <button class="btn btn-ghost btn-sm" onclick="openCardModal('${c.id}')">Edit</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteCard('${c.id}')">✕</button>
+        </div>
+      </div>
+      ${barHtml}
       ${c.balance<=0?'<div style="text-align:right;font-size:0.78rem;color:var(--success);margin-top:0.25rem">Paid off! 🎉</div>':''}
+      ${histHtml}
     </div>`;
   }).join('');
 
   // Payoff planner
   const withDebt=cards.filter(c=>c.balance>0);
   if(!withDebt.length){
-    document.getElementById('payoff-result').innerHTML='<div style="color:var(--success);font-weight:700;padding:0.5rem 0">🎉 All cards paid off — you\'re debt free!</div>';
+    document.getElementById('payoff-result').innerHTML='<div style="color:var(--success);font-weight:700;padding:0.5rem 0">🎉 All accounts paid off — you\'re debt free!</div>';
   } else {
     const result=simulatePayoff(cards,plan.extra,plan.strategy);
     const base=simulatePayoff(cards,0,plan.strategy);
@@ -803,9 +943,10 @@ function renderCards(){
 
   // Credit health
   const tips=[];
-  if(util>=30) tips.push(`⚠️ Overall utilization is <b style="color:${ui.color}">${util}%</b> — under 30% is the biggest quick win for your score. Getting there means paying down about <b>${fmt(Math.max(0,totalDebt-totalLimit*0.3))}</b>.`);
-  else tips.push(`✅ Overall utilization is <b style="color:var(--success)">${util}%</b> — under 30% helps your score. Under 10% is even better.`);
-  cards.filter(c=>c.limit&&c.balance/c.limit>=0.5).forEach(c=>tips.push(`⚠️ <b>${c.name}</b> is at ${Math.round(c.balance/c.limit*100)}% of its limit — scores also look at per-card utilization, so spreading balances or paying this one down helps.`));
+  if(!revolving.length) tips.push('💡 Credit utilization only applies to revolving accounts (cards & lines of credit) — add one to track it.');
+  else if(util>=30) tips.push(`⚠️ Credit utilization is <b style="color:${ui.color}">${util}%</b> — under 30% is the biggest quick win for your score. Getting there means paying down about <b>${fmt(Math.max(0,revDebt-totalLimit*0.3))}</b>.`);
+  else tips.push(`✅ Credit utilization is <b style="color:var(--success)">${util}%</b> — under 30% helps your score. Under 10% is even better.`);
+  revolving.filter(c=>c.limit&&c.balance/c.limit>=0.5).forEach(c=>tips.push(`⚠️ <b>${c.name}</b> is at ${Math.round(c.balance/c.limit*100)}% of its limit — scores also look at per-card utilization, so spreading balances or paying this one down helps.`));
   tips.push('💡 Always make at least the minimum payment on time — payment history is the single biggest factor in your credit score.');
   if(monthlyInterest>0) tips.push(`💡 Your balances cost about <b>${fmt(monthlyInterest)}</b> in interest every month — every extra dollar paid goes straight to that number.`);
   document.getElementById('credit-health').innerHTML=tips.map(t=>`<div style="font-size:0.88rem;line-height:1.6;padding:0.4rem 0;border-bottom:1px solid rgba(255,255,255,0.04)">${t}</div>`).join('');
@@ -815,8 +956,8 @@ function renderCards(){
 function renderDashboard(){
   document.getElementById('dash-month').textContent=monthLabel(selectedMonth);
   const txns=load(KEYS.txns).filter(t=>(t.date||'').startsWith(selectedMonth));
-  const income=txns.filter(t=>t.type==='income').reduce((s,t)=>s+t.amount,0);
-  const expenses=txns.filter(t=>t.type==='expense').reduce((s,t)=>s+t.amount,0);
+  const income=txns.filter(t=>t.type==='income'&&!t.transfer).reduce((s,t)=>s+t.amount,0);
+  const expenses=txns.filter(t=>t.type==='expense'&&!t.transfer).reduce((s,t)=>s+t.amount,0);
   const goals=load(KEYS.goals);
   const items=load(KEYS.assets);
   const net=items.filter(x=>x.type==='asset').reduce((s,x)=>s+x.value,0)-items.filter(x=>x.type==='liability').reduce((s,x)=>s+x.value,0);
@@ -825,7 +966,7 @@ function renderDashboard(){
     <div class="stat-card"><div class="label">Income · ${monthLabel(selectedMonth).split(' ')[0]}</div><div class="value" style="color:var(--success)">${fmt(income)}</div></div>
     <div class="stat-card"><div class="label">Spent · ${monthLabel(selectedMonth).split(' ')[0]}</div><div class="value" style="color:var(--danger)">${fmt(expenses)}</div></div>
     <div class="stat-card"><div class="label">Net · ${monthLabel(selectedMonth).split(' ')[0]}</div><div class="value" style="color:${income-expenses>=0?'var(--success)':'var(--danger)'}">${fmt(income-expenses)}</div></div>
-    <div class="stat-card"><div class="label">Card Debt</div><div class="value" style="color:${cardDebt>0?'var(--danger)':'var(--success)'}">${fmt(cardDebt)}</div></div>
+    <div class="stat-card"><div class="label">Total Debt</div><div class="value" style="color:${cardDebt>0?'var(--danger)':'var(--success)'}">${fmt(cardDebt)}</div></div>
     <div class="stat-card"><div class="label">Net Worth</div><div class="value" style="color:var(--peach)">${fmt(net)}</div></div>
   `;
   const recentTxns=load(KEYS.txns).sort((a,b)=>(b.date||'').localeCompare(a.date||'')).slice(0,5);

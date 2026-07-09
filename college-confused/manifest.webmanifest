@@ -1,0 +1,17 @@
+{
+  "name": "College Confused — Free College Prep",
+  "short_name": "College Confused",
+  "description": "Free college-prep tools: application timeline, scholarship tracker, essay station, FAFSA guide, and SAT/ACT prep.",
+  "id": "./",
+  "start_url": "app.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#0d0d1a",
+  "theme_color": "#0d0d1a",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

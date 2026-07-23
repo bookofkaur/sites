@@ -94,6 +94,7 @@ tr:hover td{background:rgba(255,255,255,0.02)}
 /* CROSS-LIST */
 .photo-thumbs{display:flex;gap:0.6rem;flex-wrap:wrap;margin-top:0.6rem}
 .photo-thumbs img{width:84px;height:84px;object-fit:cover;border-radius:8px;border:1px solid var(--border)}
+.inv-thumb{width:44px;height:44px;object-fit:cover;border-radius:6px;border:1px solid var(--border);flex-shrink:0}
 .spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(0,0,0,0.3);border-top-color:#000;border-radius:50%;animation:clspin 0.7s linear infinite;vertical-align:-2px}
 @keyframes clspin{to{transform:rotate(360deg)}}
 .cl-copy-block{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:0.75rem;font-size:0.82rem;white-space:pre-wrap;word-break:break-word;max-height:200px;overflow-y:auto;margin-bottom:0.6rem}
@@ -237,7 +238,7 @@ tr:hover td{background:rgba(255,255,255,0.02)}
         </div>
         <div class="form-group"><label for="cl-notes">Notes / Known Flaws</label><input id="cl-notes" placeholder="e.g. small crease on left toe, no box"></div>
         <div class="form-group">
-          <label for="cl-photos">Photos (up to 4 — used by the AI analyzer)</label>
+          <label for="cl-photos">Photos (up to 10 — used by the AI analyzer)</label>
           <input type="file" id="cl-photos" accept="image/*" multiple onchange="clLoadPhotos(this.files)">
           <div class="photo-thumbs" id="cl-thumbs"></div>
         </div>
@@ -274,6 +275,19 @@ tr:hover td{background:rgba(255,255,255,0.02)}
 <div class="modal-overlay hidden" id="pair-modal">
   <div class="modal">
     <h2 id="pair-modal-title">Add Pair</h2>
+    <div class="form-group">
+      <label>Photos — snap the shoe, AI fills in the details (up to 10)</label>
+      <input type="file" id="pair-camera" accept="image/*" capture="environment" class="hidden" onchange="pairLoadPhotos(this.files)">
+      <input type="file" id="pair-photos" accept="image/*" multiple class="hidden" onchange="pairLoadPhotos(this.files)">
+      <div style="display:flex;gap:0.5rem;flex-wrap:wrap">
+        <button class="btn btn-ghost btn-sm" onclick="document.getElementById('pair-camera').click()">📸 Take Photo</button>
+        <button class="btn btn-ghost btn-sm" onclick="document.getElementById('pair-photos').click()">🖼️ Choose Photos</button>
+        <button class="btn btn-primary btn-sm" id="pair-analyze-btn" onclick="pairAnalyze()">🤖 Analyze → Fill Details</button>
+      </div>
+      <div class="photo-thumbs" id="pair-thumbs"></div>
+      <div id="pair-ai-summary" style="margin-top:0.6rem"></div>
+      <div id="pair-error" style="font-size:0.82rem;margin-top:0.4rem;min-height:1em" role="alert"></div>
+    </div>
     <div class="form-group"><label>Shoe Name</label><input id="pair-name" placeholder="e.g. Nike Dunk Low Panda"></div>
     <div class="form-row">
       <div><label>Size (US)</label><input type="number" id="pair-size" placeholder="10" step="0.5"></div>
@@ -403,8 +417,15 @@ function calcProfit(){
 // INVENTORY
 function openPairModal(id=null){
   editingPairId=id;
+  pairPhotos=[];pairAI=null;
+  ['pair-camera','pair-photos'].forEach(i=>document.getElementById(i).value='');
+  document.getElementById('pair-ai-summary').innerHTML='';
+  document.getElementById('pair-error').textContent='';
   if(id){
     const p=load(KEYS.pairs).find(x=>x.id===id);
+    pairPhotos=(p.photos||[]).map(t=>({b64:t.split(',')[1],thumb:t}));
+    pairAI=p.ai||null;
+    if(pairAI)pairRenderAI();
     document.getElementById('pair-modal-title').textContent='Edit Pair';
     document.getElementById('pair-name').value=p.name;
     document.getElementById('pair-size').value=p.size;
@@ -426,6 +447,7 @@ function openPairModal(id=null){
     document.getElementById('pair-sale').value='';
     document.getElementById('pair-platform').value='';
   }
+  renderPairThumbs();
   openModal('pair-modal');
 }
 
@@ -436,9 +458,18 @@ function savePair(){
     color:document.getElementById('pair-color').value,cost:parseFloat(document.getElementById('pair-cost').value)||0,
     source:document.getElementById('pair-source').value,date:document.getElementById('pair-date').value,
     status:document.getElementById('pair-status').value,sale:parseFloat(document.getElementById('pair-sale').value)||0,
-    platform:document.getElementById('pair-platform').value,notes:document.getElementById('pair-notes').value};
-  if(editingPairId) pairs[pairs.findIndex(x=>x.id===editingPairId)]=p; else pairs.push(p);
-  save(KEYS.pairs,pairs); closeModal('pair-modal'); renderAll();
+    platform:document.getElementById('pair-platform').value,notes:document.getElementById('pair-notes').value,
+    photos:pairPhotos.map(x=>x.thumb),ai:pairAI||null};
+  try{
+    if(editingPairId) pairs[pairs.findIndex(x=>x.id===editingPairId)]=p; else pairs.push(p);
+    save(KEYS.pairs,pairs);
+  }catch(e){
+    // localStorage quota — retry without photos rather than losing the pair
+    p.photos=[];
+    if(editingPairId) pairs[pairs.findIndex(x=>x.id===editingPairId)]=p; else pairs[pairs.length-1]=p;
+    save(KEYS.pairs,pairs);
+  }
+  closeModal('pair-modal'); renderAll();
 }
 
 function deletePair(id){if(confirm('Delete this pair?')){save(KEYS.pairs,load(KEYS.pairs).filter(x=>x.id!==id));renderAll();}}
@@ -459,7 +490,7 @@ function renderInventory(){
   document.getElementById('inv-table').innerHTML=pairs.map(p=>{
     const profit=p.status==='Sold'&&p.sale?p.sale-p.cost:null;
     return `<tr>
-      <td><div style="font-weight:700">${p.name}</div><div style="font-size:0.75rem;color:var(--muted)">${p.color||''} ${p.notes?'· '+p.notes:''}</div></td>
+      <td><div style="display:flex;align-items:center;gap:0.6rem">${p.photos&&p.photos.length?`<img class="inv-thumb" src="${p.photos[0]}" alt="">`:''}<div><div style="font-weight:700">${p.name}</div><div style="font-size:0.75rem;color:var(--muted)">${p.color||''} ${p.notes?'· '+p.notes:''}</div></div></div></td>
       <td>${p.size||'—'}</td>
       <td style="font-weight:700">${fmt(p.cost)}</td>
       <td style="color:var(--muted);font-size:0.82rem">${p.source||'—'}</td>
@@ -631,24 +662,46 @@ function clFillFromPair(){
   document.getElementById('cl-name').value=p.name;
   document.getElementById('cl-size').value=p.size||'';
   document.getElementById('cl-notes').value=p.notes||'';
+  if(p.photos&&p.photos.length){
+    clPhotos=p.photos.map(t=>t.split(',')[1]);
+    const tEl=document.getElementById('cl-thumbs');tEl.innerHTML='';
+    p.photos.forEach(t=>{const i=document.createElement('img');i.src=t;i.alt='Stored pair photo';tEl.appendChild(i);});
+  }
+  if(p.ai){
+    clAI=p.ai;
+    clRenderAI();
+    if(!parseFloat(document.getElementById('cl-price').value))document.getElementById('cl-price').value=p.ai.prices.ebay;
+  }
+}
+// Shared photo pipeline: downscale to ≤1024px JPEG for the API + a ≤320px thumb for storage/preview
+function scaleToJpeg(img,max,q){
+  const scale=Math.min(1,max/Math.max(img.width,img.height));
+  const c=document.createElement('canvas');
+  c.width=Math.round(img.width*scale);c.height=Math.round(img.height*scale);
+  c.getContext('2d').drawImage(img,0,0,c.width,c.height);
+  return c.toDataURL('image/jpeg',q);
+}
+const MAX_PHOTOS=10;
+function processPhotos(files,done){
+  const fs=[...files].slice(0,MAX_PHOTOS);
+  const out=[];let pending=fs.length;
+  if(!pending){done([]);return;}
+  fs.forEach((f,idx)=>{
+    const img=new Image();
+    const finish=()=>{URL.revokeObjectURL(img.src);if(--pending===0)done(out.filter(Boolean));};
+    img.onload=()=>{
+      out[idx]={b64:scaleToJpeg(img,1024,0.85).split(',')[1],thumb:scaleToJpeg(img,320,0.7)};
+      finish();
+    };
+    img.onerror=finish;
+    img.src=URL.createObjectURL(f);
+  });
 }
 function clLoadPhotos(files){
-  clPhotos=[];
-  document.getElementById('cl-thumbs').innerHTML='';
-  [...files].slice(0,4).forEach(f=>{
-    const img=new Image();
-    img.onload=()=>{
-      const scale=Math.min(1,1024/Math.max(img.width,img.height));
-      const c=document.createElement('canvas');
-      c.width=Math.round(img.width*scale);c.height=Math.round(img.height*scale);
-      c.getContext('2d').drawImage(img,0,0,c.width,c.height);
-      const dataUrl=c.toDataURL('image/jpeg',0.85);
-      clPhotos.push(dataUrl.split(',')[1]);
-      const t=document.createElement('img');t.src=dataUrl;t.alt='Listing photo preview';
-      document.getElementById('cl-thumbs').appendChild(t);
-      URL.revokeObjectURL(img.src);
-    };
-    img.src=URL.createObjectURL(f);
+  processPhotos(files,ph=>{
+    clPhotos=ph.map(p=>p.b64);
+    const t=document.getElementById('cl-thumbs');t.innerHTML='';
+    ph.forEach(p=>{const i=document.createElement('img');i.src=p.thumb;i.alt='Listing photo preview';t.appendChild(i);});
   });
 }
 
@@ -665,6 +718,27 @@ const CL_SCHEMA={type:'object',additionalProperties:false,required:['shoe','cond
   confidence:{type:'string',enum:['high','medium','low']}
 }};
 
+async function analyzeShoePhotos(key,b64s,details){
+  const content=b64s.map(b64=>({type:'image',source:{type:'base64',media_type:'image/jpeg',data:b64}}));
+  content.push({type:'text',text:`You are an expert sneaker reseller and authenticator. Analyze the attached photos of a pair being listed for resale.\n\nSeller-provided details:\n${details}\n\nTasks:\n1. Identify the shoe (brand, model, colorway) from the photos; cross-check against the seller's name.\n2. Grade the condition from what you can see: creasing, sole wear, yellowing, scuffs, box condition, and any authenticity red flags.\n3. Estimate a realistic USD resale price range for this shoe in this size and condition.\n4. Recommend a listing price for each platform (eBay, Mercari, Depop), accounting for typical buyer expectations and seller fees on each.\n5. Write a keyword-rich listing title (80 characters max: brand, model, colorway, size, condition) and an honest, detailed description that mentions every flaw.`});
+  const resp=await fetch('https://api.anthropic.com/v1/messages',{
+    method:'POST',
+    headers:{'content-type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+    body:JSON.stringify({model:'claude-opus-4-8',max_tokens:8000,thinking:{type:'adaptive'},
+      output_config:{format:{type:'json_schema',schema:CL_SCHEMA}},
+      messages:[{role:'user',content}]})
+  });
+  if(!resp.ok){
+    const err=await resp.json().catch(()=>null);
+    throw new Error(err&&err.error&&err.error.message?err.error.message:'API error '+resp.status);
+  }
+  const data=await resp.json();
+  if(data.stop_reason==='refusal')throw new Error('The model declined to analyze these photos.');
+  const textBlock=(data.content||[]).find(b=>b.type==='text');
+  if(!textBlock)throw new Error('No analysis returned — try again.');
+  return JSON.parse(textBlock.text);
+}
+
 async function clAnalyze(){
   const key=(document.getElementById('cl-api-key').value.trim())||localStorage.getItem(CL_KEY);
   if(!key){clFlash('Add your Anthropic API key in AI Setup first.');return;}
@@ -679,30 +753,66 @@ async function clAnalyze(){
       'Seller-stated condition: '+document.getElementById('cl-condition').value,
       document.getElementById('cl-notes').value?'Seller notes/flaws: '+document.getElementById('cl-notes').value:''
     ].filter(Boolean).join('\n');
-    const content=clPhotos.map(b64=>({type:'image',source:{type:'base64',media_type:'image/jpeg',data:b64}}));
-    content.push({type:'text',text:`You are an expert sneaker reseller and authenticator. Analyze the attached photos of a pair being listed for resale.\n\nSeller-provided details:\n${details}\n\nTasks:\n1. Identify the shoe (brand, model, colorway) from the photos; cross-check against the seller's name.\n2. Grade the condition from what you can see: creasing, sole wear, yellowing, scuffs, box condition, and any authenticity red flags.\n3. Estimate a realistic USD resale price range for this shoe in this size and condition.\n4. Recommend a listing price for each platform (eBay, Mercari, Depop), accounting for typical buyer expectations and seller fees on each.\n5. Write a keyword-rich listing title (80 characters max: brand, model, colorway, size, condition) and an honest, detailed description that mentions every flaw.`});
-    const resp=await fetch('https://api.anthropic.com/v1/messages',{
-      method:'POST',
-      headers:{'content-type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
-      body:JSON.stringify({model:'claude-opus-4-8',max_tokens:8000,thinking:{type:'adaptive'},
-        output_config:{format:{type:'json_schema',schema:CL_SCHEMA}},
-        messages:[{role:'user',content}]})
-    });
-    if(!resp.ok){
-      const err=await resp.json().catch(()=>null);
-      throw new Error(err&&err.error&&err.error.message?err.error.message:'API error '+resp.status);
-    }
-    const data=await resp.json();
-    if(data.stop_reason==='refusal')throw new Error('The model declined to analyze these photos.');
-    const textBlock=(data.content||[]).find(b=>b.type==='text');
-    if(!textBlock)throw new Error('No analysis returned — try again.');
-    clAI=JSON.parse(textBlock.text);
+    clAI=await analyzeShoePhotos(key,clPhotos,details);
     clRenderAI();
     if(!parseFloat(document.getElementById('cl-price').value))document.getElementById('cl-price').value=clAI.prices.ebay;
     clBuildCards();
     clFlash('Analysis complete.',true);
   }catch(e){clFlash(e.message||'Analysis failed.');}
   btn.disabled=false;btn.innerHTML=orig;
+}
+
+// PAIR MODAL PHOTO ANALYZER — snap a shoe while adding inventory, AI fills in the details
+let pairPhotos=[];
+let pairAI=null;
+
+function pairFlash(msg,ok){const el=document.getElementById('pair-error');el.style.color=ok?'var(--success)':'var(--danger)';el.textContent=msg;if(msg)setTimeout(()=>{if(el.textContent===msg)el.textContent='';},6000);}
+function renderPairThumbs(){
+  const t=document.getElementById('pair-thumbs');t.innerHTML='';
+  pairPhotos.forEach(p=>{const i=document.createElement('img');i.src=p.thumb;i.alt='Pair photo';t.appendChild(i);});
+}
+function pairLoadPhotos(files){
+  processPhotos(files,ph=>{
+    if(!ph.length)return;
+    pairPhotos=ph;
+    renderPairThumbs();
+    pairFlash(ph.length+' photo'+(ph.length>1?'s':'')+' ready — tap Analyze to fill in the details.',true);
+  });
+}
+async function pairAnalyze(){
+  const key=(document.getElementById('cl-api-key').value.trim())||localStorage.getItem(CL_KEY);
+  if(!key){pairFlash('Add your Anthropic API key first (Cross-List → AI Setup).');return;}
+  if(!pairPhotos.length){pairFlash('Take or choose at least one photo first.');return;}
+  const btn=document.getElementById('pair-analyze-btn');
+  const orig=btn.innerHTML;
+  btn.disabled=true;btn.innerHTML='<span class="spinner"></span> Analyzing…';
+  try{
+    const details=[
+      'Name: '+(document.getElementById('pair-name').value||'(unknown — identify from photos)'),
+      'Size (US): '+(document.getElementById('pair-size').value||'unknown'),
+      document.getElementById('pair-notes').value?'Seller notes/flaws: '+document.getElementById('pair-notes').value:''
+    ].filter(Boolean).join('\n');
+    pairAI=await analyzeShoePhotos(key,pairPhotos.map(p=>p.b64),details);
+    const setIf=(id,v)=>{const el=document.getElementById(id);if(!el.value.trim())el.value=v;};
+    setIf('pair-name',pairAI.shoe);
+    setIf('pair-notes',[pairAI.condition_grade].concat(pairAI.flaws).join(' · '));
+    pairRenderAI();
+    pairFlash('Analysis complete — details filled in.',true);
+  }catch(e){pairFlash(e.message||'Analysis failed.');}
+  btn.disabled=false;btn.innerHTML=orig;
+}
+function pairRenderAI(){
+  const a=pairAI; if(!a)return;
+  document.getElementById('pair-ai-summary').innerHTML=`
+    <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:0.75rem">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.4rem;margin-bottom:0.4rem">
+        <span style="font-weight:800;font-size:0.9rem">${esc(a.shoe)}</span>
+        <span class="badge badge-accent">${esc(a.condition_grade)}</span>
+      </div>
+      <div style="font-size:0.85rem">Market range: <span style="font-weight:800;color:var(--accent)">${fmt(a.market_low)}–${fmt(a.market_high)}</span></div>
+      <div style="font-size:0.78rem;color:var(--muted);margin-top:0.3rem">eBay ${fmt(a.prices.ebay)} · Mercari ${fmt(a.prices.mercari)} · Depop ${fmt(a.prices.depop)} · confidence: ${esc(a.confidence)}</div>
+      ${a.quality_notes.length?`<div style="margin-top:0.4rem">${a.quality_notes.map(n=>`<span class="cl-tag">${esc(n)}</span>`).join('')}</div>`:''}
+    </div>`;
 }
 
 function clRenderAI(){
@@ -796,7 +906,8 @@ renderAll();
 const syncEncode=o=>btoa(unescape(encodeURIComponent(JSON.stringify(o)))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
 const syncDecode=s=>JSON.parse(decodeURIComponent(escape(atob(s.replace(/[^A-Za-z0-9_-]/g,'').replace(/-/g,'+').replace(/_/g,'/')))));
 function copySyncLink(){
-  const url=location.origin+location.pathname+'#sync='+syncEncode({pairs:load(KEYS.pairs),listings:load(KEYS.listings)});
+  // photos are stripped from sync links — base64 images would make the URL too long to share
+  const url=location.origin+location.pathname+'#sync='+syncEncode({pairs:load(KEYS.pairs).map(({photos,...r})=>r),listings:load(KEYS.listings)});
   navigator.clipboard.writeText(url).then(
     ()=>alert('Sync link copied — open it on your other device, or paste it into Import there.'),
     ()=>prompt('Copy this link and open it on your other device:',url));

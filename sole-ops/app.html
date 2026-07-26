@@ -682,7 +682,10 @@ const DEV_KEY='so_device_id';
 const PROXY_URL=(location.hostname==='localhost'||location.hostname==='127.0.0.1')?'http://localhost:8787':'https://sole-ops-proxy.dbelcher003.workers.dev';
 function getDeviceId(){let id=localStorage.getItem(DEV_KEY);if(!id){id=crypto.randomUUID();localStorage.setItem(DEV_KEY,id);}return id;}
 function clShowBudget(remaining){const el=document.getElementById('cl-budget');if(!el)return;const r=Number(remaining);if(!isFinite(r))return;el.textContent=r>0?('~'+Math.max(1,Math.round(r/35000))+' free analyses left.'):'Free credit used up — add your own key below.';}
-async function clFetchBudget(){try{const resp=await fetch(PROXY_URL+'/v1/usage',{headers:{'x-device-id':getDeviceId()}});if(resp.ok){const u=await resp.json();clShowBudget(u.remaining);}}catch(e){}}
+// When the proxy has a sold-comps source configured we skip web search entirely
+// and pull real eBay sold listings instead; otherwise we fall back to search.
+let clCompsAvailable=false;
+async function clFetchBudget(showBudget){try{const resp=await fetch(PROXY_URL+'/v1/usage',{headers:{'x-device-id':getDeviceId()}});if(resp.ok){const u=await resp.json();clCompsAvailable=!!u.comps;if(showBudget)clShowBudget(u.remaining);}}catch(e){}}
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const CL_PLATFORMS=[
   {name:'eBay',color:'#e53238',fee:0.136,flat:0.30,titleMax:80,sellUrl:'https://www.ebay.com/sl/sell',feeDesc:'~13.6% final value fee + $0.30 (est.)'},
@@ -707,7 +710,7 @@ function renderCrosslist(){
   sel.value=cur;
   const k=localStorage.getItem(CL_KEY);
   if(k&&!document.getElementById('cl-api-key').value)document.getElementById('cl-api-key').value=k;
-  if(!k)clFetchBudget();
+  clFetchBudget(!k);
   const ps=loadPriceSettings();
   document.getElementById('cl-margin').value=ps.margin;
   document.getElementById('cl-ship').value=ps.ship;
@@ -785,8 +788,9 @@ function clDrop(e){
   if(files.length)clLoadPhotos(files);
 }
 
-const CL_SCHEMA={type:'object',additionalProperties:false,required:['shoe','condition_grade','quality_notes','flaws','market_low','market_high','comps','price_basis','prices','title','description','confidence'],properties:{
+const CL_SCHEMA={type:'object',additionalProperties:false,required:['shoe','search_keyword','condition_grade','quality_notes','flaws','market_low','market_high','comps','price_basis','prices','title','description','confidence'],properties:{
   shoe:{type:'string',description:'Identified brand, model, and colorway'},
+  search_keyword:{type:'string',description:'Best eBay search phrase for this exact shoe: brand, model, colorway, and style code if visible. No size, no condition words.'},
   condition_grade:{type:'string',enum:['DS / Brand New','VNDS / Like New','Used - Excellent','Used - Good','Used - Fair','Used - Poor']},
   quality_notes:{type:'array',items:{type:'string'},description:'Observations about condition and quality from the photos'},
   flaws:{type:'array',items:{type:'string'},description:'Specific flaws visible in the photos or reported by the seller'},
@@ -842,21 +846,27 @@ function compPricing(comps,excluded,conditionGrade){
     count:used.length,exact,windowDays:Math.max(...used.map(compDays)),confidence};
 }
 
-async function analyzeShoePhotos(key,b64s,details){
+// Pricing steps differ by comp source: with a real sold-comps feed the model
+// only names the shoe (cheaper, and no search to spiral on); without one it
+// falls back to hunting comps via web search.
+const PRICING_TASKS_SEARCH=`3. Search the web for recent SOLD prices for this exact shoe in this size (or nearest sizes). Note: eBay's sold/completed-listings pages are not directly reachable through web search — do not waste searches trying. The best reachable sources are StockX/GOAT last-sale figures quoted in page content, price-guide articles citing recent sale prices, and marketplace sold-price roundups. Look for comps in comparable condition — a used pair does not sell for deadstock money. Never report an asking price as a sold comp.
+4. Base market_low and market_high on the actual sold comps you found, weighting the most recent sales most heavily. Do NOT price from memory when comps exist — the current secondhand market runs lower than historical prices. If searches return no usable sold comps, that is a normal outcome: calmly fall back to your best estimate, leave the comps array empty, and say so in price_basis in one sentence.
+5. List the sold comps you used in the comps array. For each comp set: source, listing title, sold_price, date as shown in the listing, days_ago (your best estimate of whole days since the sale; 21 if unknown), size_match ('exact' if the same US size as this pair, 'adjacent' if within one full size, 'other' otherwise, 'unknown' if the listing does not state size), and condition ('new', 'like_new', 'used', or 'beat' as best you can tell from the listing; 'unknown' if unstated). Only include listings that actually SOLD — never asking prices. Set price_basis to one sentence explaining what the range is based on.`;
+const PRICING_TASKS_FEED=`3. Do NOT search the web. Sole Ops looks up real eBay sold listings itself using search_keyword, so your job is to name the shoe precisely: set search_keyword to the phrase a reseller would type into eBay to find this exact shoe — brand, model, colorway, and the style code if you can read it off the tag. No size, no condition words, no year unless it distinguishes the release.
+4. Set market_low and market_high to your best estimate. These are a fallback only, used if the sold-comp lookup comes back empty, so do not agonize over them — and remember the current secondhand market runs lower than historical prices.
+5. Leave the comps array empty; real sold comps are attached after your analysis. Set price_basis to one sentence noting this is a model estimate pending sold comps.`;
+async function analyzeShoePhotos(key,b64s,details,useSearch){
   const content=b64s.map(b64=>({type:'image',source:{type:'base64',media_type:'image/jpeg',data:b64}}));
-  content.push({type:'text',text:`You are an expert sneaker reseller and authenticator. Analyze the attached photos of a pair being listed for resale.\n\nSeller-provided details:\n${details}\n\nTasks:\n1. Identify the shoe (brand, model, colorway) from the photos; cross-check against the seller's name.\n2. Grade the condition from what you can see: creasing, sole wear, yellowing, scuffs, box condition, and any authenticity red flags.\n3. Search the web for recent SOLD prices for this exact shoe in this size (or nearest sizes). Note: eBay's sold/completed-listings pages are not directly reachable through web search — do not waste searches trying. The best reachable sources are StockX/GOAT last-sale figures quoted in page content, price-guide articles citing recent sale prices, and marketplace sold-price roundups. Look for comps in comparable condition — a used pair does not sell for deadstock money. Never report an asking price as a sold comp.\n4. Base market_low and market_high on the actual sold comps you found, weighting the most recent sales most heavily. Do NOT price from memory when comps exist — the current secondhand market runs lower than historical prices. If searches return no usable sold comps, that is a normal outcome: calmly fall back to your best estimate, leave the comps array empty, and say so in price_basis in one sentence.\n5. List the sold comps you used in the comps array. For each comp set: source, listing title, sold_price, date as shown in the listing, days_ago (your best estimate of whole days since the sale; 21 if unknown), size_match ('exact' if the same US size as this pair, 'adjacent' if within one full size, 'other' otherwise, 'unknown' if the listing does not state size), and condition ('new', 'like_new', 'used', or 'beat' as best you can tell from the listing; 'unknown' if unstated). Only include listings that actually SOLD — never asking prices. Set price_basis to one sentence explaining what the range is based on.\n6. Recommend a listing price for each platform (eBay, Mercari, Depop), accounting for typical buyer expectations and seller fees on each.\n7. Write a keyword-rich listing title (80 characters max: brand, model, colorway, size, condition) and an honest, detailed description that mentions every flaw.`});
+  content.push({type:'text',text:`You are an expert sneaker reseller and authenticator. Analyze the attached photos of a pair being listed for resale.\n\nSeller-provided details:\n${details}\n\nTasks:\n1. Identify the shoe (brand, model, colorway) from the photos; cross-check against the seller's name.\n2. Grade the condition from what you can see: creasing, sole wear, yellowing, scuffs, box condition, and any authenticity red flags.\n${useSearch?PRICING_TASKS_SEARCH:PRICING_TASKS_FEED}\n6. Recommend a listing price for each platform (eBay, Mercari, Depop), accounting for typical buyer expectations and seller fees on each.\n7. Write a keyword-rich listing title (80 characters max: brand, model, colorway, size, condition) and an honest, detailed description that mentions every flaw.`});
   const url=key?'https://api.anthropic.com/v1/messages':PROXY_URL+'/v1/messages';
   const headers={'content-type':'application/json','anthropic-version':'2023-06-01'};
   if(key){headers['x-api-key']=key;headers['anthropic-dangerous-direct-browser-access']='true';}
   else headers['x-device-id']=getDeviceId();
-  const resp=await fetch(url,{
-    method:'POST',
-    headers,
-    body:JSON.stringify({model:'claude-opus-4-8',max_tokens:8000,thinking:{type:'adaptive'},
-      output_config:{format:{type:'json_schema',schema:CL_SCHEMA}},
-      tools:[{type:'web_search_20260209',name:'web_search',max_uses:3}],
-      messages:[{role:'user',content}]})
-  });
+  const body={model:'claude-opus-4-8',max_tokens:8000,thinking:{type:'adaptive'},
+    output_config:{format:{type:'json_schema',schema:CL_SCHEMA}},
+    messages:[{role:'user',content}]};
+  if(useSearch)body.tools=[{type:'web_search_20260209',name:'web_search',max_uses:3}];
+  const resp=await fetch(url,{method:'POST',headers,body:JSON.stringify(body)});
   if(!resp.ok){
     const err=await resp.json().catch(()=>null);
     throw new Error(err&&err.error&&err.error.message?err.error.message:'API error '+resp.status);
@@ -879,6 +889,26 @@ async function analyzeShoePhotos(key,b64s,details){
   }catch(e){throw new Error('Could not read the analysis — tap Analyze again.');}
 }
 
+// Pulls real eBay sold listings from the proxy and attaches them to an analysis.
+// Any failure leaves the model's own estimate in place — never blocks the result.
+async function fetchSoldComps(ai,size){
+  const q=(ai.search_keyword||ai.shoe||'').trim();
+  if(q.length<3)return false;
+  try{
+    const resp=await fetch(PROXY_URL+'/v1/comps?q='+encodeURIComponent(q)+'&size='+encodeURIComponent(size||''),
+      {headers:{'x-device-id':getDeviceId()}});
+    const rem=resp.headers.get('x-tokens-remaining');
+    if(rem)clShowBudget(rem);
+    if(!resp.ok)return false;
+    const d=await resp.json();
+    if(!d.comps||!d.comps.length)return false;
+    ai.comps=d.comps;
+    const exact=d.comps.filter(c=>c.size_match==='exact').length;
+    ai.price_basis=d.comps.length+' eBay sold comps from the last 90 days'
+      +(size?' ('+exact+' in size '+size+')':'')+' — searched “'+q+'”.';
+    return true;
+  }catch(e){return false;}
+}
 async function clAnalyze(){
   const key=(document.getElementById('cl-api-key').value.trim())||localStorage.getItem(CL_KEY)||null;
   if(!clPhotos.length){clFlash('Upload at least one photo to analyze.');return;}
@@ -892,8 +922,12 @@ async function clAnalyze(){
       'Seller-stated condition: '+document.getElementById('cl-condition').value,
       document.getElementById('cl-notes').value?'Seller notes/flaws: '+document.getElementById('cl-notes').value:''
     ].filter(Boolean).join('\n');
-    clAI=await analyzeShoePhotos(key,clPhotos.map(p=>p.b64),details);
+    clAI=await analyzeShoePhotos(key,clPhotos.map(p=>p.b64),details,!clCompsAvailable);
     clExcluded=new Set();
+    if(clCompsAvailable){
+      btn.innerHTML='<span class="spinner"></span> Finding sold comps…';
+      await fetchSoldComps(clAI,document.getElementById('cl-size').value);
+    }
     clRenderAI();
     if(!parseFloat(document.getElementById('cl-price').value))document.getElementById('cl-price').value=clPricing?clPricing.market:clAI.prices.ebay;
     clBuildCards();
@@ -931,7 +965,11 @@ async function pairAnalyze(){
       'Size (US): '+(document.getElementById('pair-size').value||'unknown'),
       document.getElementById('pair-notes').value?'Seller notes/flaws: '+document.getElementById('pair-notes').value:''
     ].filter(Boolean).join('\n');
-    pairAI=await analyzeShoePhotos(key,pairPhotos.map(p=>p.b64),details);
+    pairAI=await analyzeShoePhotos(key,pairPhotos.map(p=>p.b64),details,!clCompsAvailable);
+    if(clCompsAvailable){
+      btn.innerHTML='<span class="spinner"></span> Finding sold comps…';
+      await fetchSoldComps(pairAI,document.getElementById('pair-size').value);
+    }
     const setIf=(id,v)=>{const el=document.getElementById(id);if(!el.value.trim())el.value=v;};
     setIf('pair-name',pairAI.shoe);
     setIf('pair-notes',[pairAI.condition_grade].concat(pairAI.flaws).join(' · '));

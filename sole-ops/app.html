@@ -92,8 +92,22 @@ tr:hover td{background:rgba(255,255,255,0.02)}
 .legend-item{display:flex;align-items:center;gap:0.5rem;font-size:0.82rem;margin-bottom:0.4rem}
 .legend-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
 /* CROSS-LIST */
-.photo-thumbs{display:flex;gap:0.6rem;flex-wrap:wrap;margin-top:0.6rem}
-.photo-thumbs img{width:84px;height:84px;object-fit:cover;border-radius:8px;border:1px solid var(--border)}
+.photo-thumbs{display:flex;gap:0.6rem;flex-wrap:wrap;margin-top:0.75rem}
+.photo-thumbs img{width:84px;height:84px;object-fit:cover;border-radius:8px;border:1px solid var(--border);display:block}
+.thumb{position:relative;line-height:0}
+.thumb:hover img{border-color:var(--accent)}
+.thumb .thumb-x{position:absolute;top:-7px;right:-7px;width:22px;height:22px;padding:0;border-radius:50%;border:1px solid var(--border);background:var(--bg);color:var(--muted);font-size:0.8rem;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.15s}
+.thumb .thumb-x:hover{background:var(--danger);border-color:var(--danger);color:#000}
+.thumb .thumb-cover{position:absolute;left:4px;bottom:4px;padding:0.1rem 0.35rem;border-radius:3px;background:rgba(10,10,10,0.85);color:var(--accent);font-size:0.58rem;font-weight:800;letter-spacing:0.5px;text-transform:uppercase;line-height:1.4}
+.dropzone{display:flex;flex-direction:column;align-items:center;gap:0.45rem;padding:1.6rem 1rem;border:1.5px dashed var(--border);border-radius:12px;background:linear-gradient(180deg,rgba(255,255,255,0.015),transparent);text-align:center;cursor:pointer;transition:border-color 0.2s,background 0.2s}
+.dropzone:hover{border-color:var(--accent);background:rgba(232,255,60,0.04)}
+.dropzone.dragover{border-color:var(--accent);background:rgba(232,255,60,0.09)}
+.dz-icon{font-size:1.5rem;line-height:1}
+.dz-title{font-size:0.9rem;font-weight:800}
+.dz-title b{color:var(--accent)}
+.dz-sub{font-size:0.75rem;color:var(--muted)}
+.dz-actions{display:flex;gap:0.5rem;flex-wrap:wrap;justify-content:center;margin-top:0.35rem}
+.dz-count{font-size:0.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-top:0.6rem}
 .inv-thumb{width:44px;height:44px;object-fit:cover;border-radius:6px;border:1px solid var(--border);flex-shrink:0}
 .spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(0,0,0,0.3);border-top-color:#000;border-radius:50%;animation:clspin 0.7s linear infinite;vertical-align:-2px}
 @keyframes clspin{to{transform:rotate(360deg)}}
@@ -243,9 +257,23 @@ tr:hover td{background:rgba(255,255,255,0.02)}
         </div>
         <div class="form-group"><label for="cl-notes">Notes / Known Flaws</label><input id="cl-notes" placeholder="e.g. small crease on left toe, no box"></div>
         <div class="form-group">
-          <label for="cl-photos">Photos (up to 10 — used by the AI analyzer)</label>
-          <input type="file" id="cl-photos" accept="image/*" multiple onchange="clLoadPhotos(this.files)">
+          <label>Photos — used by the AI analyzer</label>
+          <input type="file" id="cl-photos" accept="image/*" multiple class="hidden" onchange="clLoadPhotos(this.files);this.value=''">
+          <input type="file" id="cl-camera" accept="image/*" capture="environment" class="hidden" onchange="clLoadPhotos(this.files);this.value=''">
+          <div class="dropzone" id="cl-dropzone" onclick="clPickPhotos()"
+               ondragover="event.preventDefault();this.classList.add('dragover')"
+               ondragleave="this.classList.remove('dragover')"
+               ondrop="clDrop(event)">
+            <div class="dz-icon">📸</div>
+            <div class="dz-title">Drop photos here or <b>browse</b></div>
+            <div class="dz-sub">Up to 10 — more angles (sole, heel, tag, flaws) means better comps</div>
+            <div class="dz-actions">
+              <button type="button" class="btn btn-ghost btn-sm" onclick="event.stopPropagation();document.getElementById('cl-camera').click()">📸 Take Photo</button>
+              <button type="button" class="btn btn-ghost btn-sm" onclick="event.stopPropagation();clPickPhotos()">🖼️ Choose Photos</button>
+            </div>
+          </div>
           <div class="photo-thumbs" id="cl-thumbs"></div>
+          <div class="dz-count" id="cl-photo-count"></div>
         </div>
         <div style="display:flex;gap:0.75rem;flex-wrap:wrap">
           <button class="btn btn-primary" id="cl-analyze-btn" onclick="clAnalyze()">🤖 Analyze Photos + Suggest Prices</button>
@@ -691,9 +719,8 @@ function clFillFromPair(){
   document.getElementById('cl-size').value=p.size||'';
   document.getElementById('cl-notes').value=p.notes||'';
   if(p.photos&&p.photos.length){
-    clPhotos=p.photos.map(t=>t.split(',')[1]);
-    const tEl=document.getElementById('cl-thumbs');tEl.innerHTML='';
-    p.photos.forEach(t=>{const i=document.createElement('img');i.src=t;i.alt='Stored pair photo';tEl.appendChild(i);});
+    clPhotos=p.photos.map(t=>({b64:t.split(',')[1],thumb:t}));
+    clRenderThumbs();
   }
   if(p.ai){
     clAI=p.ai;
@@ -726,12 +753,36 @@ function processPhotos(files,done){
     img.src=URL.createObjectURL(f);
   });
 }
-function clLoadPhotos(files){
-  processPhotos(files,ph=>{
-    clPhotos=ph.map(p=>p.b64);
-    const t=document.getElementById('cl-thumbs');t.innerHTML='';
-    ph.forEach(p=>{const i=document.createElement('img');i.src=p.thumb;i.alt='Listing photo preview';t.appendChild(i);});
+function clPickPhotos(){document.getElementById('cl-photos').click();}
+function clRenderThumbs(){
+  const t=document.getElementById('cl-thumbs');t.innerHTML='';
+  clPhotos.forEach((p,i)=>{
+    const d=document.createElement('div');d.className='thumb';
+    const img=document.createElement('img');img.src=p.thumb;img.alt='Listing photo '+(i+1);d.appendChild(img);
+    if(i===0){const c=document.createElement('span');c.className='thumb-cover';c.textContent='Cover';d.appendChild(c);}
+    const x=document.createElement('button');x.type='button';x.className='thumb-x';x.textContent='×';
+    x.title='Remove photo';x.setAttribute('aria-label','Remove photo '+(i+1));
+    x.onclick=()=>{clPhotos.splice(i,1);clRenderThumbs();};
+    d.appendChild(x);t.appendChild(d);
   });
+  const n=clPhotos.length;
+  document.getElementById('cl-photo-count').textContent=n?n+' of '+MAX_PHOTOS+' photos'+(n===MAX_PHOTOS?' — limit reached':''):'';
+}
+// Photos append rather than replace, so you can add angles in several passes.
+function clLoadPhotos(files){
+  const room=MAX_PHOTOS-clPhotos.length;
+  if(room<=0){clFlash('Photo limit reached ('+MAX_PHOTOS+') — remove one first.');return;}
+  processPhotos([...files].slice(0,room),ph=>{
+    if(!ph.length)return;
+    clPhotos=clPhotos.concat(ph);
+    clRenderThumbs();
+  });
+}
+function clDrop(e){
+  e.preventDefault();
+  document.getElementById('cl-dropzone').classList.remove('dragover');
+  const files=[...(e.dataTransfer?e.dataTransfer.files:[])].filter(f=>f.type.startsWith('image/'));
+  if(files.length)clLoadPhotos(files);
 }
 
 const CL_SCHEMA={type:'object',additionalProperties:false,required:['shoe','condition_grade','quality_notes','flaws','market_low','market_high','comps','price_basis','prices','title','description','confidence'],properties:{
@@ -841,7 +892,7 @@ async function clAnalyze(){
       'Seller-stated condition: '+document.getElementById('cl-condition').value,
       document.getElementById('cl-notes').value?'Seller notes/flaws: '+document.getElementById('cl-notes').value:''
     ].filter(Boolean).join('\n');
-    clAI=await analyzeShoePhotos(key,clPhotos,details);
+    clAI=await analyzeShoePhotos(key,clPhotos.map(p=>p.b64),details);
     clExcluded=new Set();
     clRenderAI();
     if(!parseFloat(document.getElementById('cl-price').value))document.getElementById('cl-price').value=clPricing?clPricing.market:clAI.prices.ebay;

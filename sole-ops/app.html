@@ -92,8 +92,22 @@ tr:hover td{background:rgba(255,255,255,0.02)}
 .legend-item{display:flex;align-items:center;gap:0.5rem;font-size:0.82rem;margin-bottom:0.4rem}
 .legend-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
 /* CROSS-LIST */
-.photo-thumbs{display:flex;gap:0.6rem;flex-wrap:wrap;margin-top:0.6rem}
-.photo-thumbs img{width:84px;height:84px;object-fit:cover;border-radius:8px;border:1px solid var(--border)}
+.photo-thumbs{display:flex;gap:0.6rem;flex-wrap:wrap;margin-top:0.75rem}
+.photo-thumbs img{width:84px;height:84px;object-fit:cover;border-radius:8px;border:1px solid var(--border);display:block}
+.thumb{position:relative;line-height:0}
+.thumb:hover img{border-color:var(--accent)}
+.thumb .thumb-x{position:absolute;top:-7px;right:-7px;width:22px;height:22px;padding:0;border-radius:50%;border:1px solid var(--border);background:var(--bg);color:var(--muted);font-size:0.8rem;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.15s}
+.thumb .thumb-x:hover{background:var(--danger);border-color:var(--danger);color:#000}
+.thumb .thumb-cover{position:absolute;left:4px;bottom:4px;padding:0.1rem 0.35rem;border-radius:3px;background:rgba(10,10,10,0.85);color:var(--accent);font-size:0.58rem;font-weight:800;letter-spacing:0.5px;text-transform:uppercase;line-height:1.4}
+.dropzone{display:flex;flex-direction:column;align-items:center;gap:0.45rem;padding:1.6rem 1rem;border:1.5px dashed var(--border);border-radius:12px;background:linear-gradient(180deg,rgba(255,255,255,0.015),transparent);text-align:center;cursor:pointer;transition:border-color 0.2s,background 0.2s}
+.dropzone:hover{border-color:var(--accent);background:rgba(232,255,60,0.04)}
+.dropzone.dragover{border-color:var(--accent);background:rgba(232,255,60,0.09)}
+.dz-icon{font-size:1.5rem;line-height:1}
+.dz-title{font-size:0.9rem;font-weight:800}
+.dz-title b{color:var(--accent)}
+.dz-sub{font-size:0.75rem;color:var(--muted)}
+.dz-actions{display:flex;gap:0.5rem;flex-wrap:wrap;justify-content:center;margin-top:0.35rem}
+.dz-count{font-size:0.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-top:0.6rem}
 .inv-thumb{width:44px;height:44px;object-fit:cover;border-radius:6px;border:1px solid var(--border);flex-shrink:0}
 .spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(0,0,0,0.3);border-top-color:#000;border-radius:50%;animation:clspin 0.7s linear infinite;vertical-align:-2px}
 @keyframes clspin{to{transform:rotate(360deg)}}
@@ -237,11 +251,29 @@ tr:hover td{background:rgba(255,255,255,0.02)}
           </div>
           <div><label for="cl-price">List Price ($) — blank for AI suggestion</label><input type="number" id="cl-price" placeholder="0"></div>
         </div>
+        <div class="form-row">
+          <div><label for="cl-margin">Target Margin % — for max buy price</label><input type="number" id="cl-margin" step="5" placeholder="30" onchange="savePriceSettings()"></div>
+          <div><label for="cl-ship">Est. Shipping Cost ($)</label><input type="number" id="cl-ship" step="1" placeholder="12" onchange="savePriceSettings()"></div>
+        </div>
         <div class="form-group"><label for="cl-notes">Notes / Known Flaws</label><input id="cl-notes" placeholder="e.g. small crease on left toe, no box"></div>
         <div class="form-group">
-          <label for="cl-photos">Photos (up to 10 — used by the AI analyzer)</label>
-          <input type="file" id="cl-photos" accept="image/*" multiple onchange="clLoadPhotos(this.files)">
+          <label>Photos — used by the AI analyzer</label>
+          <input type="file" id="cl-photos" accept="image/*" multiple class="hidden" onchange="clLoadPhotos(this.files);this.value=''">
+          <input type="file" id="cl-camera" accept="image/*" capture="environment" class="hidden" onchange="clLoadPhotos(this.files);this.value=''">
+          <div class="dropzone" id="cl-dropzone" onclick="clPickPhotos()"
+               ondragover="event.preventDefault();this.classList.add('dragover')"
+               ondragleave="this.classList.remove('dragover')"
+               ondrop="clDrop(event)">
+            <div class="dz-icon">📸</div>
+            <div class="dz-title">Drop photos here or <b>browse</b></div>
+            <div class="dz-sub">Up to 10 — more angles (sole, heel, tag, flaws) means better comps</div>
+            <div class="dz-actions">
+              <button type="button" class="btn btn-ghost btn-sm" onclick="event.stopPropagation();document.getElementById('cl-camera').click()">📸 Take Photo</button>
+              <button type="button" class="btn btn-ghost btn-sm" onclick="event.stopPropagation();clPickPhotos()">🖼️ Choose Photos</button>
+            </div>
+          </div>
           <div class="photo-thumbs" id="cl-thumbs"></div>
+          <div class="dz-count" id="cl-photo-count"></div>
         </div>
         <div style="display:flex;gap:0.75rem;flex-wrap:wrap">
           <button class="btn btn-primary" id="cl-analyze-btn" onclick="clAnalyze()">🤖 Analyze Photos + Suggest Prices</button>
@@ -346,6 +378,17 @@ const load=k=>JSON.parse(localStorage.getItem(k)||'[]');
 const save=(k,v)=>localStorage.setItem(k,JSON.stringify(v));
 const fmt=n=>'$'+Number(n).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
 const fmtP=n=>(n>=0?'+':'')+fmt(n);
+
+// Pricing settings for the comps engine (target margin for max-buy, est. shipping)
+const PRICE_SETTINGS_KEY='so_price_settings';
+const loadPriceSettings=()=>({margin:30,ship:12,...JSON.parse(localStorage.getItem(PRICE_SETTINGS_KEY)||'{}')});
+function savePriceSettings(){
+  save(PRICE_SETTINGS_KEY,{
+    margin:parseFloat(document.getElementById('cl-margin').value)||0,
+    ship:parseFloat(document.getElementById('cl-ship').value)||0
+  });
+  if(clAI)clRenderAI();
+}
 
 let invFilter='all';
 let editingPairId=null;
@@ -638,7 +681,7 @@ const CL_KEY='so_anthropic_key';
 const DEV_KEY='so_device_id';
 const PROXY_URL=(location.hostname==='localhost'||location.hostname==='127.0.0.1')?'http://localhost:8787':'https://sole-ops-proxy.dbelcher003.workers.dev';
 function getDeviceId(){let id=localStorage.getItem(DEV_KEY);if(!id){id=crypto.randomUUID();localStorage.setItem(DEV_KEY,id);}return id;}
-function clShowBudget(remaining){const el=document.getElementById('cl-budget');if(!el)return;const r=Number(remaining);if(!isFinite(r))return;el.textContent=r>0?('~'+Math.max(1,Math.round(r/20000))+' free analyses left.'):'Free credit used up — add your own key below.';}
+function clShowBudget(remaining){const el=document.getElementById('cl-budget');if(!el)return;const r=Number(remaining);if(!isFinite(r))return;el.textContent=r>0?('~'+Math.max(1,Math.round(r/35000))+' free analyses left.'):'Free credit used up — add your own key below.';}
 async function clFetchBudget(){try{const resp=await fetch(PROXY_URL+'/v1/usage',{headers:{'x-device-id':getDeviceId()}});if(resp.ok){const u=await resp.json();clShowBudget(u.remaining);}}catch(e){}}
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const CL_PLATFORMS=[
@@ -649,6 +692,9 @@ const CL_PLATFORMS=[
 let clPhotos=[];
 let clAI=null;
 let clCards=[];
+let clExcluded=new Set(); // comp indexes tapped out of the pricing math (session-only)
+let clPricing=null;
+function clToggleComp(i){clExcluded.has(i)?clExcluded.delete(i):clExcluded.add(i);clRenderAI();}
 
 function clFlash(msg,ok){const el=document.getElementById('cl-error');el.style.color=ok?'var(--success)':'var(--danger)';el.textContent=msg;if(msg)setTimeout(()=>{if(el.textContent===msg)el.textContent='';},6000);}
 function saveClKey(){const v=document.getElementById('cl-api-key').value.trim();if(v)localStorage.setItem(CL_KEY,v);else localStorage.removeItem(CL_KEY);clFlash(v?'Key saved to this browser.':'Key cleared.',true);}
@@ -662,6 +708,9 @@ function renderCrosslist(){
   const k=localStorage.getItem(CL_KEY);
   if(k&&!document.getElementById('cl-api-key').value)document.getElementById('cl-api-key').value=k;
   if(!k)clFetchBudget();
+  const ps=loadPriceSettings();
+  document.getElementById('cl-margin').value=ps.margin;
+  document.getElementById('cl-ship').value=ps.ship;
 }
 function clFillFromPair(){
   const id=document.getElementById('cl-pair').value; if(!id)return;
@@ -670,14 +719,14 @@ function clFillFromPair(){
   document.getElementById('cl-size').value=p.size||'';
   document.getElementById('cl-notes').value=p.notes||'';
   if(p.photos&&p.photos.length){
-    clPhotos=p.photos.map(t=>t.split(',')[1]);
-    const tEl=document.getElementById('cl-thumbs');tEl.innerHTML='';
-    p.photos.forEach(t=>{const i=document.createElement('img');i.src=t;i.alt='Stored pair photo';tEl.appendChild(i);});
+    clPhotos=p.photos.map(t=>({b64:t.split(',')[1],thumb:t}));
+    clRenderThumbs();
   }
   if(p.ai){
     clAI=p.ai;
+    clExcluded=new Set();
     clRenderAI();
-    if(!parseFloat(document.getElementById('cl-price').value))document.getElementById('cl-price').value=p.ai.prices.ebay;
+    if(!parseFloat(document.getElementById('cl-price').value))document.getElementById('cl-price').value=clPricing?clPricing.market:p.ai.prices.ebay;
   }
 }
 // Shared photo pipeline: downscale to ≤1024px JPEG for the API + a ≤320px thumb for storage/preview
@@ -704,30 +753,98 @@ function processPhotos(files,done){
     img.src=URL.createObjectURL(f);
   });
 }
+function clPickPhotos(){document.getElementById('cl-photos').click();}
+function clRenderThumbs(){
+  const t=document.getElementById('cl-thumbs');t.innerHTML='';
+  clPhotos.forEach((p,i)=>{
+    const d=document.createElement('div');d.className='thumb';
+    const img=document.createElement('img');img.src=p.thumb;img.alt='Listing photo '+(i+1);d.appendChild(img);
+    if(i===0){const c=document.createElement('span');c.className='thumb-cover';c.textContent='Cover';d.appendChild(c);}
+    const x=document.createElement('button');x.type='button';x.className='thumb-x';x.textContent='×';
+    x.title='Remove photo';x.setAttribute('aria-label','Remove photo '+(i+1));
+    x.onclick=()=>{clPhotos.splice(i,1);clRenderThumbs();};
+    d.appendChild(x);t.appendChild(d);
+  });
+  const n=clPhotos.length;
+  document.getElementById('cl-photo-count').textContent=n?n+' of '+MAX_PHOTOS+' photos'+(n===MAX_PHOTOS?' — limit reached':''):'';
+}
+// Photos append rather than replace, so you can add angles in several passes.
 function clLoadPhotos(files){
-  processPhotos(files,ph=>{
-    clPhotos=ph.map(p=>p.b64);
-    const t=document.getElementById('cl-thumbs');t.innerHTML='';
-    ph.forEach(p=>{const i=document.createElement('img');i.src=p.thumb;i.alt='Listing photo preview';t.appendChild(i);});
+  const room=MAX_PHOTOS-clPhotos.length;
+  if(room<=0){clFlash('Photo limit reached ('+MAX_PHOTOS+') — remove one first.');return;}
+  processPhotos([...files].slice(0,room),ph=>{
+    if(!ph.length)return;
+    clPhotos=clPhotos.concat(ph);
+    clRenderThumbs();
   });
 }
+function clDrop(e){
+  e.preventDefault();
+  document.getElementById('cl-dropzone').classList.remove('dragover');
+  const files=[...(e.dataTransfer?e.dataTransfer.files:[])].filter(f=>f.type.startsWith('image/'));
+  if(files.length)clLoadPhotos(files);
+}
 
-const CL_SCHEMA={type:'object',additionalProperties:false,required:['shoe','condition_grade','quality_notes','flaws','market_low','market_high','prices','title','description','confidence'],properties:{
+const CL_SCHEMA={type:'object',additionalProperties:false,required:['shoe','condition_grade','quality_notes','flaws','market_low','market_high','comps','price_basis','prices','title','description','confidence'],properties:{
   shoe:{type:'string',description:'Identified brand, model, and colorway'},
   condition_grade:{type:'string',enum:['DS / Brand New','VNDS / Like New','Used - Excellent','Used - Good','Used - Fair','Used - Poor']},
   quality_notes:{type:'array',items:{type:'string'},description:'Observations about condition and quality from the photos'},
   flaws:{type:'array',items:{type:'string'},description:'Specific flaws visible in the photos or reported by the seller'},
   market_low:{type:'number',description:'Low end of realistic USD resale range'},
   market_high:{type:'number',description:'High end of realistic USD resale range'},
+  comps:{type:'array',description:'Recent sold listings found via web search that the pricing is based on. Empty if none found.',items:{type:'object',additionalProperties:false,required:['source','title','sold_price','date','days_ago','size_match','condition'],properties:{
+    source:{type:'string',description:'e.g. eBay, StockX, GOAT'},
+    title:{type:'string',description:'Listing title or item description'},
+    sold_price:{type:'number',description:'Actual sold price in USD'},
+    date:{type:'string',description:'Sale date or recency, e.g. "2026-07-18" or "1 week ago"'},
+    days_ago:{type:'integer',description:'Best-estimate whole days since the sale; use 21 if unknown'},
+    size_match:{type:'string',enum:['exact','adjacent','other','unknown'],description:'exact = same US size as this pair, adjacent = within one full size'},
+    condition:{type:'string',enum:['new','like_new','used','beat','unknown'],description:'Comp condition as stated or inferred from the listing'}
+  }}},
+  price_basis:{type:'string',description:'One sentence: what the price range is based on (e.g. "6 eBay sold comps from the last 2 weeks, median $84") or a note that no comps were found and this is a model estimate.'},
   prices:{type:'object',additionalProperties:false,required:['ebay','mercari','depop'],properties:{ebay:{type:'number'},mercari:{type:'number'},depop:{type:'number'}}},
   title:{type:'string',description:'Keyword-rich listing title, 80 characters max'},
   description:{type:'string',description:'Honest, detailed listing description mentioning all flaws'},
   confidence:{type:'string',enum:['high','medium','low']}
 }};
 
+// COMPS PRICING ENGINE — client-side weighted median over the model's sold comps,
+// so tap-to-exclude recalculates instantly with zero API calls.
+const COND_RANK={new:0,like_new:1,used:2,beat:3};
+const GRADE_TO_COND={'DS / Brand New':'new','VNDS / Like New':'like_new','Used - Excellent':'used','Used - Good':'used','Used - Fair':'beat','Used - Poor':'beat'};
+const SIZE_W={exact:1,adjacent:0.5,other:0.25,unknown:0.25};
+const COND_DIST_W=[1,0.6,0.3,0.15];
+const compDays=c=>Number.isFinite(c.days_ago)&&c.days_ago>=0?Math.min(c.days_ago,90):21;
+function compWeight(c,pairCond){
+  const wR=Math.pow(0.5,compDays(c)/14); // recency: 14-day half-life
+  const wS=SIZE_W[c.size_match]??0.25;
+  const pr=COND_RANK[pairCond],cr=COND_RANK[c.condition];
+  const wC=(pr===undefined||cr===undefined)?0.5:COND_DIST_W[Math.min(Math.abs(pr-cr),3)];
+  return wR*wS*wC;
+}
+function weightedQuantile(items,q){ // items: [{price,w}] — first cumulative weight >= q*total
+  const s=[...items].sort((a,b)=>a.price-b.price);
+  const total=s.reduce((t,x)=>t+x.w,0);let cum=0;
+  for(const x of s){cum+=x.w;if(cum>=q*total)return Math.round(x.price);}
+  return Math.round(s[s.length-1].price);
+}
+function compPricing(comps,excluded,conditionGrade){
+  const pairCond=GRADE_TO_COND[conditionGrade];
+  const used=(comps||[]).map((c,i)=>({...c,i}))
+    .filter(c=>c&&!excluded.has(c.i)&&typeof c.sold_price==='number'&&isFinite(c.sold_price)&&c.sold_price>0&&c.sold_price<20000);
+  if(used.length<3)return null; // too thin — fall back to the model's own estimate
+  const w=used.map(c=>({price:c.sold_price,w:compWeight(c,pairCond)}));
+  const market=weightedQuantile(w,0.5),quick=weightedQuantile(w,0.25),patient=weightedQuantile(w,0.75);
+  const exact=used.filter(c=>c.size_match==='exact').length;
+  const confidence=(used.filter(c=>compDays(c)<=14).length>=5&&exact>=2)?'high'
+    :(used.filter(c=>compDays(c)<=30).length>=3&&used.some(c=>c.size_match==='exact'||c.size_match==='adjacent'))?'medium':'low';
+  return {market,quick,patient,accepted:Math.round(market*0.9),
+    count:used.length,exact,windowDays:Math.max(...used.map(compDays)),confidence};
+}
+
 async function analyzeShoePhotos(key,b64s,details){
   const content=b64s.map(b64=>({type:'image',source:{type:'base64',media_type:'image/jpeg',data:b64}}));
-  content.push({type:'text',text:`You are an expert sneaker reseller and authenticator. Analyze the attached photos of a pair being listed for resale.\n\nSeller-provided details:\n${details}\n\nTasks:\n1. Identify the shoe (brand, model, colorway) from the photos; cross-check against the seller's name.\n2. Grade the condition from what you can see: creasing, sole wear, yellowing, scuffs, box condition, and any authenticity red flags.\n3. Estimate a realistic USD resale price range for this shoe in this size and condition.\n4. Recommend a listing price for each platform (eBay, Mercari, Depop), accounting for typical buyer expectations and seller fees on each.\n5. Write a keyword-rich listing title (80 characters max: brand, model, colorway, size, condition) and an honest, detailed description that mentions every flaw.`});
+  content.push({type:'text',text:`You are an expert sneaker reseller and authenticator. Analyze the attached photos of a pair being listed for resale.\n\nSeller-provided details:\n${details}\n\nTasks:\n1. Identify the shoe (brand, model, colorway) from the photos; cross-check against the seller's name.\n2. Grade the condition from what you can see: creasing, sole wear, yellowing, scuffs, box condition, and any authenticity red flags.\n3. Search the web for recent SOLD prices for this exact shoe in this size (or nearest sizes). Note: eBay's sold/completed-listings pages are not directly reachable through web search — do not waste searches trying. The best reachable sources are StockX/GOAT last-sale figures quoted in page content, price-guide articles citing recent sale prices, and marketplace sold-price roundups. Look for comps in comparable condition — a used pair does not sell for deadstock money. Never report an asking price as a sold comp.\n4. Base market_low and market_high on the actual sold comps you found, weighting the most recent sales most heavily. Do NOT price from memory when comps exist — the current secondhand market runs lower than historical prices. If searches return no usable sold comps, that is a normal outcome: calmly fall back to your best estimate, leave the comps array empty, and say so in price_basis in one sentence.\n5. List the sold comps you used in the comps array. For each comp set: source, listing title, sold_price, date as shown in the listing, days_ago (your best estimate of whole days since the sale; 21 if unknown), size_match ('exact' if the same US size as this pair, 'adjacent' if within one full size, 'other' otherwise, 'unknown' if the listing does not state size), and condition ('new', 'like_new', 'used', or 'beat' as best you can tell from the listing; 'unknown' if unstated). Only include listings that actually SOLD — never asking prices. Set price_basis to one sentence explaining what the range is based on.\n6. Recommend a listing price for each platform (eBay, Mercari, Depop), accounting for typical buyer expectations and seller fees on each.\n7. Write a keyword-rich listing title (80 characters max: brand, model, colorway, size, condition) and an honest, detailed description that mentions every flaw.`});
   const url=key?'https://api.anthropic.com/v1/messages':PROXY_URL+'/v1/messages';
   const headers={'content-type':'application/json','anthropic-version':'2023-06-01'};
   if(key){headers['x-api-key']=key;headers['anthropic-dangerous-direct-browser-access']='true';}
@@ -737,6 +854,7 @@ async function analyzeShoePhotos(key,b64s,details){
     headers,
     body:JSON.stringify({model:'claude-opus-4-8',max_tokens:8000,thinking:{type:'adaptive'},
       output_config:{format:{type:'json_schema',schema:CL_SCHEMA}},
+      tools:[{type:'web_search_20260209',name:'web_search',max_uses:3}],
       messages:[{role:'user',content}]})
   });
   if(!resp.ok){
@@ -746,9 +864,19 @@ async function analyzeShoePhotos(key,b64s,details){
   if(!key)clShowBudget(resp.headers.get('x-tokens-remaining'));
   const data=await resp.json();
   if(data.stop_reason==='refusal')throw new Error('The model declined to analyze these photos.');
-  const textBlock=(data.content||[]).find(b=>b.type==='text');
+  if(data.stop_reason==='pause_turn')throw new Error('The market search took too long — tap Analyze again.');
+  // With web search active, commentary text blocks can precede the structured
+  // output, so take the LAST text block (that's the JSON when output_config is set).
+  const textBlocks=(data.content||[]).filter(b=>b.type==='text');
+  const textBlock=textBlocks[textBlocks.length-1];
   if(!textBlock)throw new Error('No analysis returned — try again.');
-  return JSON.parse(textBlock.text);
+  try{
+    const a=JSON.parse(textBlock.text);
+    // Sanity check: a degenerate output loop can produce schema-valid JSON with
+    // rambling stuffed into string fields — reject it instead of rendering it.
+    if(typeof a.shoe!=='string'||!a.shoe.trim()||a.shoe.length>150||!(a.market_low<=a.market_high))throw 0;
+    return a;
+  }catch(e){throw new Error('Could not read the analysis — tap Analyze again.');}
 }
 
 async function clAnalyze(){
@@ -764,9 +892,10 @@ async function clAnalyze(){
       'Seller-stated condition: '+document.getElementById('cl-condition').value,
       document.getElementById('cl-notes').value?'Seller notes/flaws: '+document.getElementById('cl-notes').value:''
     ].filter(Boolean).join('\n');
-    clAI=await analyzeShoePhotos(key,clPhotos,details);
+    clAI=await analyzeShoePhotos(key,clPhotos.map(p=>p.b64),details);
+    clExcluded=new Set();
     clRenderAI();
-    if(!parseFloat(document.getElementById('cl-price').value))document.getElementById('cl-price').value=clAI.prices.ebay;
+    if(!parseFloat(document.getElementById('cl-price').value))document.getElementById('cl-price').value=clPricing?clPricing.market:clAI.prices.ebay;
     clBuildCards();
     clFlash('Analysis complete.',true);
   }catch(e){clFlash(e.message||'Analysis failed.');}
@@ -819,26 +948,76 @@ function pairRenderAI(){
         <span style="font-weight:800;font-size:0.9rem">${esc(a.shoe)}</span>
         <span class="badge badge-accent">${esc(a.condition_grade)}</span>
       </div>
-      <div style="font-size:0.85rem">Market range: <span style="font-weight:800;color:var(--accent)">${fmt(a.market_low)}–${fmt(a.market_high)}</span></div>
+      ${(()=>{const pp=compPricing(a.comps,new Set(),a.condition_grade);return pp?`
+      <div style="font-size:0.85rem">Market <span style="font-weight:800;color:var(--accent)">${fmt(pp.market)}</span> · ${pp.count} comps (${pp.exact} exact) · last ${pp.windowDays}d <span class="badge ${CONF_BADGE[pp.confidence]}">confidence: ${pp.confidence}</span></div>`:`
+      <div style="font-size:0.85rem">Market range: <span style="font-weight:800;color:var(--accent)">${fmt(a.market_low)}–${fmt(a.market_high)}</span> <span class="badge badge-gray">model estimate</span></div>`;})()}
       <div style="font-size:0.78rem;color:var(--muted);margin-top:0.3rem">eBay ${fmt(a.prices.ebay)} · Mercari ${fmt(a.prices.mercari)} · Depop ${fmt(a.prices.depop)} · confidence: ${esc(a.confidence)}</div>
+      ${a.price_basis?`<div style="font-size:0.75rem;color:var(--muted);margin-top:0.3rem">${esc(a.price_basis)}</div>`:''}
+      <div style="margin-top:0.4rem">${ebaySoldLink(a.shoe,document.getElementById('pair-size').value)}</div>
       ${a.quality_notes.length?`<div style="margin-top:0.4rem">${a.quality_notes.map(n=>`<span class="cl-tag">${esc(n)}</span>`).join('')}</div>`:''}
     </div>`;
 }
 
+function ebaySoldUrl(shoe,size){
+  const q=[shoe,size?('size '+size):''].filter(Boolean).join(' ');
+  return 'https://www.ebay.com/sch/i.html?_nkw='+encodeURIComponent(q)+'&LH_Sold=1&LH_Complete=1&_sop=13';
+}
+function ebaySoldLink(shoe,size){
+  return `<a href="${ebaySoldUrl(shoe,size)}" target="_blank" rel="noopener" style="font-size:0.8rem;font-weight:700">View sold comps on eBay →</a>`;
+}
+const CONF_BADGE={high:'badge-green',medium:'badge-yellow',low:'badge-gray'};
+const SIZE_CHIP={exact:'exact size',adjacent:'±1 size',other:'other size'};
+function clCompRow(c){
+  const ex=clExcluded.has(c.i);
+  const chips=[SIZE_CHIP[c.size_match],(c.condition&&c.condition!=='unknown')?c.condition.replace('_',' '):null,Number.isFinite(c.days_ago)?c.days_ago+'d ago':null].filter(Boolean);
+  return `<div onclick="clToggleComp(${c.i})" style="display:flex;justify-content:space-between;gap:0.5rem;padding:0.35rem 0;border-bottom:1px solid var(--border);font-size:0.82rem;cursor:pointer${ex?';opacity:0.4':''}">
+      <div style="min-width:0${ex?';text-decoration:line-through':''}">${ex?'✗':'✓'} <span style="font-weight:700">${esc(c.source)}</span> · <span style="color:var(--muted)">${esc(c.title)}</span>${chips.length?` <span style="color:var(--muted);font-size:0.72rem">${esc(chips.join(' · '))}</span>`:''}</div>
+      <div style="white-space:nowrap"><span style="font-weight:800;color:var(--accent)">${fmt(c.sold_price)}</span> <span style="color:var(--muted);font-size:0.75rem">${esc(c.date)}</span></div>
+    </div>`;
+}
 function clRenderAI(){
   const a=clAI; if(!a)return;
   document.getElementById('cl-ai-card').classList.remove('hidden');
-  document.getElementById('cl-ai-result').innerHTML=`
-    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem;margin-bottom:1rem">
-      <div style="font-weight:800;font-size:1.05rem">${esc(a.shoe)}</div>
-      <div><span class="badge badge-accent">${esc(a.condition_grade)}</span> <span class="badge badge-gray">confidence: ${esc(a.confidence)}</span></div>
+  const s=loadPriceSettings();
+  clPricing=compPricing(a.comps,clExcluded,a.condition_grade);
+  const p=clPricing;
+  const comps=(a.comps||[]).map((c,i)=>({...c,i}));
+  let pricesHtml;
+  if(p){
+    const eb=CL_PLATFORMS[0]; // eBay fee row
+    const net=p.market-(p.market*eb.fee+eb.flat)-s.ship;
+    const maxBuy=net/(1+(s.margin||0)/100);
+    const disagree=p.market<a.market_low*0.7||p.market>a.market_high*1.3;
+    pricesHtml=`
+    <div class="card-grid" style="margin-bottom:0.6rem">
+      <div class="stat-card"><div class="label">Quick Sale</div><div class="value" style="font-size:1.3rem">${fmt(p.quick)}</div></div>
+      <div class="stat-card"><div class="label">Market Price</div><div class="value" style="font-size:1.3rem;color:var(--accent)">${fmt(p.market)}</div></div>
+      <div class="stat-card"><div class="label">Patient Price</div><div class="value" style="font-size:1.3rem">${fmt(p.patient)}</div><div style="font-size:0.68rem;color:var(--muted)">slower sale</div></div>
+      <div class="stat-card"><div class="label">Expected Accepted</div><div class="value" style="font-size:1.3rem">${fmt(p.accepted)}</div></div>
+      <div class="stat-card"><div class="label">Est. Net (eBay)</div><div class="value" style="font-size:1.3rem;color:${net>=0?'var(--success)':'var(--danger)'}">${fmt(net)}</div><div style="font-size:0.68rem;color:var(--muted)">after fees + ship</div></div>
+      <div class="stat-card"><div class="label">Max Buy Price</div><div class="value" style="font-size:1.3rem">${fmt(maxBuy)}</div><div style="font-size:0.68rem;color:var(--muted)">at ${s.margin}% margin</div></div>
     </div>
+    <div style="font-size:0.8rem;margin-bottom:0.3rem">${p.count} comps · ${p.exact} exact size · last ${p.windowDays}d <span class="badge ${CONF_BADGE[p.confidence]}">confidence: ${p.confidence}</span></div>
+    <div style="font-size:0.75rem;color:var(--muted);margin-bottom:0.5rem">AI range ${fmt(a.market_low)}–${fmt(a.market_high)} · AI eBay ${fmt(a.prices.ebay)}</div>
+    ${disagree?`<div style="font-size:0.8rem;color:var(--warn);margin-bottom:0.5rem">⚠ Comps disagree with the AI's range — verify on the eBay sold link before pricing.</div>`:''}`;
+  }else{
+    pricesHtml=`
     <div class="card-grid" style="margin-bottom:1rem">
       <div class="stat-card"><div class="label">Market Range</div><div class="value" style="font-size:1.3rem">${fmt(a.market_low)}–${fmt(a.market_high)}</div></div>
       <div class="stat-card"><div class="label">eBay Price</div><div class="value" style="font-size:1.3rem;color:var(--accent)">${fmt(a.prices.ebay)}</div></div>
       <div class="stat-card"><div class="label">Mercari Price</div><div class="value" style="font-size:1.3rem;color:var(--accent)">${fmt(a.prices.mercari)}</div></div>
       <div class="stat-card"><div class="label">Depop Price</div><div class="value" style="font-size:1.3rem;color:var(--accent)">${fmt(a.prices.depop)}</div></div>
+    </div>`;
+  }
+  document.getElementById('cl-ai-result').innerHTML=`
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem;margin-bottom:1rem">
+      <div style="font-weight:800;font-size:1.05rem">${esc(a.shoe)}</div>
+      <div><span class="badge badge-accent">${esc(a.condition_grade)}</span>${p?'':` <span class="badge badge-gray">model estimate — no usable comps</span> <span class="badge badge-gray">confidence: ${esc(a.confidence)}</span>`}</div>
     </div>
+    ${pricesHtml}
+    ${a.price_basis?`<div style="font-size:0.8rem;color:var(--muted);margin-bottom:0.5rem">${esc(a.price_basis)}</div>`:''}
+    ${comps.length?`<div style="margin-bottom:0.75rem"><div style="font-size:0.72rem;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:0.15rem">Sold Comps${p?'':' (too few to price from)'}</div><div style="font-size:0.72rem;color:var(--muted);margin-bottom:0.4rem">Tap a comp to exclude it from the math.</div>${comps.map(clCompRow).join('')}</div>`:''}
+    <div style="margin-bottom:0.75rem">${ebaySoldLink(a.shoe,document.getElementById('cl-size').value)}</div>
     ${a.quality_notes.length?`<div style="margin-bottom:0.75rem"><div style="font-size:0.72rem;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:0.4rem">Quality Notes</div>${a.quality_notes.map(n=>`<span class="cl-tag">${esc(n)}</span>`).join('')}</div>`:''}
     ${a.flaws.length?`<div><div style="font-size:0.72rem;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:0.4rem">Flaws</div>${a.flaws.map(n=>`<span class="cl-tag" style="color:var(--warn)">${esc(n)}</span>`).join('')}</div>`:''}`;
 }
@@ -861,7 +1040,7 @@ function clBuildCards(){
   const base=clAI?{title:clAI.title,description:clAI.description}:clComposeManual();
   const hashtags=(clAI?clAI.shoe:name).toLowerCase().split(/\s+/).filter(w=>/^[a-z0-9]+$/.test(w)).slice(0,4).map(w=>'#'+w).concat(['#sneakers','#kicks']).join(' ');
   clCards=CL_PLATFORMS.map(pl=>{
-    const p=price||(clAI?clAI.prices[pl.name.toLowerCase()]:0);
+    const p=price||(clPricing?clPricing.market:(clAI?clAI.prices[pl.name.toLowerCase()]:0));
     const fees=p*pl.fee+pl.flat;
     return {platform:pl,price:p,net:p-fees,
       title:pl.titleMax?base.title.slice(0,pl.titleMax):'',

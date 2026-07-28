@@ -31,6 +31,23 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:1rem 2
 .tip-box strong{color:var(--accent2)}
 .warn-box{background:rgba(255,107,107,0.08);border:1px solid rgba(255,107,107,0.25);border-radius:10px;padding:1rem 1.25rem;font-size:0.9rem;color:var(--muted);line-height:1.6;margin:1.5rem 0}
 .warn-box strong{color:var(--coral)}
+.prompt-box{background:var(--card);border:1px solid var(--border);border-left:3px solid var(--accent);border-radius:0 10px 10px 0;padding:1.1rem 1.25rem;margin:1.75rem 0}
+.prompt-box .prompt-label{display:block;font-size:0.7rem;font-weight:800;letter-spacing:0.8px;text-transform:uppercase;color:var(--accent2);margin-bottom:0.5rem}
+.prompt-box p{color:var(--text);font-style:italic;margin:0}
+.essay-text{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.5rem 1.75rem;margin:1.75rem 0;line-height:1.9}
+.essay-text p{color:#e4e6ef;margin-bottom:1.2rem}
+.essay-text p:last-child{margin-bottom:0}
+.annotation{display:flex;gap:0.65rem;align-items:flex-start;border-radius:0 10px 10px 0;padding:0.85rem 1.1rem;margin:0.25rem 0 1.5rem;font-size:0.85rem;line-height:1.6;color:var(--muted)}
+.annotation .annotation-label{flex-shrink:0;font-size:0.68rem;font-weight:800;letter-spacing:0.6px;text-transform:uppercase;padding:0.2rem 0.55rem;border-radius:20px;margin-top:0.05rem}
+.annotation-craft{background:rgba(139,132,255,0.08);border-left:3px solid var(--accent)}
+.annotation-craft .annotation-label{background:rgba(139,132,255,0.16);color:var(--accent2)}
+.annotation-voice{background:rgba(255,212,59,0.07);border-left:3px solid var(--gold)}
+.annotation-voice .annotation-label{background:rgba(255,212,59,0.16);color:var(--gold)}
+.annotation-structure{background:rgba(81,207,102,0.07);border-left:3px solid var(--success)}
+.annotation-structure .annotation-label{background:rgba(81,207,102,0.16);color:var(--success)}
+.checklist{list-style:none;margin:1.5rem 0}
+.checklist li{position:relative;padding-left:1.75rem;margin-bottom:0.65rem;color:#d0d4e0}
+.checklist li::before{content:"✓";position:absolute;left:0;color:var(--success);font-weight:800}
 .resource-list{list-style:none;margin:1.5rem 0}
 .resource-list li{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:1rem 1.25rem;margin-bottom:0.75rem}
 .resource-list a{color:var(--accent2);font-weight:700;text-decoration:none}

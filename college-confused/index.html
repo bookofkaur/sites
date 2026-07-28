@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<meta name="description" content="College Confused — free college prep for every student. Application timelines, scholarship tracking, essay help, FAFSA guidance, and SAT/ACT prep. No paywalls, ever." />
+<meta name="description" content="College Confused — free college-prep guides for every student: scholarships, FAFSA, essays, the Common App, and test prep. No paywalls, ever." />
 <meta name="color-scheme" content="dark" />
 <meta name="theme-color" content="#0c0b14" />
 <link rel="manifest" href="manifest.webmanifest" />
@@ -40,13 +40,17 @@ h1 em{font-style:normal;color:var(--accent)}
 .sub-cta a{color:var(--muted)}
 .sub-cta a:hover,.sub-cta a:focus-visible{color:var(--accent)}
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1.25rem;margin-top:1.5rem}
-.card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:1.5rem}
+.card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:1.5rem;display:block;text-decoration:none;color:inherit;transition:border-color 0.2s,transform 0.2s}
+.card:hover,.card:focus-visible{border-color:var(--accent);transform:translateY(-2px)}
+.card:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .card .ico{font-size:1.6rem}
-.card h2{font-size:1rem;font-weight:800;margin:0.6rem 0 0.4rem}
+.card h2{font-size:1rem;font-weight:800;margin:0.6rem 0 0.4rem;color:var(--text)}
 .card p{color:var(--muted);font-size:0.87rem;line-height:1.55}
 .founder{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:1.75rem;margin-top:2.5rem;text-align:center}
 .founder p{color:var(--muted);font-size:0.92rem;line-height:1.65;max-width:42rem;margin:0 auto}
 .founder strong{color:var(--text)}
+.founder .read-more{display:inline-block;margin-top:0.9rem;color:var(--accent2);font-size:0.85rem;font-weight:700;text-decoration:none}
+.founder .read-more:hover,.founder .read-more:focus-visible{text-decoration:underline}
 footer{text-align:center;color:var(--muted);font-size:0.8rem;padding:2rem 1rem;border-top:1px solid var(--border)}
 footer a{color:var(--muted)}
 footer a:hover,footer a:focus-visible{color:var(--accent)}
@@ -56,31 +60,56 @@ footer a:hover,footer a:focus-visible{color:var(--accent)}
 <body>
 <nav>
   <div class="logo">College <span>Confused</span></div>
-  <div class="links"><a href="blog.html">Blog</a><a href="https://collegeconfused.org">Sign In</a></div>
+  <div class="links"><a href="blog.html">Guides</a></div>
 </nav>
 <main>
   <section class="hero">
     <div class="cap" aria-hidden="true">🎓</div>
-    <h1>College prep, <em>minus the confusion</em></h1>
+    <h1>Simplify <em>the college application process</em></h1>
     <span class="free-badge">100% free · no paywalls · ever</span>
-    <p>Timelines, scholarships, essays, FAFSA, and test prep — everything first-gen students and busy families need to get in and get funded, in plain English.</p>
-    <a class="cta" href="https://collegeconfused.org">Start Free at collegeconfused.org</a>
-    <span class="sub-cta"><a href="app.html">Or use the lite in-browser toolkit</a> · <a href="blog.html">Read the blog</a></span>
+    <p>College Confused provides tutorials, walkthroughs, and guides on how to efficiently apply and pay for college — scholarships, FAFSA, essays, the Common App, and test prep, in plain English.</p>
+    <a class="cta" href="blog.html">Browse the Guides</a>
+    <span class="sub-cta"><a href="blog/first-gen-guide.html">Read why this site exists</a></span>
   </section>
-  <section class="grid" aria-label="Tools">
-    <div class="card"><div class="ico" aria-hidden="true">🗓️</div><h2>Application Timeline</h2><p>Every deadline from junior-year planning to decision day, laid out so nothing sneaks up on you.</p></div>
-    <div class="card"><div class="ico" aria-hidden="true">💰</div><h2>Scholarship Tracker</h2><p>Find, track, and win scholarships — organized by deadline, amount, and effort.</p></div>
-    <div class="card"><div class="ico" aria-hidden="true">✍️</div><h2>Essay Station</h2><p>Brainstorm, draft, and polish personal statements that sound like you — with AI feedback.</p></div>
-    <div class="card"><div class="ico" aria-hidden="true">🧾</div><h2>FAFSA Guide</h2><p>Financial aid without the jargon: step-by-step FAFSA help and an aid estimator.</p></div>
-    <div class="card"><div class="ico" aria-hidden="true">📝</div><h2>SAT / ACT Prep</h2><p>Score tracking and a study plan that fits around school, work, and life.</p></div>
-    <div class="card"><div class="ico" aria-hidden="true">🧭</div><h2>College List Builder</h2><p>Build a balanced reach/match/safety list that fits your goals and your budget.</p></div>
+  <section class="grid" aria-label="Guides">
+    <a class="card" href="blog/application-timeline.html">
+      <div class="ico" aria-hidden="true">🗓️</div>
+      <h2>Application Timeline</h2>
+      <p>Every deadline from junior-year planning to decision day, laid out so nothing sneaks up on you.</p>
+    </a>
+    <a class="card" href="blog/scholarships-hub.html">
+      <div class="ico" aria-hidden="true">💰</div>
+      <h2>Scholarships</h2>
+      <p>Find scholarships, avoid scams, and build a strategy that actually wins — plus a real scholarship bulletin.</p>
+    </a>
+    <a class="card" href="blog/essay-hub.html">
+      <div class="ico" aria-hidden="true">✍️</div>
+      <h2>Essay Station</h2>
+      <p>Get past the blank page and write a personal statement that actually sounds like you.</p>
+    </a>
+    <a class="card" href="blog/fafsa-hub.html">
+      <div class="ico" aria-hidden="true">🧾</div>
+      <h2>FAFSA Guide</h2>
+      <p>Financial aid without the jargon — step-by-step, plus what to do if your aid is delayed.</p>
+    </a>
+    <a class="card" href="blog/test-prep-guide.html">
+      <div class="ico" aria-hidden="true">📝</div>
+      <h2>SAT / ACT Prep</h2>
+      <p>Free study resources, fee-waiver eligibility, and a strategy for when to test.</p>
+    </a>
+    <a class="card" href="blog/college-list-guide.html">
+      <div class="ico" aria-hidden="true">🧭</div>
+      <h2>College List Builder</h2>
+      <p>Build a balanced reach/match/safety list that fits your goals and your budget.</p>
+    </a>
   </section>
   <section class="founder" aria-label="About the founder">
-    <p><strong>Built by someone who's been there.</strong> College Confused is a nonprofit founded by Darrian Belcher — first-gen college applicant turned NC A&amp;T grad with <strong>25 acceptances, 7 full rides, and $500K+ in scholarships</strong>. Every tool here is the one he wishes he'd had.</p>
+    <p><strong>Built by someone who's been there.</strong> College Confused is a nonprofit founded by Darrian Belcher — a first-gen applicant who turned 30 college applications into 25 acceptances, 7 full-ride offers (including Virginia State, VCU, Alabama A&amp;M, Fisk, Xavier of Louisiana, Bethune-Cookman, and William &amp; Mary), and over <strong>$500,000 in scholarships</strong>, including the Thurgood Marshall College Fund's VISA Black Scholars award. Every guide here is the one he wishes he'd had.</p>
+    <a class="read-more" href="blog/first-gen-guide.html">Read his full story →</a>
   </section>
 </main>
 <footer>
-  <p>College Confused is free forever · <a href="https://collegeconfused.org">collegeconfused.org</a> · <a href="blog.html">Blog</a> · <a href="app.html">Lite toolkit</a></p>
+  <p>College Confused is free forever · <a href="https://collegeconfused.org">collegeconfused.org</a> · <a href="blog.html">Guides</a> · <a href="privacy.html">Privacy</a></p>
 </footer>
 </body>
 </html>

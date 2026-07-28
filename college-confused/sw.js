@@ -1,9 +1,13 @@
 /* College Confused service worker — network-first for pages, cache-first for assets. */
-const CACHE = 'college-confused-v1';
+const CACHE = 'college-confused-v2';
 const PRECACHE = [
   'index.html',
   'app.html',
   'blog.html',
+  'blog/_base.css',
+  'blog/scholarships-hub.html',
+  'blog/fafsa-hub.html',
+  'blog/essay-hub.html',
   'manifest.webmanifest',
   'icons/icon-192.png',
   'icons/icon-512.png',

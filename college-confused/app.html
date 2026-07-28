@@ -11,7 +11,7 @@
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{--accent:#8b84ff;--accent2:#a89fff;--bg:#0c0b14;--card:#171523;--border:#2a2740;--text:#f4f3fa;--muted:#9a96b8}
 body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column}
-nav{display:flex;align-items:center;justify-content:space-between;padding:1rem 2rem;border-bottom:1px solid var(--border)}
+nav{display:flex;align-items:center;justify-content:space-between;padding:1rem 2rem;border-bottom:1px solid var(--border);flex-wrap:wrap;gap:0.5rem}
 .logo{font-size:1.15rem;font-weight:900}.logo span{color:var(--accent)}
 nav a{color:var(--muted);text-decoration:none;font-size:0.85rem;padding:0.4rem 0.8rem;border-radius:6px}
 nav a:hover,nav a:focus-visible{color:var(--accent);outline:none}
@@ -33,7 +33,7 @@ footer a:hover,footer a:focus-visible{color:var(--accent)}
 <body>
 <nav>
   <div class="logo">College <span>Confused</span></div>
-  <a href="blog.html">Guides</a>
+  <div class="links"><a href="blog.html">Guides</a><a href="blog/scholarships-hub.html">Scholarships</a><a href="blog/essay-hub.html">Essay Station</a></div>
 </nav>
 <main>
   <div class="box">

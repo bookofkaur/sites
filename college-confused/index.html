@@ -20,14 +20,15 @@ if ('serviceWorker' in navigator) {
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{--accent:#8b84ff;--accent2:#a89fff;--bg:#0c0b14;--card:#171523;--border:#2a2740;--text:#f4f3fa;--muted:#9a96b8}
-body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;overflow-x:hidden}
 nav{display:flex;align-items:center;justify-content:space-between;padding:1rem 2rem;border-bottom:1px solid var(--border);flex-wrap:wrap;gap:0.5rem}
 .logo{font-size:1.15rem;font-weight:900}.logo span{color:var(--accent)}
 nav .links a{color:var(--muted);text-decoration:none;font-size:0.85rem;padding:0.4rem 0.8rem;border-radius:6px}
 nav .links a:hover,nav .links a:focus-visible{color:var(--accent);outline:none}
 nav .links a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-main{flex:1;width:100%;max-width:960px;margin:0 auto;padding:3rem 1.5rem}
-.hero{text-align:center;padding:4.5rem 1.5rem 4rem;border-radius:20px;background:linear-gradient(180deg,rgba(12,11,20,0.55) 0%,rgba(12,11,20,0.88) 65%,var(--bg) 100%),url("assets/hero-graduates.jpg") center 30%/cover no-repeat}
+main{flex:1;width:100%;max-width:1320px;margin:0 auto;padding:3rem 2.5rem}
+.hero{position:relative;left:50%;right:50%;margin:-3rem -50vw 3rem;width:100vw;text-align:center;padding:6rem 1.5rem;min-height:min(70vh,640px);display:flex;flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(180deg,rgba(12,11,20,0.6) 0%,rgba(12,11,20,0.85) 70%,var(--bg) 100%),url("assets/hero-graduates.jpg") center 30%/cover no-repeat}
+.hero-inner{max-width:50rem}
 .hero .cap{font-size:3rem}
 h1{font-size:clamp(1.9rem,6vw,3rem);font-weight:900;letter-spacing:-1px;margin:0.75rem 0}
 h1 em{font-style:normal;color:var(--accent)}
@@ -39,17 +40,17 @@ h1 em{font-style:normal;color:var(--accent)}
 .sub-cta{display:block;margin-top:1rem;color:var(--muted);font-size:0.85rem}
 .sub-cta a{color:var(--muted)}
 .sub-cta a:hover,.sub-cta a:focus-visible{color:var(--accent)}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1.25rem;margin-top:1.5rem}
-.card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:1.5rem;display:block;text-decoration:none;color:inherit;transition:border-color 0.2s,transform 0.2s}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1.5rem;margin-top:1.5rem}
+.card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:1.75rem;display:block;text-decoration:none;color:inherit;transition:border-color 0.2s,transform 0.2s}
 .card:hover,.card:focus-visible{border-color:var(--accent);transform:translateY(-2px)}
 .card:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .card .ico{font-size:1.6rem}
 .card h2{font-size:1rem;font-weight:800;margin:0.6rem 0 0.4rem;color:var(--text)}
 .card p{color:var(--muted);font-size:0.87rem;line-height:1.55}
-.about{display:grid;grid-template-columns:220px 1fr;gap:2.25rem;align-items:center;background:var(--card);border:1px solid var(--border);border-radius:18px;padding:2rem;margin:0.5rem 0 3rem}
+.about{display:grid;grid-template-columns:280px 1fr;gap:3rem;align-items:center;background:var(--card);border:1px solid var(--border);border-radius:18px;padding:3rem;margin:0.5rem 0 3rem}
 .about-photo img{width:100%;height:auto;aspect-ratio:1/1;object-fit:cover;border-radius:50%;border:3px solid var(--accent);display:block}
 .about-eyebrow{display:block;font-size:0.75rem;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--accent2);margin-bottom:0.6rem}
-.about-content p{color:var(--muted);font-size:0.95rem;line-height:1.65;margin-bottom:1rem}
+.about-content p{color:var(--muted);font-size:1rem;line-height:1.7;margin-bottom:1rem;max-width:44rem}
 .about-content strong{color:var(--text)}
 .stat-row{display:flex;gap:1.75rem;flex-wrap:wrap;margin:1.25rem 0}
 .stat{display:flex;flex-direction:column}
@@ -77,12 +78,14 @@ footer a:hover,footer a:focus-visible{color:var(--accent)}
 </nav>
 <main>
   <section class="hero">
-    <div class="cap" aria-hidden="true">🎓</div>
-    <h1>Simplify <em>the college application process</em></h1>
-    <span class="free-badge">100% free · no paywalls · ever</span>
-    <p>College Confused provides tutorials, walkthroughs, and guides on how to efficiently apply and pay for college — scholarships, FAFSA, essays, the Common App, and test prep, in plain English.</p>
-    <a class="cta" href="blog.html">Browse the Guides</a>
-    <span class="sub-cta"><a href="blog/first-gen-guide.html">Read why this site exists</a></span>
+    <div class="hero-inner">
+      <div class="cap" aria-hidden="true">🎓</div>
+      <h1>Simplify <em>the college application process</em></h1>
+      <span class="free-badge">100% free · no paywalls · ever</span>
+      <p>College Confused provides tutorials, walkthroughs, and guides on how to efficiently apply and pay for college — scholarships, FAFSA, essays, the Common App, and test prep, in plain English.</p>
+      <a class="cta" href="blog.html">Browse the Guides</a>
+      <span class="sub-cta"><a href="blog/first-gen-guide.html">Read why this site exists</a></span>
+    </div>
   </section>
   <section class="about" aria-label="About the founder">
     <div class="about-photo">

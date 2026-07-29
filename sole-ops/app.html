@@ -729,7 +729,6 @@ function clFillFromPair(){
     clAI=p.ai;
     clExcluded=new Set();
     clRenderAI();
-    if(!parseFloat(document.getElementById('cl-price').value))document.getElementById('cl-price').value=clPricing?clPricing.market:p.ai.prices.ebay;
   }
 }
 // Shared photo pipeline: downscale to ≤1024px JPEG for the API + a ≤320px thumb for storage/preview
@@ -929,7 +928,6 @@ async function clAnalyze(){
       await fetchSoldComps(clAI,document.getElementById('cl-size').value);
     }
     clRenderAI();
-    if(!parseFloat(document.getElementById('cl-price').value))document.getElementById('cl-price').value=clPricing?clPricing.market:clAI.prices.ebay;
     clBuildCards();
     clFlash('Analysis complete.',true);
   }catch(e){clFlash(e.message||'Analysis failed.');}
@@ -1071,6 +1069,15 @@ function clComposeManual(){
   };
 }
 
+// Per-platform suggested price, matching what the AI analysis card shows.
+// With comps pricing, the comps market price anchors eBay and the AI's
+// platform differentials (Mercari/Depop relative to eBay) carry over.
+function clSuggestedPrice(pl){
+  const ai=clAI?(clAI.prices[pl.name.toLowerCase()]||0):0;
+  if(!clPricing)return ai;
+  const eb=clAI?clAI.prices.ebay:0;
+  return (ai>0&&eb>0)?Math.round(clPricing.market*ai/eb):clPricing.market;
+}
 function clBuildCards(){
   const name=document.getElementById('cl-name').value.trim();
   if(!name&&!clAI){clFlash('Enter a shoe name (or run the AI analyzer) first.');return;}
@@ -1078,7 +1085,7 @@ function clBuildCards(){
   const base=clAI?{title:clAI.title,description:clAI.description}:clComposeManual();
   const hashtags=(clAI?clAI.shoe:name).toLowerCase().split(/\s+/).filter(w=>/^[a-z0-9]+$/.test(w)).slice(0,4).map(w=>'#'+w).concat(['#sneakers','#kicks']).join(' ');
   clCards=CL_PLATFORMS.map(pl=>{
-    const p=price||(clPricing?clPricing.market:(clAI?clAI.prices[pl.name.toLowerCase()]:0));
+    const p=price||clSuggestedPrice(pl);
     const fees=p*pl.fee+pl.flat;
     return {platform:pl,price:p,net:p-fees,
       title:pl.titleMax?base.title.slice(0,pl.titleMax):'',

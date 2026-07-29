@@ -1,0 +1,994 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="Essay Station Toolkit — write, store, and improve your college essays with free AI feedback. Part of College Confused, free forever." />
+<meta name="color-scheme" content="dark" />
+<meta name="theme-color" content="#0c0b14" />
+<title>Essay Station Toolkit — College Confused</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--accent:#8b84ff;--accent2:#a89fff;--bg:#0c0b14;--card:#171523;--border:#2a2740;--text:#f4f3fa;--muted:#9a96b8;--ok:#8fe3a8;--bad:#ff9c9c}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;overflow-x:hidden}
+nav{display:flex;align-items:center;justify-content:space-between;padding:1rem 2rem;border-bottom:1px solid var(--border);flex-wrap:wrap;gap:0.5rem}
+.logo{font-size:1.15rem;font-weight:900}.logo span{color:var(--accent)}
+nav .links a{color:var(--muted);text-decoration:none;font-size:0.85rem;padding:0.4rem 0.8rem;border-radius:6px}
+nav .links a:hover,nav .links a:focus-visible{color:var(--accent);outline:none}
+nav .links a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+nav .links a[aria-current="page"]{color:var(--accent);font-weight:700}
+main{flex:1;width:100%;max-width:1100px;margin:0 auto;padding:2.5rem 2rem}
+.hero-mini{text-align:center;margin-bottom:2rem}
+.hero-mini .cap{font-size:2.2rem}
+h1{font-size:clamp(1.6rem,5vw,2.3rem);font-weight:900;letter-spacing:-1px;margin:0.5rem 0}
+h1 em{font-style:normal;color:var(--accent)}
+.hero-mini p{color:var(--muted);font-size:1rem;max-width:34rem;margin:0 auto;line-height:1.6}
+.free-badge{display:inline-block;background:rgba(139,132,255,0.14);color:var(--accent2);font-weight:800;font-size:0.75rem;letter-spacing:1px;text-transform:uppercase;padding:0.3rem 0.8rem;border-radius:999px;margin-top:0.75rem}
+.tabbar{display:flex;flex-wrap:wrap;gap:0.5rem;border-bottom:1px solid var(--border);padding-bottom:0.75rem;margin-bottom:1.75rem}
+.tabbar button{background:var(--card);border:1px solid var(--border);color:var(--muted);font:inherit;font-size:0.9rem;font-weight:700;padding:0.55rem 1.1rem;border-radius:10px;cursor:pointer;transition:border-color .2s,color .2s}
+.tabbar button:hover{border-color:var(--accent);color:var(--text)}
+.tabbar button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.tabbar button[aria-selected="true"]{background:var(--accent);color:#0c0b14;border-color:var(--accent)}
+.panel[hidden]{display:none}
+h2{font-size:1.25rem;font-weight:800;margin-bottom:0.9rem}
+h3{font-size:1rem;font-weight:800;margin:1.1rem 0 0.5rem}
+.tip-box{background:rgba(139,132,255,0.1);border:1px solid var(--border);border-left:3px solid var(--accent);border-radius:8px;padding:0.8rem 1rem;color:var(--muted);font-size:0.85rem;line-height:1.55;margin:0 0 1.25rem}
+.warn-box{background:rgba(255,156,156,0.08);border:1px solid var(--border);border-left:3px solid var(--bad);border-radius:8px;padding:0.8rem 1rem;color:var(--bad);font-size:0.88rem;line-height:1.55;margin:0.75rem 0}
+.warn-box:empty{display:none}
+.card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:1.25rem 1.4rem;margin-bottom:1rem}
+.card h3{margin:0 0 0.3rem;font-size:1rem}
+.card .meta{color:var(--muted);font-size:0.8rem;margin-bottom:0.5rem}
+.card .preview{color:var(--muted);font-size:0.87rem;line-height:1.55;margin-bottom:0.75rem;overflow-wrap:anywhere}
+.card .actions{display:flex;flex-wrap:wrap;gap:0.5rem}
+.btn{display:inline-block;background:var(--accent);color:#0c0b14;font:inherit;font-weight:800;font-size:0.88rem;padding:0.6rem 1.3rem;border:1px solid var(--accent);border-radius:10px;cursor:pointer;transition:background .2s}
+.btn:hover{background:var(--accent2);border-color:var(--accent2)}
+.btn:focus-visible{outline:2px solid var(--text);outline-offset:3px}
+.btn:disabled{opacity:0.55;cursor:wait}
+.btn-sm{background:var(--bg);color:var(--muted);border:1px solid var(--border);font:inherit;font-size:0.78rem;font-weight:700;padding:0.35rem 0.75rem;border-radius:8px;cursor:pointer;transition:border-color .2s,color .2s}
+.btn-sm:hover{border-color:var(--accent);color:var(--accent)}
+.btn-sm:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.field{margin-bottom:1rem}
+.field label,fieldset legend{display:block;font-size:0.82rem;font-weight:700;color:var(--muted);margin-bottom:0.35rem}
+input[type="text"],select,textarea{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font:inherit;font-size:0.9rem;padding:0.6rem 0.75rem}
+input[type="text"]:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+textarea{resize:vertical;min-height:5.5rem;line-height:1.55}
+textarea.big{min-height:16rem}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.wc{text-align:right;font-size:0.82rem;margin-top:0.3rem}
+.wc.ok{color:var(--ok)}
+.wc.over{color:var(--bad)}
+fieldset{border:0;padding:0;margin:0 0 1rem}
+.chips{display:flex;flex-wrap:wrap;gap:0.5rem}
+.chip{display:inline-flex;align-items:center;gap:0.35rem;background:var(--bg);border:1px solid var(--border);border-radius:999px;padding:0.3rem 0.8rem;font-size:0.8rem;color:var(--muted);cursor:pointer}
+.chip:has(input:checked){border-color:var(--accent);color:var(--accent2)}
+.chip:has(input:focus-visible){outline:2px solid var(--accent);outline-offset:2px}
+.chip input{accent-color:var(--accent)}
+.filter-chips{display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:1.25rem}
+.filter-chips button{background:var(--bg);border:1px solid var(--border);border-radius:999px;color:var(--muted);font:inherit;font-size:0.8rem;font-weight:700;padding:0.35rem 0.9rem;cursor:pointer}
+.filter-chips button:hover{border-color:var(--accent);color:var(--accent2)}
+.filter-chips button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.filter-chips button[aria-pressed="true"]{background:var(--accent);color:#0c0b14;border-color:var(--accent)}
+.tag-pill{display:inline-block;background:rgba(139,132,255,0.14);color:var(--accent2);font-size:0.72rem;font-weight:700;padding:0.15rem 0.6rem;border-radius:999px;margin-right:0.3rem}
+details.prompt-card{background:var(--card);border:1px solid var(--border);border-radius:14px;margin-bottom:1rem}
+details.prompt-card summary{cursor:pointer;font-weight:800;font-size:0.95rem;padding:1.1rem 1.4rem;list-style-position:inside}
+details.prompt-card summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:14px}
+details.prompt-card summary:hover{color:var(--accent2)}
+details.prompt-card .body{padding:0 1.4rem 1.25rem;color:var(--muted);font-size:0.88rem;line-height:1.6}
+details.prompt-card .body blockquote{border-left:3px solid var(--accent);padding:0.5rem 0.9rem;margin:0.5rem 0 1rem;color:var(--text)}
+details.prompt-card .body h4{color:var(--text);font-size:0.85rem;margin:0.9rem 0 0.25rem}
+.ai-output{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:1.25rem 1.4rem;margin-top:1.25rem;line-height:1.65;font-size:0.92rem}
+.ai-output:empty{display:none}
+.ai-output h3{color:var(--accent2);margin:1rem 0 0.4rem}
+.ai-output h3:first-child{margin-top:0}
+.ai-output p{margin-bottom:0.6rem;overflow-wrap:anywhere}
+.tokens-left{color:var(--muted);font-size:0.78rem;margin-top:0.5rem}
+.tokens-left:empty{display:none}
+.mode-row{display:flex;gap:1.25rem;flex-wrap:wrap;margin-bottom:1.25rem}
+.mode-row label{display:inline-flex;align-items:center;gap:0.4rem;font-size:0.9rem;font-weight:700;color:var(--muted);cursor:pointer}
+.mode-row input{accent-color:var(--accent)}
+.mode-row input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.list-head{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.75rem;margin-bottom:1rem}
+.empty-note{color:var(--muted);font-size:0.9rem;line-height:1.6;padding:1rem 0}
+.read-more{display:inline-block;margin-top:0.4rem;color:var(--accent2);font-size:0.85rem;font-weight:700;text-decoration:none}
+.read-more:hover,.read-more:focus-visible{text-decoration:underline}
+footer{text-align:center;color:var(--muted);font-size:0.8rem;padding:2rem 1rem;border-top:1px solid var(--border)}
+footer a{color:var(--muted)}
+footer a:hover,footer a:focus-visible{color:var(--accent)}
+@media (max-width:640px){
+  main{padding:1.75rem 1rem}
+  .form-row{grid-template-columns:1fr}
+  nav{padding:1rem}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<nav>
+  <div class="logo">College <span>Confused</span></div>
+  <div class="links"><a href="blog.html">Guides</a><a href="blog/scholarships-hub.html">Scholarships</a><a href="blog/essay-hub.html">Essay Station</a><a href="essay-tool.html" aria-current="page">Essay Tool</a></div>
+</nav>
+<main>
+  <header class="hero-mini">
+    <div class="cap" aria-hidden="true">✍️</div>
+    <h1>Essay Station <em>Toolkit</em></h1>
+    <p>Write, store, and improve your essays. Free AI feedback included.</p>
+    <span class="free-badge">100% free · no account needed</span>
+  </header>
+
+  <div class="tabbar" role="tablist" aria-label="Essay toolkit sections">
+    <button type="button" role="tab" id="tab-essays" aria-selected="true" aria-controls="panel-essays">📝 My Essays</button>
+    <button type="button" role="tab" id="tab-blocks" aria-selected="false" aria-controls="panel-blocks" tabindex="-1">🧩 Story Blocks</button>
+    <button type="button" role="tab" id="tab-prompts" aria-selected="false" aria-controls="panel-prompts" tabindex="-1">📖 Prompts &amp; Tips</button>
+    <button type="button" role="tab" id="tab-ai" aria-selected="false" aria-controls="panel-ai" tabindex="-1">🤖 AI Coach</button>
+  </div>
+
+  <!-- ── Tab 1: My Essays ─────────────────────────────────────────────── -->
+  <section class="panel" id="panel-essays" role="tabpanel" aria-labelledby="tab-essays">
+    <div class="tip-box">Your essays are saved only in this browser — no account needed, and nothing leaves your device unless you ask for AI feedback. Copy important drafts somewhere safe too (a doc, an email to yourself).</div>
+
+    <div id="essay-list-view">
+      <div class="list-head">
+        <h2>📝 My Essays</h2>
+        <button type="button" class="btn" id="new-essay-btn">➕ New Essay</button>
+      </div>
+      <div id="essay-list"></div>
+    </div>
+
+    <div id="essay-form-view" hidden>
+      <div class="list-head">
+        <h2 id="essay-form-title">✨ New Essay</h2>
+        <button type="button" class="btn-sm" id="essay-cancel-btn">← Back to list</button>
+      </div>
+      <div class="form-row">
+        <div class="field">
+          <label for="ef-title">Essay title</label>
+          <input type="text" id="ef-title" maxlength="200" placeholder="e.g., Common App Personal Statement — Draft 1" />
+        </div>
+        <div class="field">
+          <label for="ef-type">Essay type</label>
+          <select id="ef-type"></select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="field">
+          <label for="ef-status">Status</label>
+          <select id="ef-status"></select>
+        </div>
+        <div class="field">
+          <label for="ef-prompt">Essay prompt (paste the prompt you're responding to)</label>
+          <textarea id="ef-prompt" placeholder="Paste the exact essay prompt here..."></textarea>
+        </div>
+      </div>
+      <div class="field">
+        <label for="ef-content">Your essay</label>
+        <textarea id="ef-content" class="big" placeholder="Start writing your essay here...&#10;&#10;Tip: Don't try to be perfect on the first draft. Just get your story down!"></textarea>
+        <div class="wc ok" id="ef-wc" aria-live="polite">Word count: 0</div>
+      </div>
+      <button type="button" class="btn" id="essay-save-btn">💾 Save Essay</button>
+      <div class="warn-box" id="essay-form-warn" role="alert"></div>
+    </div>
+  </section>
+
+  <!-- ── Tab 2: Story Blocks ──────────────────────────────────────────── -->
+  <section class="panel" id="panel-blocks" role="tabpanel" aria-labelledby="tab-blocks" hidden>
+    <div class="tip-box">Story blocks are reusable pieces of your story — a hook, a challenge, a win — that you can mix into any essay. Saved only in this browser.</div>
+
+    <div id="block-list-view">
+      <div class="list-head">
+        <h2>🧩 Story Blocks</h2>
+        <button type="button" class="btn" id="new-block-btn">➕ New Block</button>
+      </div>
+      <div class="filter-chips" id="tag-filters" role="group" aria-label="Filter blocks by tag"></div>
+      <div id="block-list"></div>
+    </div>
+
+    <div id="block-form-view" hidden>
+      <div class="list-head">
+        <h2 id="block-form-title">✨ New Story Block</h2>
+        <button type="button" class="btn-sm" id="block-cancel-btn">← Back to list</button>
+      </div>
+      <div class="form-row">
+        <div class="field">
+          <label for="bf-title">Block title</label>
+          <input type="text" id="bf-title" maxlength="200" placeholder="e.g., McDonald's opening scene" />
+        </div>
+        <div class="field">
+          <label for="bf-type">Block type</label>
+          <select id="bf-type"></select>
+        </div>
+      </div>
+      <div class="field">
+        <label for="bf-text">Block text</label>
+        <textarea id="bf-text" class="big" placeholder="Write the piece of your story here..."></textarea>
+      </div>
+      <fieldset>
+        <legend>Tags</legend>
+        <div class="chips" id="bf-tags"></div>
+      </fieldset>
+      <button type="button" class="btn" id="block-save-btn">💾 Save Block</button>
+      <div class="warn-box" id="block-form-warn" role="alert"></div>
+    </div>
+  </section>
+
+  <!-- ── Tab 3: Prompts & Tips ────────────────────────────────────────── -->
+  <section class="panel" id="panel-prompts" role="tabpanel" aria-labelledby="tab-prompts" hidden>
+    <h2>📖 Common App Essay Prompts</h2>
+    <p class="empty-note">650-word limit. Choose the prompt that lets you tell the story only YOU can tell. All prompts are equally good — pick the one that excites you most.</p>
+    <div id="prompt-cards"></div>
+    <a class="read-more" href="blog/essay-examples-hub.html">See real essays that won, annotated line by line →</a>
+  </section>
+
+  <!-- ── Tab 4: AI Coach ──────────────────────────────────────────────── -->
+  <section class="panel" id="panel-ai" role="tabpanel" aria-labelledby="tab-ai" hidden>
+    <h2>🤖 AI Coach</h2>
+    <p class="empty-note">Trained on Darrian's winning essay approach — he won $1M+ in scholarships and 10+ full rides. Your essay is sent to the AI only when you press the button.</p>
+
+    <div class="mode-row" role="radiogroup" aria-label="AI Coach mode">
+      <label><input type="radio" name="ai-mode" value="feedback" checked /> 🔧 Get Feedback</label>
+      <label><input type="radio" name="ai-mode" value="draft" /> ✨ Start a Draft</label>
+    </div>
+
+    <div id="ai-feedback-mode">
+      <div class="form-row">
+        <div class="field">
+          <label for="fb-essay-select">Load a saved essay (optional)</label>
+          <select id="fb-essay-select"></select>
+        </div>
+        <div class="field">
+          <label for="fb-type">Essay type</label>
+          <select id="fb-type"></select>
+        </div>
+      </div>
+      <div class="field">
+        <label for="fb-prompt">Essay prompt (optional but recommended)</label>
+        <textarea id="fb-prompt" placeholder="Paste the prompt your essay is responding to..."></textarea>
+      </div>
+      <div class="field">
+        <label for="fb-text">Your essay</label>
+        <textarea id="fb-text" class="big" placeholder="Paste your full essay here..."></textarea>
+        <div class="wc ok" id="fb-wc" aria-live="polite">Word count: 0</div>
+      </div>
+      <button type="button" class="btn" id="fb-go-btn">🤖 Get AI Feedback</button>
+    </div>
+
+    <div id="ai-draft-mode" hidden>
+      <div class="field">
+        <label for="dr-prompt">Essay prompt</label>
+        <textarea id="dr-prompt" placeholder="Paste the full essay prompt here. The more specific the prompt, the better the draft."></textarea>
+      </div>
+      <div class="form-row">
+        <div class="field">
+          <label for="dr-type">Essay type</label>
+          <select id="dr-type"></select>
+        </div>
+        <div class="field">
+          <label class="chip" style="margin-top:1.6rem"><input type="checkbox" id="dr-style" checked /> 🏆 Use Darrian's writing style as a model</label>
+        </div>
+      </div>
+      <div class="field">
+        <label for="dr-about">About you (optional — background, challenges, achievements, goals)</label>
+        <textarea id="dr-about" placeholder="The more the AI knows about YOUR story, the less generic the draft. Saved in this browser so you only write it once."></textarea>
+      </div>
+      <button type="button" class="btn" id="dr-go-btn">🚀 Generate Essay Draft</button>
+    </div>
+
+    <div class="warn-box" id="ai-warn" role="alert"></div>
+    <div class="ai-output" id="ai-output" aria-live="polite"></div>
+    <p class="tokens-left" id="tokens-left"></p>
+    <button type="button" class="btn-sm" id="dr-save-btn" hidden>💾 Save as new essay</button>
+  </section>
+</main>
+<footer>
+  <p>College Confused is free forever · <a href="https://collegeconfused.org">collegeconfused.org</a> · <a href="blog.html">Guides</a> · <a href="privacy.html">Privacy</a></p>
+</footer>
+<script>
+'use strict';
+
+/* ── Constants ported verbatim from darrian-budget pages/83_cc_essay_station.py ── */
+
+const DARRIAN_ESSAY_CONTEXT = `
+DARRIAN BELCHER'S COLLEGE ESSAY STYLE & WINNING APPROACH:
+
+BACKGROUND: Darrian Belcher is the founder of College Confused. He applied to 30+ colleges his senior year, received 25 acceptances, 10+ full rides, and $1M+ in scholarships. He won the VISA Black Scholars program ($20,000/year), Trajectory Foundation Scholarship ($5,000/year), and multiple full rides including VCU, Virginia State, Alabama A&M, Fisk, Xavier University of Louisiana, Bethune Cookman, and William & Mary.
+
+WRITING STYLE CHARACTERISTICS:
+1. Opens with a vivid, cinematic scene that pulls the reader in immediately (e.g., "Apron? Check. Work hat? Check. Slip-resistant shoes? Check.")
+2. Uses personal, authentic voice — writes like he's talking to a trusted friend
+3. Connects personal challenges to larger purpose and goals
+4. Shows growth and resilience without being overly dramatic
+5. Weaves in specific details (real names, places, numbers) to make stories real
+6. Links personal story to career goals and community impact
+7. Ends with forward-looking purpose statement
+8. Themes: Technology passion, family sacrifice, low-income background, resilience after adversity (house fire, parents' divorce), wanting to give back
+9. Tone: Optimistic, determined, grateful, community-focused
+10. NEVER sounds like bragging — focuses on growth and impact on others
+
+KEY ESSAY THEMES FROM HIS ESSAYS:
+- The house fire in 2019 that destroyed everything — taught him what truly matters (family)
+- Working at McDonald's to help support his family
+- Parents' divorce and moving to a new city
+- Using Chromebooks to discover passion for technology
+- Flipping sneakers to earn money, connecting to technology interest
+- Being accepted to Governor's School of Science and Technology
+- Creating College Confused website during GSST fellowship
+- Volunteering at Virginia Peninsula Food Bank
+- Track team — learning discipline, teamwork, overcoming setbacks
+
+STRUCTURAL APPROACH:
+1. Hook (cinematic opening or surprising statement)
+2. Context (what was happening/situation)
+3. Challenge/Conflict (what made it hard)
+4. Action (what he did about it)
+5. Growth (what he learned)
+6. Connection to Future (how this shapes his goals)
+7. Closing Vision (where he's headed)
+
+WHAT MAKES HIS ESSAYS STAND OUT:
+- Specific over general: "I applied to 40 scholarships and won 9" not "I applied to many scholarships"
+- Vulnerability + strength: Shows struggle while showing he overcame it
+- Purpose-driven: Every story connects back to wanting to help others
+- Authentic voice: Doesn't try to sound like someone else
+- No clichés: Avoids "ever since I was little" and "in today's society"
+`;
+
+const ESSAY_TYPES = [
+  "Common App Personal Statement",
+  "Supplemental Essay",
+  "Scholarship Essay",
+  "Why This College"
+];
+
+const STATUS_OPTIONS = ["Draft", "In Progress", "Final", "Submitted"];
+
+const WORD_LIMITS = {
+  "Common App Personal Statement": "650",
+  "Supplemental Essay": "250-650",
+  "Scholarship Essay": "500",
+  "Why This College": "300-500"
+};
+
+const BLOCK_TYPES = ["Hook", "Challenge", "Action", "Growth", "Achievement", "Closing/Vision"];
+const BLOCK_TAG_OPTIONS = ["extracurricular", "community", "values-identity", "other"];
+
+const COMMON_APP_PROMPTS = [
+  {
+    number: 1,
+    prompt: "Some students have a background, identity, interest, or talent that is so meaningful they believe their application would be incomplete without it. If this sounds like you, then please share your story.",
+    what_asking: "Tell us something central to who you are — a defining part of your identity, passion, or background.",
+    great_response: "Pick ONE thing (not everything). Go deep, not wide. Show how it shapes how you see the world.",
+    avoid: "Listing accomplishments. Being vague. Saying 'I've always been passionate about...'",
+    hook_idea: "Start in the middle of a moment — mid-practice, mid-experiment, mid-game. Drop us in."
+  },
+  {
+    number: 2,
+    prompt: "The lessons we take from obstacles we encounter can be fundamental to later success. Recount a time when you faced a challenge, setback, or failure. How did it affect you, and what did you learn from the experience?",
+    what_asking: "Show us how you handle hard things. Admissions wants to see resilience and self-awareness.",
+    great_response: "Be honest and vulnerable. The lesson must be specific, not generic ('I learned to persevere').",
+    avoid: "Picking a minor challenge. Skipping the lesson. Making it sound like you have everything figured out.",
+    hook_idea: "Open at the worst moment — the phone call, the grade, the loss. Put us right there with you."
+  },
+  {
+    number: 3,
+    prompt: "Reflect on a time when you questioned or challenged a belief or idea. What prompted your thinking? What was the outcome?",
+    what_asking: "Demonstrate critical thinking and intellectual courage. Show you can think for yourself.",
+    great_response: "Pick a genuine belief you changed your mind about. Be honest about why you believed what you did before.",
+    avoid: "Picking something safe or cliché. Not showing your actual thought process. Being preachy.",
+    hook_idea: "Start with the old belief stated confidently — then the moment everything shifted."
+  },
+  {
+    number: 4,
+    prompt: "Reflect on something that someone has done for you that has made you happy or thankful in a surprising way. How has this gratitude affected or motivated you?",
+    what_asking: "Show your capacity for gratitude, humility, and how relationships shape you.",
+    great_response: "Make it about a specific person and a specific moment. Surprise is key — unexpected kindness hits hardest.",
+    avoid: "Generic thank-you to parents. Vague gratitude. Not connecting it to your life going forward.",
+    hook_idea: "Describe the exact moment — the person's face, their words, where you were standing."
+  },
+  {
+    number: 5,
+    prompt: "Discuss an accomplishment, event, or realization that sparked a period of personal growth and a new understanding of yourself or others.",
+    what_asking: "Show self-awareness and growth. Admissions wants to see you evolve through an experience.",
+    great_response: "Focus more on the 'new understanding' than the accomplishment itself. The growth is the story.",
+    avoid: "Turning it into a brag. Not explaining what actually changed inside you.",
+    hook_idea: "Start after the accomplishment — in the quiet moment of reflection, or the surprising emotion you felt."
+  },
+  {
+    number: 6,
+    prompt: "Describe a topic, idea, or concept you find so engaging that it makes you lose all track of time. Why does it captivate you? What or who do you turn to when you want to learn more?",
+    what_asking: "Show intellectual passion and curiosity. What drives you to learn?",
+    great_response: "Get specific — name the exact topic, the exact resource, the exact rabbit hole. Show the obsession.",
+    avoid: "Picking something generic. Not showing WHY it captivates you personally.",
+    hook_idea: "Open at 2am, deep in research, losing track of time — show us the obsession in action."
+  },
+  {
+    number: 7,
+    prompt: "Share an essay on any topic of your choice.",
+    what_asking: "Total creative freedom — tell us something meaningful about you that no other prompt captures.",
+    great_response: "This is your chance to be bold. Pick the story that only YOU can tell.",
+    avoid: "Picking a 'safe' topic because you have freedom. This is the prompt to take the biggest swing.",
+    hook_idea: "Open with your most unexpected, memorable, or surprising sentence — something they've never read before."
+  }
+];
+
+/* ── AI proxy client (pattern from sole-ops app.html) ── */
+
+const DEV_KEY = 'cc_device_id';
+const PROXY_URL = (location.hostname === 'localhost' || location.hostname === '127.0.0.1') ? 'http://localhost:8787' : 'https://sole-ops-proxy.dbelcher003.workers.dev';
+
+function getDeviceId() {
+  let id = localStorage.getItem(DEV_KEY);
+  if (!id) { id = crypto.randomUUID(); localStorage.setItem(DEV_KEY, id); }
+  return id;
+}
+
+async function callAI(promptText) {
+  const resp = await fetch(PROXY_URL + '/v1/messages', {
+    method: 'POST',
+    headers: {
+      'content-type': 'application/json',
+      'anthropic-version': '2023-06-01',
+      'x-device-id': getDeviceId(),
+      'x-app': 'cc'
+    },
+    body: JSON.stringify({ max_tokens: 2000, messages: [{ role: 'user', content: promptText }] })
+  });
+  if (!resp.ok) {
+    const err = await resp.json().catch(() => null);
+    throw new Error(err && err.error && err.error.message ? err.error.message : 'Request failed (' + resp.status + '). Please try again.');
+  }
+  const remaining = resp.headers.get('x-tokens-remaining');
+  const data = await resp.json();
+  const text = (data.content || []).filter(b => b.type === 'text').map(b => b.text).join('\n');
+  return { text: text, remaining: remaining };
+}
+
+/* ── Storage helpers ── */
+
+const ESSAYS_KEY = 'cc_essays';
+const BLOCKS_KEY = 'cc_story_blocks';
+const PROFILE_KEY = 'cc_story_profile';
+
+function loadList(key) {
+  try {
+    const raw = localStorage.getItem(key);
+    const arr = raw ? JSON.parse(raw) : [];
+    return Array.isArray(arr) ? arr : [];
+  } catch (e) { return []; }
+}
+function saveList(key, arr) { localStorage.setItem(key, JSON.stringify(arr)); }
+function loadEssays() { return loadList(ESSAYS_KEY).sort((a, b) => String(b.updatedAt || '').localeCompare(String(a.updatedAt || ''))); }
+function loadBlocks() { return loadList(BLOCKS_KEY).sort((a, b) => String(b.updatedAt || '').localeCompare(String(a.updatedAt || ''))); }
+
+/* ── Small utilities ── */
+
+function esc(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+function wordCount(s) { return s && s.trim() ? s.trim().split(/\s+/).length : 0; }
+function limitFor(type) {
+  const raw = WORD_LIMITS[type] || '650';
+  const parts = raw.split('-');
+  return parseInt(parts[parts.length - 1], 10) || 650;
+}
+function mdInline(s) { return esc(s).replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>'); }
+function renderMd(el, raw) {
+  let html = '';
+  raw.split('\n').forEach(line => {
+    const t = line.trim();
+    if (t.indexOf('## ') === 0) html += '<h3>' + mdInline(t.slice(3)) + '</h3>';
+    else if (t.indexOf('# ') === 0) html += '<h3>' + mdInline(t.slice(2)) + '</h3>';
+    else if (t !== '') html += '<p>' + mdInline(line) + '</p>';
+  });
+  el.innerHTML = html;
+}
+function fillSelect(sel, options) {
+  sel.innerHTML = '';
+  options.forEach(o => {
+    const opt = document.createElement('option');
+    opt.value = o; opt.textContent = o;
+    sel.appendChild(opt);
+  });
+}
+function el(id) { return document.getElementById(id); }
+function flashBtn(btn, msg) {
+  const orig = btn.textContent;
+  btn.textContent = msg;
+  setTimeout(() => { btn.textContent = orig; }, 1200);
+}
+function copyText(txt, btn) {
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(txt).then(() => flashBtn(btn, '✅ Copied!'), () => flashBtn(btn, 'Copy failed'));
+  } else { flashBtn(btn, 'Copy unsupported'); }
+}
+
+/* ── Tabs ── */
+
+const TAB_IDS = ['essays', 'blocks', 'prompts', 'ai'];
+function switchTab(name) {
+  TAB_IDS.forEach(t => {
+    const tab = el('tab-' + t);
+    const panel = el('panel-' + t);
+    const active = t === name;
+    tab.setAttribute('aria-selected', active ? 'true' : 'false');
+    tab.tabIndex = active ? 0 : -1;
+    panel.hidden = !active;
+  });
+  if (name === 'ai') refreshFbEssaySelect();
+}
+TAB_IDS.forEach(t => {
+  el('tab-' + t).addEventListener('click', () => switchTab(t));
+});
+document.querySelector('.tabbar').addEventListener('keydown', e => {
+  if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+  const current = TAB_IDS.findIndex(t => el('tab-' + t).getAttribute('aria-selected') === 'true');
+  const next = (current + (e.key === 'ArrowRight' ? 1 : TAB_IDS.length - 1)) % TAB_IDS.length;
+  switchTab(TAB_IDS[next]);
+  el('tab-' + TAB_IDS[next]).focus();
+});
+
+/* ── Tab 1: My Essays ── */
+
+let editingEssayId = null;
+
+function renderEssayList() {
+  const essays = loadEssays();
+  const list = el('essay-list');
+  if (!essays.length) {
+    list.innerHTML = '<p class="empty-note">No essays yet. Click <strong>➕ New Essay</strong> to start writing, or use the <strong>🤖 AI Coach</strong> tab to generate a draft.</p>';
+    return;
+  }
+  list.innerHTML = essays.map(e => {
+    const wc = wordCount(e.content);
+    return '<article class="card">' +
+      '<h3>' + esc(e.title) + '</h3>' +
+      '<p class="meta">' + esc(e.type) + ' · ' + esc(e.status) + ' · ' + wc + ' words · updated ' + esc((e.updatedAt || '').slice(0, 16).replace('T', ' ')) + '</p>' +
+      (e.prompt ? '<p class="preview">📋 ' + esc(e.prompt.slice(0, 120)) + (e.prompt.length > 120 ? '…' : '') + '</p>' : '') +
+      (e.content ? '<p class="preview">' + esc(e.content.slice(0, 240)) + (e.content.length > 240 ? '…' : '') + '</p>' : '') +
+      '<div class="actions">' +
+      '<button type="button" class="btn-sm" data-action="edit" data-id="' + esc(e.id) + '">✏️ Edit</button>' +
+      '<button type="button" class="btn-sm" data-action="delete" data-id="' + esc(e.id) + '">🗑️ Delete</button>' +
+      '<button type="button" class="btn-sm" data-action="copy" data-id="' + esc(e.id) + '">📋 Copy</button>' +
+      '<button type="button" class="btn-sm" data-action="feedback" data-id="' + esc(e.id) + '">🤖 Get AI Feedback</button>' +
+      '</div></article>';
+  }).join('');
+}
+
+function openEssayForm(essay, prefillContent) {
+  editingEssayId = essay ? essay.id : null;
+  el('essay-form-title').textContent = essay ? '✏️ Edit Essay' : '✨ New Essay';
+  el('ef-title').value = essay ? essay.title : '';
+  el('ef-type').value = essay && ESSAY_TYPES.indexOf(essay.type) !== -1 ? essay.type : ESSAY_TYPES[0];
+  el('ef-status').value = essay && STATUS_OPTIONS.indexOf(essay.status) !== -1 ? essay.status : STATUS_OPTIONS[0];
+  el('ef-prompt').value = essay ? essay.prompt : '';
+  el('ef-content').value = essay ? essay.content : (prefillContent || '');
+  el('essay-form-warn').textContent = '';
+  el('essay-list-view').hidden = true;
+  el('essay-form-view').hidden = false;
+  updateEssayWc();
+  el('ef-title').focus();
+}
+
+function closeEssayForm() {
+  editingEssayId = null;
+  el('essay-form-view').hidden = true;
+  el('essay-list-view').hidden = false;
+  renderEssayList();
+}
+
+function updateEssayWc() {
+  const wc = wordCount(el('ef-content').value);
+  const max = limitFor(el('ef-type').value);
+  const box = el('ef-wc');
+  box.textContent = 'Word count: ' + wc + ' (limit: ' + (WORD_LIMITS[el('ef-type').value] || '650') + ')';
+  box.className = 'wc ' + (wc <= max ? 'ok' : 'over');
+}
+
+el('new-essay-btn').addEventListener('click', () => openEssayForm(null));
+el('essay-cancel-btn').addEventListener('click', closeEssayForm);
+el('ef-content').addEventListener('input', updateEssayWc);
+el('ef-type').addEventListener('change', updateEssayWc);
+
+el('essay-save-btn').addEventListener('click', () => {
+  const title = el('ef-title').value.trim();
+  if (!title) { el('essay-form-warn').textContent = 'Please give your essay a title.'; return; }
+  const essays = loadList(ESSAYS_KEY);
+  const now = new Date().toISOString();
+  const data = {
+    title: title,
+    prompt: el('ef-prompt').value.trim(),
+    content: el('ef-content').value,
+    type: el('ef-type').value,
+    status: el('ef-status').value,
+    updatedAt: now
+  };
+  if (editingEssayId) {
+    const idx = essays.findIndex(e => e.id === editingEssayId);
+    if (idx !== -1) essays[idx] = Object.assign({}, essays[idx], data);
+    else essays.push(Object.assign({ id: editingEssayId }, data));
+  } else {
+    essays.push(Object.assign({ id: crypto.randomUUID() }, data));
+  }
+  saveList(ESSAYS_KEY, essays);
+  closeEssayForm();
+});
+
+el('essay-list').addEventListener('click', e => {
+  const btn = e.target.closest('button[data-action]');
+  if (!btn) return;
+  const essay = loadList(ESSAYS_KEY).find(x => x.id === btn.dataset.id);
+  if (!essay) return;
+  if (btn.dataset.action === 'edit') {
+    openEssayForm(essay);
+  } else if (btn.dataset.action === 'delete') {
+    if (confirm('Delete "' + essay.title + '"? This cannot be undone.')) {
+      saveList(ESSAYS_KEY, loadList(ESSAYS_KEY).filter(x => x.id !== essay.id));
+      renderEssayList();
+    }
+  } else if (btn.dataset.action === 'copy') {
+    copyText(essay.content || '', btn);
+  } else if (btn.dataset.action === 'feedback') {
+    switchTab('ai');
+    setAiMode('feedback');
+    refreshFbEssaySelect();
+    el('fb-essay-select').value = essay.id;
+    loadEssayIntoFeedback(essay);
+    el('fb-text').focus();
+  }
+});
+
+/* ── Tab 2: Story Blocks ── */
+
+let editingBlockId = null;
+let activeTagFilter = 'all';
+
+function renderTagFilters() {
+  const wrap = el('tag-filters');
+  const tags = ['all'].concat(BLOCK_TAG_OPTIONS);
+  wrap.innerHTML = tags.map(t =>
+    '<button type="button" data-tag="' + esc(t) + '" aria-pressed="' + (activeTagFilter === t ? 'true' : 'false') + '">' +
+    (t === 'all' ? 'All' : esc(t)) + '</button>'
+  ).join('');
+}
+
+function renderBlockList() {
+  const blocks = loadBlocks().filter(b =>
+    activeTagFilter === 'all' || (Array.isArray(b.tags) && b.tags.indexOf(activeTagFilter) !== -1)
+  );
+  const list = el('block-list');
+  if (!blocks.length) {
+    list.innerHTML = '<p class="empty-note">' + (activeTagFilter === 'all'
+      ? 'No story blocks yet. Click <strong>➕ New Block</strong> to save your first reusable story piece.'
+      : 'No blocks with this tag yet.') + '</p>';
+    return;
+  }
+  list.innerHTML = blocks.map(b => {
+    const tags = (Array.isArray(b.tags) ? b.tags : []).map(t => '<span class="tag-pill">' + esc(t) + '</span>').join('');
+    return '<article class="card">' +
+      '<h3>' + esc(b.title) + '</h3>' +
+      '<p class="meta">' + esc(b.blockType) + ' · ' + wordCount(b.text) + ' words · updated ' + esc((b.updatedAt || '').slice(0, 16).replace('T', ' ')) + '</p>' +
+      (tags ? '<p class="preview">' + tags + '</p>' : '') +
+      '<p class="preview">' + esc((b.text || '').slice(0, 240)) + ((b.text || '').length > 240 ? '…' : '') + '</p>' +
+      '<div class="actions">' +
+      '<button type="button" class="btn-sm" data-action="edit" data-id="' + esc(b.id) + '">✏️ Edit</button>' +
+      '<button type="button" class="btn-sm" data-action="delete" data-id="' + esc(b.id) + '">🗑️ Delete</button>' +
+      '<button type="button" class="btn-sm" data-action="copy" data-id="' + esc(b.id) + '">📋 Copy</button>' +
+      '<button type="button" class="btn-sm" data-action="start-essay" data-id="' + esc(b.id) + '">📝 Start Essay With This Block</button>' +
+      '</div></article>';
+  }).join('');
+}
+
+function renderBlockTagChoices(selected) {
+  const wrap = el('bf-tags');
+  wrap.innerHTML = BLOCK_TAG_OPTIONS.map((t, i) =>
+    '<label class="chip" for="bf-tag-' + i + '"><input type="checkbox" id="bf-tag-' + i + '" value="' + esc(t) + '"' +
+    (selected && selected.indexOf(t) !== -1 ? ' checked' : '') + ' /> ' + esc(t) + '</label>'
+  ).join('');
+}
+
+function openBlockForm(block) {
+  editingBlockId = block ? block.id : null;
+  el('block-form-title').textContent = block ? '✏️ Edit Story Block' : '✨ New Story Block';
+  el('bf-title').value = block ? block.title : '';
+  el('bf-type').value = block && BLOCK_TYPES.indexOf(block.blockType) !== -1 ? block.blockType : BLOCK_TYPES[0];
+  el('bf-text').value = block ? block.text : '';
+  renderBlockTagChoices(block ? block.tags : []);
+  el('block-form-warn').textContent = '';
+  el('block-list-view').hidden = true;
+  el('block-form-view').hidden = false;
+  el('bf-title').focus();
+}
+
+function closeBlockForm() {
+  editingBlockId = null;
+  el('block-form-view').hidden = true;
+  el('block-list-view').hidden = false;
+  renderBlockList();
+}
+
+el('new-block-btn').addEventListener('click', () => openBlockForm(null));
+el('block-cancel-btn').addEventListener('click', closeBlockForm);
+
+el('block-save-btn').addEventListener('click', () => {
+  const title = el('bf-title').value.trim();
+  const text = el('bf-text').value.trim();
+  if (!title) { el('block-form-warn').textContent = 'Please give your block a title.'; return; }
+  if (!text) { el('block-form-warn').textContent = 'Please write some block text first.'; return; }
+  const tags = Array.prototype.slice.call(el('bf-tags').querySelectorAll('input:checked')).map(i => i.value);
+  const blocks = loadList(BLOCKS_KEY);
+  const now = new Date().toISOString();
+  const data = { title: title, blockType: el('bf-type').value, text: text, tags: tags, updatedAt: now };
+  if (editingBlockId) {
+    const idx = blocks.findIndex(b => b.id === editingBlockId);
+    if (idx !== -1) blocks[idx] = Object.assign({}, blocks[idx], data);
+    else blocks.push(Object.assign({ id: editingBlockId }, data));
+  } else {
+    blocks.push(Object.assign({ id: crypto.randomUUID() }, data));
+  }
+  saveList(BLOCKS_KEY, blocks);
+  closeBlockForm();
+});
+
+el('tag-filters').addEventListener('click', e => {
+  const btn = e.target.closest('button[data-tag]');
+  if (!btn) return;
+  activeTagFilter = btn.dataset.tag;
+  renderTagFilters();
+  renderBlockList();
+});
+
+el('block-list').addEventListener('click', e => {
+  const btn = e.target.closest('button[data-action]');
+  if (!btn) return;
+  const block = loadList(BLOCKS_KEY).find(x => x.id === btn.dataset.id);
+  if (!block) return;
+  if (btn.dataset.action === 'edit') {
+    openBlockForm(block);
+  } else if (btn.dataset.action === 'delete') {
+    if (confirm('Delete block "' + block.title + '"? This cannot be undone.')) {
+      saveList(BLOCKS_KEY, loadList(BLOCKS_KEY).filter(x => x.id !== block.id));
+      renderBlockList();
+    }
+  } else if (btn.dataset.action === 'copy') {
+    copyText(block.text || '', btn);
+  } else if (btn.dataset.action === 'start-essay') {
+    switchTab('essays');
+    openEssayForm(null, block.text);
+    el('ef-title').value = block.title + ' — draft';
+  }
+});
+
+/* ── Tab 3: Prompts & Tips ── */
+
+function renderPromptCards() {
+  el('prompt-cards').innerHTML = COMMON_APP_PROMPTS.map(p =>
+    '<details class="prompt-card"><summary>Prompt #' + p.number + ' — ' + esc(p.prompt.slice(0, 70)) + '…</summary>' +
+    '<div class="body">' +
+    '<blockquote>' + esc(p.prompt) + '</blockquote>' +
+    '<h4>🎯 What they\'re really asking</h4><p>' + esc(p.what_asking) + '</p>' +
+    '<h4>✅ What makes a great response</h4><p>' + esc(p.great_response) + '</p>' +
+    '<h4>⚠️ What to avoid</h4><p>' + esc(p.avoid) + '</p>' +
+    '<h4>💡 Hook idea (Darrian\'s style)</h4><p>' + esc(p.hook_idea) + '</p>' +
+    '</div></details>'
+  ).join('');
+}
+
+/* ── Tab 4: AI Coach ── */
+
+let lastDraftMeta = null;
+
+function setAiMode(mode) {
+  document.querySelectorAll('input[name="ai-mode"]').forEach(r => { r.checked = r.value === mode; });
+  el('ai-feedback-mode').hidden = mode !== 'feedback';
+  el('ai-draft-mode').hidden = mode !== 'draft';
+  el('ai-warn').textContent = '';
+}
+document.querySelectorAll('input[name="ai-mode"]').forEach(r => {
+  r.addEventListener('change', () => setAiMode(r.value));
+});
+
+function refreshFbEssaySelect() {
+  const sel = el('fb-essay-select');
+  const current = sel.value;
+  sel.innerHTML = '';
+  const ph = document.createElement('option');
+  ph.value = '';
+  ph.textContent = '— paste text below instead —';
+  sel.appendChild(ph);
+  loadEssays().forEach(e => {
+    const opt = document.createElement('option');
+    opt.value = e.id;
+    opt.textContent = e.title + ' (' + wordCount(e.content) + ' words)';
+    sel.appendChild(opt);
+  });
+  if (current) sel.value = current;
+}
+
+function loadEssayIntoFeedback(essay) {
+  el('fb-text').value = essay.content || '';
+  el('fb-prompt').value = essay.prompt || '';
+  if (ESSAY_TYPES.indexOf(essay.type) !== -1) el('fb-type').value = essay.type;
+  updateFbWc();
+}
+
+el('fb-essay-select').addEventListener('change', () => {
+  const essay = loadList(ESSAYS_KEY).find(x => x.id === el('fb-essay-select').value);
+  if (essay) loadEssayIntoFeedback(essay);
+});
+
+function updateFbWc() {
+  const wc = wordCount(el('fb-text').value);
+  const max = limitFor(el('fb-type').value);
+  const box = el('fb-wc');
+  box.textContent = 'Word count: ' + wc + ' (limit: ' + (WORD_LIMITS[el('fb-type').value] || '650') + ')';
+  box.className = 'wc ' + (wc <= max ? 'ok' : 'over');
+}
+el('fb-text').addEventListener('input', updateFbWc);
+el('fb-type').addEventListener('change', updateFbWc);
+
+/* Feedback prompt template ported verbatim from _get_essay_feedback (Page 83) */
+function buildFeedbackPrompt(essayText, promptText, essayType) {
+  const wc = wordCount(essayText);
+  const limit = WORD_LIMITS[essayType] || '650';
+  return `You are an expert college essay reviewer. Review this ${essayType} essay and provide specific, actionable feedback.
+
+Essay Prompt: ${promptText}
+
+Essay Word Count: ${wc} words (limit: ${limit} words)
+
+Essay:
+${essayText}
+
+${DARRIAN_ESSAY_CONTEXT}
+
+Provide feedback in this format:
+## Overall Assessment (2-3 sentences)
+
+## What's Working Well ✅
+(3-5 specific strengths)
+
+## Areas to Improve 🔧
+(3-5 specific, actionable suggestions with examples)
+
+## Opening Hook Analysis
+(Is it strong enough? How could it be stronger?)
+
+## Authenticity Check
+(Does it sound like a real person? What feels generic?)
+
+## Word Count Check
+(The essay is ${wc} words against a ${limit}-word limit. Explicitly state whether it is over or under the limit, and by how much.)
+
+## Cliché Scan
+(Flag any stock phrases like "ever since I was little" or "in today's society" — or similar clichés — found anywhere in the essay. If none are found, say so explicitly.)
+
+## Specificity Score
+(Rate the essay Low, Medium, or High for specificity, with a one-line reason for the rating.)
+
+## Narrative Arc Check
+(Does the essay's structure map onto: Hook → Context → Challenge/Conflict → Action → Growth → Connection to Future → Closing Vision? Name which of these seven parts are present and which, if any, are missing.)
+
+## Closing Strength
+(Is the ending memorable? Suggestions to make it stronger)
+
+## One Sentence to Add
+(Write one powerful sentence they could add to strengthen the essay)
+
+Keep feedback encouraging and constructive. This student worked hard on this.`;
+}
+
+/* Draft system prompt structure ported verbatim from _generate_essay_draft (Page 83) */
+function buildDraftPrompt(promptText, essayType, aboutYou, darrianStyle) {
+  const styleSection = darrianStyle ? `\n\n${DARRIAN_ESSAY_CONTEXT}\n\nUse Darrian's writing style and approach as your model.` : '';
+  const storySection = aboutYou.trim() ? `\nStudent's Background Information:\n${aboutYou.trim()}\n` : '';
+  const wordLimit = WORD_LIMITS[essayType] || '650';
+  return `You are an expert college essay coach who has helped hundreds of students get into their dream schools and win scholarships.${styleSection}
+
+Your goal is to help students write authentic, compelling essays that tell THEIR story in THEIR voice.
+
+Essay Type: ${essayType}
+Word Limit: ${wordLimit} words
+
+${storySection}
+
+Essay Prompt: ${promptText}
+
+Write a compelling draft essay that:
+1. Opens with a vivid hook (specific scene, not a generic statement)
+2. Uses authentic, personal voice
+3. Tells a specific story with real details
+4. Shows growth and learning
+5. Connects to future goals
+6. Stays within word limit
+7. Does NOT sound generic or AI-written
+8. Uses the student's real background information provided above
+
+After the essay, provide 3 specific suggestions for how to make it even more personal and authentic.`;
+}
+
+async function runAI(btn, busyLabel, promptText) {
+  const orig = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = busyLabel;
+  el('ai-warn').textContent = '';
+  el('ai-output').innerHTML = '';
+  el('tokens-left').textContent = '';
+  el('dr-save-btn').hidden = true;
+  try {
+    const result = await callAI(promptText);
+    renderMd(el('ai-output'), result.text);
+    if (result.remaining !== null && result.remaining !== undefined && result.remaining !== '') {
+      el('tokens-left').textContent = '~' + result.remaining + ' tokens of free AI credit left';
+    }
+    return result.text;
+  } catch (err) {
+    el('ai-warn').textContent = err && err.message ? err.message : 'Something went wrong. Please try again.';
+    return null;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = orig;
+  }
+}
+
+el('fb-go-btn').addEventListener('click', async () => {
+  const essayText = el('fb-text').value;
+  if (!essayText.trim()) {
+    el('ai-warn').textContent = 'Please write or paste your essay first — the AI needs something to read!';
+    return;
+  }
+  const promptText = buildFeedbackPrompt(essayText, el('fb-prompt').value.trim(), el('fb-type').value);
+  await runAI(el('fb-go-btn'), '🤖 Thinking…', promptText);
+});
+
+el('dr-go-btn').addEventListener('click', async () => {
+  const essayPrompt = el('dr-prompt').value.trim();
+  if (!essayPrompt) {
+    el('ai-warn').textContent = 'Please paste an essay prompt first.';
+    return;
+  }
+  const aboutYou = el('dr-about').value;
+  localStorage.setItem(PROFILE_KEY, aboutYou);
+  const essayType = el('dr-type').value;
+  const promptText = buildDraftPrompt(essayPrompt, essayType, aboutYou, el('dr-style').checked);
+  const text = await runAI(el('dr-go-btn'), '✍️ Thinking…', promptText);
+  if (text) {
+    lastDraftMeta = { text: text, prompt: essayPrompt, type: essayType };
+    el('dr-save-btn').hidden = false;
+  }
+});
+
+el('dr-save-btn').addEventListener('click', () => {
+  if (!lastDraftMeta) return;
+  const essays = loadList(ESSAYS_KEY);
+  essays.push({
+    id: crypto.randomUUID(),
+    title: lastDraftMeta.type + ' — AI Draft',
+    prompt: lastDraftMeta.prompt,
+    content: lastDraftMeta.text,
+    type: lastDraftMeta.type,
+    status: 'Draft',
+    updatedAt: new Date().toISOString()
+  });
+  saveList(ESSAYS_KEY, essays);
+  flashBtn(el('dr-save-btn'), '✅ Saved to My Essays!');
+  renderEssayList();
+});
+
+/* ── Init ── */
+
+fillSelect(el('ef-type'), ESSAY_TYPES);
+fillSelect(el('ef-status'), STATUS_OPTIONS);
+fillSelect(el('bf-type'), BLOCK_TYPES);
+fillSelect(el('fb-type'), ESSAY_TYPES);
+fillSelect(el('dr-type'), ESSAY_TYPES);
+el('dr-about').value = localStorage.getItem(PROFILE_KEY) || '';
+renderEssayList();
+renderTagFilters();
+renderBlockList();
+renderPromptCards();
+refreshFbEssaySelect();
+updateEssayWc();
+updateFbWc();
+</script>
+</body>
+</html>

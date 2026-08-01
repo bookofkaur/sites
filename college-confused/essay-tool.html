@@ -49,11 +49,12 @@ h3{font-size:1rem;font-weight:800;margin:1.1rem 0 0.5rem}
 .btn-sm:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .field{margin-bottom:1rem}
 .field label,fieldset legend{display:block;font-size:0.82rem;font-weight:700;color:var(--muted);margin-bottom:0.35rem}
-input[type="text"],select,textarea{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font:inherit;font-size:0.9rem;padding:0.6rem 0.75rem}
-input[type="text"]:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+input[type="text"],input[type="number"],select,textarea{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font:inherit;font-size:0.9rem;padding:0.6rem 0.75rem}
+input[type="text"]:focus-visible,input[type="number"]:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
 textarea{resize:vertical;min-height:5.5rem;line-height:1.55}
 textarea.big{min-height:16rem}
 .form-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.form-row.three{grid-template-columns:1fr 1fr 1fr}
 .wc{text-align:right;font-size:0.82rem;margin-top:0.3rem}
 .wc.ok{color:var(--ok)}
 .wc.over{color:var(--bad)}
@@ -96,7 +97,7 @@ footer a{color:var(--muted)}
 footer a:hover,footer a:focus-visible{color:var(--accent)}
 @media (max-width:640px){
   main{padding:1.75rem 1rem}
-  .form-row{grid-template-columns:1fr}
+  .form-row,.form-row.three{grid-template-columns:1fr}
   nav{padding:1rem}
 }
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
@@ -155,9 +156,13 @@ footer a:hover,footer a:focus-visible{color:var(--accent)}
           <select id="ef-status"></select>
         </div>
         <div class="field">
-          <label for="ef-prompt">Essay prompt (paste the prompt you're responding to)</label>
-          <textarea id="ef-prompt" placeholder="Paste the exact essay prompt here..."></textarea>
+          <label for="ef-limit">Word limit</label>
+          <input type="number" id="ef-limit" min="1" max="10000" step="1" inputmode="numeric" value="650" />
         </div>
+      </div>
+      <div class="field">
+        <label for="ef-prompt">Essay prompt (paste the prompt you're responding to)</label>
+        <textarea id="ef-prompt" placeholder="Paste the exact essay prompt here..."></textarea>
       </div>
       <div class="field">
         <label for="ef-content">Your essay</label>
@@ -229,7 +234,7 @@ footer a:hover,footer a:focus-visible{color:var(--accent)}
     </div>
 
     <div id="ai-feedback-mode">
-      <div class="form-row">
+      <div class="form-row three">
         <div class="field">
           <label for="fb-essay-select">Load a saved essay (optional)</label>
           <select id="fb-essay-select"></select>
@@ -237,6 +242,10 @@ footer a:hover,footer a:focus-visible{color:var(--accent)}
         <div class="field">
           <label for="fb-type">Essay type</label>
           <select id="fb-type"></select>
+        </div>
+        <div class="field">
+          <label for="fb-limit">Word limit</label>
+          <input type="number" id="fb-limit" min="1" max="10000" step="1" inputmode="numeric" value="650" />
         </div>
       </div>
       <div class="field">
@@ -256,10 +265,14 @@ footer a:hover,footer a:focus-visible{color:var(--accent)}
         <label for="dr-prompt">Essay prompt</label>
         <textarea id="dr-prompt" placeholder="Paste the full essay prompt here. The more specific the prompt, the better the draft."></textarea>
       </div>
-      <div class="form-row">
+      <div class="form-row three">
         <div class="field">
           <label for="dr-type">Essay type</label>
           <select id="dr-type"></select>
+        </div>
+        <div class="field">
+          <label for="dr-limit">Word limit</label>
+          <input type="number" id="dr-limit" min="1" max="10000" step="1" inputmode="numeric" value="650" />
         </div>
         <div class="field">
           <label class="chip" style="margin-top:1.6rem"><input type="checkbox" id="dr-style" checked /> 🏆 Use Darrian's writing style as a model</label>
@@ -471,6 +484,13 @@ function limitFor(type) {
   const parts = raw.split('-');
   return parseInt(parts[parts.length - 1], 10) || 650;
 }
+/* The student's own limit wins; anything unusable falls back to the type default. */
+function cleanLimit(value, type) {
+  const n = Math.round(Number(String(value == null ? '' : value).trim()));
+  return Number.isFinite(n) && n > 0 ? Math.min(n, 10000) : limitFor(type);
+}
+function readLimit(input, type) { return cleanLimit(input.value, type); }
+function essayLimit(essay) { return cleanLimit(essay && essay.wordLimit, essay && essay.type); }
 function mdInline(s) { return esc(s).replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>'); }
 function renderMd(el, raw) {
   let html = '';
@@ -560,6 +580,7 @@ function openEssayForm(essay, prefillContent) {
   el('ef-title').value = essay ? essay.title : '';
   el('ef-type').value = essay && ESSAY_TYPES.indexOf(essay.type) !== -1 ? essay.type : ESSAY_TYPES[0];
   el('ef-status').value = essay && STATUS_OPTIONS.indexOf(essay.status) !== -1 ? essay.status : STATUS_OPTIONS[0];
+  el('ef-limit').value = essay ? essayLimit(essay) : limitFor(el('ef-type').value);
   el('ef-prompt').value = essay ? essay.prompt : '';
   el('ef-content').value = essay ? essay.content : (prefillContent || '');
   el('essay-form-warn').textContent = '';
@@ -578,16 +599,25 @@ function closeEssayForm() {
 
 function updateEssayWc() {
   const wc = wordCount(el('ef-content').value);
-  const max = limitFor(el('ef-type').value);
+  const max = readLimit(el('ef-limit'), el('ef-type').value);
   const box = el('ef-wc');
-  box.textContent = 'Word count: ' + wc + ' (limit: ' + (WORD_LIMITS[el('ef-type').value] || '650') + ')';
+  box.textContent = 'Word count: ' + wc + ' (limit: ' + max + ')';
   box.className = 'wc ' + (wc <= max ? 'ok' : 'over');
 }
 
 el('new-essay-btn').addEventListener('click', () => openEssayForm(null));
 el('essay-cancel-btn').addEventListener('click', closeEssayForm);
 el('ef-content').addEventListener('input', updateEssayWc);
-el('ef-type').addEventListener('change', updateEssayWc);
+el('ef-type').addEventListener('change', () => {
+  el('ef-limit').value = limitFor(el('ef-type').value);
+  updateEssayWc();
+});
+el('ef-limit').addEventListener('input', updateEssayWc);
+/* Tidy the box only once they're done typing — otherwise "5" on the way to "500" gets rewritten. */
+el('ef-limit').addEventListener('change', () => {
+  el('ef-limit').value = readLimit(el('ef-limit'), el('ef-type').value);
+  updateEssayWc();
+});
 
 el('essay-save-btn').addEventListener('click', () => {
   const title = el('ef-title').value.trim();
@@ -600,6 +630,7 @@ el('essay-save-btn').addEventListener('click', () => {
     content: el('ef-content').value,
     type: el('ef-type').value,
     status: el('ef-status').value,
+    wordLimit: readLimit(el('ef-limit'), el('ef-type').value),
     updatedAt: now
   };
   if (editingEssayId) {
@@ -808,6 +839,7 @@ function loadEssayIntoFeedback(essay) {
   el('fb-text').value = essay.content || '';
   el('fb-prompt').value = essay.prompt || '';
   if (ESSAY_TYPES.indexOf(essay.type) !== -1) el('fb-type').value = essay.type;
+  el('fb-limit').value = essayLimit(essay);
   updateFbWc();
 }
 
@@ -818,18 +850,25 @@ el('fb-essay-select').addEventListener('change', () => {
 
 function updateFbWc() {
   const wc = wordCount(el('fb-text').value);
-  const max = limitFor(el('fb-type').value);
+  const max = readLimit(el('fb-limit'), el('fb-type').value);
   const box = el('fb-wc');
-  box.textContent = 'Word count: ' + wc + ' (limit: ' + (WORD_LIMITS[el('fb-type').value] || '650') + ')';
+  box.textContent = 'Word count: ' + wc + ' (limit: ' + max + ')';
   box.className = 'wc ' + (wc <= max ? 'ok' : 'over');
 }
 el('fb-text').addEventListener('input', updateFbWc);
-el('fb-type').addEventListener('change', updateFbWc);
+el('fb-type').addEventListener('change', () => {
+  el('fb-limit').value = limitFor(el('fb-type').value);
+  updateFbWc();
+});
+el('fb-limit').addEventListener('input', updateFbWc);
+el('fb-limit').addEventListener('change', () => {
+  el('fb-limit').value = readLimit(el('fb-limit'), el('fb-type').value);
+  updateFbWc();
+});
 
 /* Feedback prompt template ported verbatim from _get_essay_feedback (Page 83) */
-function buildFeedbackPrompt(essayText, promptText, essayType) {
+function buildFeedbackPrompt(essayText, promptText, essayType, limit) {
   const wc = wordCount(essayText);
-  const limit = WORD_LIMITS[essayType] || '650';
   return `You are an expert college essay reviewer. Review this ${essayType} essay and provide specific, actionable feedback.
 
 Essay Prompt: ${promptText}
@@ -878,10 +917,9 @@ Keep feedback encouraging and constructive. This student worked hard on this.`;
 }
 
 /* Draft system prompt structure ported verbatim from _generate_essay_draft (Page 83) */
-function buildDraftPrompt(promptText, essayType, aboutYou, darrianStyle) {
+function buildDraftPrompt(promptText, essayType, aboutYou, darrianStyle, wordLimit) {
   const styleSection = darrianStyle ? `\n\n${DARRIAN_ESSAY_CONTEXT}\n\nUse Darrian's writing style and approach as your model.` : '';
   const storySection = aboutYou.trim() ? `\nStudent's Background Information:\n${aboutYou.trim()}\n` : '';
-  const wordLimit = WORD_LIMITS[essayType] || '650';
   return `You are an expert college essay coach who has helped hundreds of students get into their dream schools and win scholarships.${styleSection}
 
 Your goal is to help students write authentic, compelling essays that tell THEIR story in THEIR voice.
@@ -899,7 +937,7 @@ Write a compelling draft essay that:
 3. Tells a specific story with real details
 4. Shows growth and learning
 5. Connects to future goals
-6. Stays within word limit
+6. Stays within the ${wordLimit}-word limit
 7. Does NOT sound generic or AI-written
 8. Uses the student's real background information provided above
 
@@ -936,7 +974,7 @@ el('fb-go-btn').addEventListener('click', async () => {
     el('ai-warn').textContent = 'Please write or paste your essay first — the AI needs something to read!';
     return;
   }
-  const promptText = buildFeedbackPrompt(essayText, el('fb-prompt').value.trim(), el('fb-type').value);
+  const promptText = buildFeedbackPrompt(essayText, el('fb-prompt').value.trim(), el('fb-type').value, readLimit(el('fb-limit'), el('fb-type').value));
   await runAI(el('fb-go-btn'), '🤖 Thinking…', promptText);
 });
 
@@ -949,10 +987,11 @@ el('dr-go-btn').addEventListener('click', async () => {
   const aboutYou = el('dr-about').value;
   localStorage.setItem(PROFILE_KEY, aboutYou);
   const essayType = el('dr-type').value;
-  const promptText = buildDraftPrompt(essayPrompt, essayType, aboutYou, el('dr-style').checked);
+  const wordLimit = readLimit(el('dr-limit'), essayType);
+  const promptText = buildDraftPrompt(essayPrompt, essayType, aboutYou, el('dr-style').checked, wordLimit);
   const text = await runAI(el('dr-go-btn'), '✍️ Thinking…', promptText);
   if (text) {
-    lastDraftMeta = { text: text, prompt: essayPrompt, type: essayType };
+    lastDraftMeta = { text: text, prompt: essayPrompt, type: essayType, limit: wordLimit };
     el('dr-save-btn').hidden = false;
   }
 });
@@ -966,6 +1005,7 @@ el('dr-save-btn').addEventListener('click', () => {
     prompt: lastDraftMeta.prompt,
     content: lastDraftMeta.text,
     type: lastDraftMeta.type,
+    wordLimit: lastDraftMeta.limit,
     status: 'Draft',
     updatedAt: new Date().toISOString()
   });
@@ -981,6 +1021,10 @@ fillSelect(el('ef-status'), STATUS_OPTIONS);
 fillSelect(el('bf-type'), BLOCK_TYPES);
 fillSelect(el('fb-type'), ESSAY_TYPES);
 fillSelect(el('dr-type'), ESSAY_TYPES);
+el('dr-type').addEventListener('change', () => { el('dr-limit').value = limitFor(el('dr-type').value); });
+el('ef-limit').value = limitFor(el('ef-type').value);
+el('fb-limit').value = limitFor(el('fb-type').value);
+el('dr-limit').value = limitFor(el('dr-type').value);
 el('dr-about').value = localStorage.getItem(PROFILE_KEY) || '';
 renderEssayList();
 renderTagFilters();

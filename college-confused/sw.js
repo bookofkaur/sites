@@ -6,6 +6,7 @@ const PRECACHE = [
   'blog.html',
   'cost-tool.html',
   'deadlines.html',
+  'fee-waiver.html',
   'essay-tool.html',
   'privacy.html',
   'blog/_base.css',

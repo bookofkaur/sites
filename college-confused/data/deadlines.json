@@ -1,0 +1,104 @@
+{
+  "cycle": "2026-27",
+  "as_of": "2026-08-02",
+  "note": "Each deadline carries both an absolute instant (dueUTC) and the calendar date as displayed in its own timezone (dueDate). Pages count DOWN using dueDate so two deadlines shown as the same date always display the same number of days, and test whether a deadline has PASSED using dueUTC so an 11:59 PM cutoff is not marked over at 9 AM. tzLabel is rendered verbatim next to every countdown.",
+  "time_policy": "kind=hard means a single published instant. kind=varies means each college sets its own time on that date, so dueUTC is the START of that day in US Pacific — the countdown understates time remaining rather than overstating it. kind=milestone is informational (something opens).",
+  "sources": [
+    "https://www.questbridge.org/apply-to-college/programs/national-college-match/apply/dates-and-deadlines",
+    "https://www.commonapp.org/",
+    "https://studentaid.gov/h/apply-for-aid/fafsa",
+    "https://cssprofile.collegeboard.org/"
+  ],
+  "deadlines": [
+    {
+      "id": "commonapp-open",
+      "label": "Common App opens for 2026-27",
+      "dueUTC": "2026-08-01T07:00:00Z",
+      "dueDate": "2026-08-01",
+      "tzLabel": "Aug 1, 2026",
+      "kind": "milestone",
+      "note": "Your account and essays roll over if you made one earlier. Start now — the site is slowest right at deadlines.",
+      "url": "blog/common-app-guide.html"
+    },
+    {
+      "id": "questbridge-match",
+      "label": "QuestBridge National College Match application",
+      "dueUTC": "2026-10-02T06:59:00Z",
+      "dueDate": "2026-10-01",
+      "tzLabel": "Oct 1, 2026 · 11:59 PM Pacific",
+      "kind": "hard",
+      "note": "Full four-year scholarships to 50+ partner colleges. Free to apply. This is a hard cutoff — no extensions.",
+      "url": "blog/scholarships-hub.html"
+    },
+    {
+      "id": "fafsa-open",
+      "label": "2027-28 FAFSA opens",
+      "dueUTC": "2026-10-01T07:00:00Z",
+      "dueDate": "2026-10-01",
+      "tzLabel": "Oct 1, 2026",
+      "kind": "milestone",
+      "note": "File as early as you can. Some aid is first-come, first-served, and your state and college deadlines are earlier than the federal one.",
+      "url": "blog/fafsa-hub.html"
+    },
+    {
+      "id": "css-profile-open",
+      "label": "CSS Profile opens",
+      "dueUTC": "2026-10-01T07:00:00Z",
+      "dueDate": "2026-10-01",
+      "tzLabel": "Oct 1, 2026",
+      "kind": "milestone",
+      "note": "Only needed by some private colleges for their own institutional aid. Check each school's list — it is separate from the FAFSA.",
+      "url": "blog/fafsa-hub.html"
+    },
+    {
+      "id": "questbridge-rankings",
+      "label": "QuestBridge Match Rankings & Match Agreement",
+      "dueUTC": "2026-10-16T06:59:00Z",
+      "dueDate": "2026-10-15",
+      "tzLabel": "Oct 15, 2026 · 11:59 PM Pacific",
+      "kind": "hard",
+      "note": "Finalists only. Missing this forfeits the Match even if your application was strong — this step ends more runs than the application does.",
+      "url": "blog/scholarships-hub.html"
+    },
+    {
+      "id": "early-nov-1",
+      "label": "Early Decision / Early Action — Nov 1 schools",
+      "dueUTC": "2026-11-01T07:00:00Z",
+      "dueDate": "2026-11-01",
+      "tzLabel": "Nov 1, 2026 · time varies by college",
+      "kind": "varies",
+      "note": "The most common early deadline. Confirm the exact time with each college — some close at 11:59 PM local, others at midnight Eastern.",
+      "url": "blog/application-timeline.html"
+    },
+    {
+      "id": "early-nov-15",
+      "label": "Early Decision / Early Action — Nov 15 schools",
+      "dueUTC": "2026-11-15T08:00:00Z",
+      "dueDate": "2026-11-15",
+      "tzLabel": "Nov 15, 2026 · time varies by college",
+      "kind": "varies",
+      "note": "The second common early date. Several large publics use it.",
+      "url": "blog/application-timeline.html"
+    },
+    {
+      "id": "regular-jan-1",
+      "label": "Regular Decision — Jan 1 schools",
+      "dueUTC": "2027-01-01T08:00:00Z",
+      "dueDate": "2027-01-01",
+      "tzLabel": "Jan 1, 2027 · time varies by college",
+      "kind": "varies",
+      "note": "Do not plan to submit on New Year's Eve. Aim to finish before winter break starts.",
+      "url": "blog/application-timeline.html"
+    },
+    {
+      "id": "regular-jan-15",
+      "label": "Regular Decision — Jan 15 schools",
+      "dueUTC": "2027-01-15T08:00:00Z",
+      "dueDate": "2027-01-15",
+      "tzLabel": "Jan 15, 2027 · time varies by college",
+      "kind": "varies",
+      "note": "Also a common priority-scholarship deadline — applying by this date can matter for money, not just admission.",
+      "url": "blog/application-timeline.html"
+    }
+  ]
+}

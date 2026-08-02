@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="Every 2026-27 college application deadline in one place, with live countdowns, a checklist that saves your progress, and a calendar export. Free, no account needed." />
+<meta name="color-scheme" content="dark" />
+<meta name="theme-color" content="#0c0b14" />
+<title>Deadline Command Center — College Confused</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--accent:#8b84ff;--accent2:#a89fff;--bg:#0c0b14;--card:#171523;--border:#2a2740;--text:#f4f3fa;--muted:#9a96b8;--ok:#8fe3a8;--bad:#ff9c9c;--gold:#FFD43B}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;overflow-x:hidden}
+nav{display:flex;align-items:center;justify-content:space-between;padding:1rem 2rem;border-bottom:1px solid var(--border);flex-wrap:wrap;gap:0.5rem}
+.logo{font-size:1.15rem;font-weight:900}.logo span{color:var(--accent)}
+nav .links a{color:var(--muted);text-decoration:none;font-size:0.85rem;padding:0.4rem 0.8rem;border-radius:6px}
+nav .links a:hover,nav .links a:focus-visible{color:var(--accent);outline:none}
+nav .links a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+nav .links a[aria-current="page"]{color:var(--accent);font-weight:700}
+main{flex:1;width:100%;max-width:900px;margin:0 auto;padding:2.5rem 2rem}
+.hero-mini{text-align:center;margin-bottom:2rem}
+.hero-mini .cap{font-size:2.2rem}
+h1{font-size:clamp(1.6rem,5vw,2.3rem);font-weight:900;letter-spacing:-1px;margin:0.5rem 0}
+h1 em{font-style:normal;color:var(--accent)}
+.hero-mini p{color:var(--muted);font-size:1rem;max-width:34rem;margin:0 auto;line-height:1.6}
+.free-badge{display:inline-block;background:rgba(139,132,255,0.14);color:var(--accent2);font-weight:800;font-size:0.75rem;letter-spacing:1px;text-transform:uppercase;padding:0.3rem 0.8rem;border-radius:999px;margin-top:0.75rem}
+h2{font-size:1.25rem;font-weight:800;margin:0 0 0.9rem}
+h3{font-size:1rem;font-weight:800;margin:0}
+.tip-box{background:rgba(139,132,255,0.1);border:1px solid var(--border);border-left:3px solid var(--accent);border-radius:8px;padding:0.8rem 1rem;color:var(--muted);font-size:0.85rem;line-height:1.55;margin:0 0 1.25rem}
+.warn-box{background:rgba(255,156,156,0.08);border:1px solid var(--border);border-left:3px solid var(--bad);border-radius:8px;padding:0.8rem 1rem;color:var(--bad);font-size:0.88rem;line-height:1.55;margin:0.75rem 0}
+.toolbar{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:1.25rem 1.4rem;margin-bottom:1.75rem}
+.toolbar-row{display:flex;flex-wrap:wrap;gap:0.6rem;align-items:center}
+.progress-line{color:var(--muted);font-size:0.85rem;margin-bottom:0.9rem}
+.progress-line strong{color:var(--accent2)}
+.btn{display:inline-block;background:var(--accent);color:#0c0b14;font:inherit;font-weight:800;font-size:0.88rem;padding:0.6rem 1.3rem;border:1px solid var(--accent);border-radius:10px;cursor:pointer;transition:background .2s}
+.btn:hover{background:var(--accent2);border-color:var(--accent2)}
+.btn:focus-visible{outline:2px solid var(--text);outline-offset:3px}
+.btn-sm{background:var(--bg);color:var(--muted);border:1px solid var(--border);font:inherit;font-size:0.78rem;font-weight:700;padding:0.5rem 0.9rem;border-radius:8px;cursor:pointer;transition:border-color .2s,color .2s}
+.btn-sm:hover{border-color:var(--accent);color:var(--accent)}
+.btn-sm:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.code-row{display:flex;gap:0.6rem;flex-wrap:wrap;margin-top:0.9rem}
+.code-row label{flex:1;min-width:14rem}
+label{display:block;font-size:0.82rem;font-weight:700;color:var(--muted);margin-bottom:0.35rem}
+input[type="text"]{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font:inherit;font-size:0.85rem;padding:0.55rem 0.7rem}
+input[type="text"]:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.status{color:var(--ok);font-size:0.83rem;margin-top:0.6rem;min-height:1.1rem}
+.status.err{color:var(--bad)}
+.group-head{font-size:0.78rem;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin:1.75rem 0 0.85rem}
+.dl{display:flex;gap:0.9rem;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:1.15rem 1.3rem;margin-bottom:0.85rem;transition:border-color .2s}
+.dl:has(input:checked){opacity:0.6}
+.dl.urgent{border-color:var(--bad)}
+.dl.soon{border-color:var(--gold)}
+.dl.past{opacity:0.55}
+.dl-check{padding-top:0.15rem}
+.dl-check input{width:1.15rem;height:1.15rem;accent-color:var(--accent);cursor:pointer}
+.dl-check input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.dl-body{flex:1;min-width:0}
+.dl-top{display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap;align-items:baseline}
+.dl-when{color:var(--muted);font-size:0.82rem;margin-top:0.2rem}
+.dl-count{font-size:0.82rem;font-weight:800;white-space:nowrap}
+.dl-count.urgent{color:var(--bad)}
+.dl-count.soon{color:var(--gold)}
+.dl-count.normal{color:var(--accent2)}
+.dl-count.done{color:var(--ok)}
+.dl-note{color:var(--muted);font-size:0.85rem;line-height:1.55;margin-top:0.55rem}
+.dl-note a{color:var(--accent2)}
+.varies-tag{display:inline-block;background:rgba(255,212,59,0.14);color:var(--gold);font-size:0.68rem;font-weight:800;padding:0.1rem 0.5rem;border-radius:999px;margin-left:0.4rem;vertical-align:middle}
+.sources{color:var(--muted);font-size:0.8rem;line-height:1.65}
+.sources a{color:var(--accent2)}
+footer{text-align:center;color:var(--muted);font-size:0.8rem;padding:2rem 1rem;border-top:1px solid var(--border)}
+footer a{color:var(--muted)}
+footer a:hover,footer a:focus-visible{color:var(--accent)}
+@media (max-width:640px){
+  main{padding:1.75rem 1rem}
+  nav{padding:1rem}
+  .toolbar{padding:1.1rem}
+  .toolbar-row .btn,.toolbar-row .btn-sm{flex:1}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<nav>
+  <div class="logo">College <span>Confused</span></div>
+  <div class="links"><a href="blog.html">Guides</a><a href="deadlines.html" aria-current="page">Deadlines</a><a href="cost-tool.html">College Costs</a><a href="essay-tool.html">Write Your Essay</a></div>
+</nav>
+<main>
+  <header class="hero-mini">
+    <div class="cap" aria-hidden="true">🗓️</div>
+    <h1>Deadline <em>Command Center</em></h1>
+    <p>Every date that matters this application season, counting down. Check things off as you go — and put them in your real calendar so you can stop worrying about forgetting.</p>
+    <span class="free-badge">100% free · no account · saved on your device</span>
+  </header>
+
+  <div class="toolbar">
+    <p class="progress-line" id="progress-line">Loading deadlines…</p>
+    <div class="toolbar-row">
+      <button type="button" class="btn" id="export-ics" disabled>📅 Add all to my calendar</button>
+      <button type="button" class="btn-sm" id="make-code" disabled>Get my progress code</button>
+      <button type="button" class="btn-sm" id="reset-all" disabled>Clear my checkmarks</button>
+    </div>
+    <div class="code-row">
+      <label for="code-input">Move progress between devices — paste a code here
+        <input type="text" id="code-input" autocomplete="off" placeholder="Paste your progress code…" />
+      </label>
+      <div style="align-self:flex-end"><button type="button" class="btn-sm" id="load-code">Restore</button></div>
+    </div>
+    <p class="status" id="status" role="status"></p>
+    <p class="tip-box" style="margin:0.9rem 0 0">Your checkmarks are saved <strong>on this device only</strong> — we have no accounts and no server, so there's nothing of yours for us to store or lose. Switching to your phone? Grab a progress code above and paste it there.</p>
+  </div>
+
+  <div id="list"></div>
+
+  <section style="margin-top:2rem">
+    <h2>Before you trust any date here</h2>
+    <p class="sources" id="source-note">Colleges set their own deadlines and occasionally change them. These are the fixed, program-wide dates for the 2026-27 cycle — <strong>always confirm the exact deadline on each college's own admissions page</strong>, especially the time of day. When a date shows "time varies by college," we count down to the <em>earliest</em> moment it could close so you're never caught short.</p>
+  </section>
+</main>
+<footer>
+  <p>College Confused is free forever · <a href="https://collegeconfused.org">collegeconfused.org</a> · <a href="blog.html">Guides</a> · <a href="privacy.html">Privacy</a></p>
+</footer>
+<script>
+(function () {
+  'use strict';
+
+  var STORE_KEY = 'cc_deadlines';
+  var DAY_MS = 86400000;
+
+  var deadlines = [];
+  var checked = loadList(STORE_KEY);
+
+  var $ = function (id) { return document.getElementById(id); };
+
+  // ── Storage, matching the pattern used in essay-tool.html ───────────
+  function loadList(key) {
+    try {
+      var raw = localStorage.getItem(key);
+      var parsed = raw ? JSON.parse(raw) : [];
+      return Array.isArray(parsed) ? parsed : [];
+    } catch (e) { return []; }
+  }
+  function saveList(key, arr) {
+    try { localStorage.setItem(key, JSON.stringify(arr)); } catch (e) { /* private mode */ }
+  }
+
+  // ── Load the shared deadline dataset ────────────────────────────────
+  fetch('data/deadlines.json')
+    .then(function (r) {
+      if (!r.ok) { throw new Error('HTTP ' + r.status); }
+      return r.json();
+    })
+    .then(function (data) {
+      // Sort by the absolute instant, never by a parsed local date string.
+      deadlines = data.deadlines.slice().sort(function (a, b) {
+        return Date.parse(a.dueUTC) - Date.parse(b.dueUTC);
+      });
+      checked = checked.filter(function (id) {
+        return deadlines.some(function (d) { return d.id === id; });
+      });
+      ['export-ics', 'make-code', 'reset-all'].forEach(function (id) { $(id).disabled = false; });
+      render();
+      // Refresh the countdowns each minute so an open tab doesn't go stale.
+      setInterval(render, 60000);
+    })
+    .catch(function (err) {
+      $('progress-line').innerHTML = '';
+      $('list').innerHTML = '<p class="warn-box">Couldn\'t load the deadline list (' + esc(String(err.message)) +
+        '). Try reloading. Our <a href="blog/application-timeline.html">application timeline guide</a> has the same dates written out.</p>';
+    });
+
+  // ── Countdown maths ─────────────────────────────────────────────────
+  // Two different questions, deliberately answered two different ways:
+  //
+  //   daysUntil()  — how many days to show. A calendar question, so it runs off
+  //                  dueDate (the date the student sees) normalised to UTC midnight.
+  //                  Exact integer day maths, no DST drift, and two deadlines shown
+  //                  as the same date always display the same count.
+  //   hasPassed()  — whether it is over. An instant question, so it runs off dueUTC.
+  //                  QuestBridge closes at 11:59 PM Pacific; at 9 AM that morning it
+  //                  shows "Today", not "Passed".
+  function daysUntil(dueDate) {
+    var p = dueDate.split('-');
+    var due = Date.UTC(+p[0], +p[1] - 1, +p[2]);
+    var n = new Date();
+    var today = Date.UTC(n.getFullYear(), n.getMonth(), n.getDate());
+    return Math.round((due - today) / DAY_MS);
+  }
+
+  function hasPassed(d) {
+    return Date.parse(d.dueUTC) <= Date.now();
+  }
+
+  function countdownText(days) {
+    if (days < 0) { return { text: 'Passed', cls: 'done' }; }
+    if (days === 0) { return { text: 'Due today', cls: 'urgent' }; }
+    if (days === 1) { return { text: '1 day left', cls: 'urgent' }; }
+    if (days <= 7) { return { text: days + ' days left', cls: 'urgent' }; }
+    if (days <= 30) { return { text: days + ' days left', cls: 'soon' }; }
+    return { text: days + ' days left', cls: 'normal' };
+  }
+
+  // ── Render ──────────────────────────────────────────────────────────
+  function render() {
+    var upcoming = [], past = [];
+    deadlines.forEach(function (d) {
+      (hasPassed(d) ? past : upcoming).push(d);
+    });
+
+    var html = '';
+    if (upcoming.length) {
+      html += '<h2 class="group-head">Coming up</h2>' + upcoming.map(card).join('');
+    }
+    if (past.length) {
+      html += '<h2 class="group-head">Already passed</h2>' + past.map(card).join('');
+    }
+    $('list').innerHTML = html;
+    updateProgress();
+  }
+
+  function updateProgress() {
+    $('progress-line').innerHTML = '<strong>' + checked.length + ' of ' + deadlines.length +
+      '</strong> checked off for the 2026-27 season.';
+  }
+
+  function card(d) {
+    var past = hasPassed(d);
+    var days = daysUntil(d.dueDate);
+    var cd = past ? { text: 'Passed', cls: 'done' } : countdownText(days);
+    var isChecked = checked.indexOf(d.id) !== -1;
+
+    var cls = 'dl';
+    if (past) { cls += ' past'; }
+    else if (cd.cls === 'urgent') { cls += ' urgent'; }
+    else if (cd.cls === 'soon') { cls += ' soon'; }
+
+    var variesTag = d.kind === 'varies' ? '<span class="varies-tag">time varies</span>' : '';
+    var note = d.note ? '<p class="dl-note">' + esc(d.note) +
+      (d.url ? ' <a href="' + esc(d.url) + '">Read the guide &rarr;</a>' : '') + '</p>' : '';
+
+    return '<div class="' + cls + '">' +
+      '<div class="dl-check"><input type="checkbox" id="chk-' + esc(d.id) + '" data-id="' + esc(d.id) + '"' +
+        (isChecked ? ' checked' : '') + ' /></div>' +
+      '<div class="dl-body">' +
+        '<div class="dl-top">' +
+          '<h3><label for="chk-' + esc(d.id) + '" style="display:inline;font-size:1rem;color:var(--text);margin:0;cursor:pointer">' +
+            esc(d.label) + '</label>' + variesTag + '</h3>' +
+          '<span class="dl-count ' + cd.cls + '">' + (past ? '✅ ' : '') + cd.text + '</span>' +
+        '</div>' +
+        // tzLabel is rendered verbatim — the timezone must always be visible.
+        '<p class="dl-when">' + esc(d.tzLabel) + '</p>' +
+        note +
+      '</div></div>';
+  }
+
+  $('list').addEventListener('change', function (e) {
+    var box = e.target.closest('input[type="checkbox"][data-id]');
+    if (!box) { return; }
+    var id = box.getAttribute('data-id');
+    if (box.checked) {
+      if (checked.indexOf(id) === -1) { checked.push(id); }
+    } else {
+      checked = checked.filter(function (x) { return x !== id; });
+    }
+    saveList(STORE_KEY, checked);
+    // Deliberately NOT a full render(): rebuilding the list innerHTML would detach the
+    // checkbox that was just activated and throw keyboard focus back to the top of the
+    // page. The dimmed "done" styling is handled by the .dl:has(input:checked) rule, so
+    // only the counter needs updating.
+    updateProgress();
+  });
+
+  $('reset-all').addEventListener('click', function () {
+    checked = [];
+    saveList(STORE_KEY, checked);
+    setStatus('Cleared.', false);
+    render();
+  });
+
+  // ── Progress code: move checkmarks between devices ──────────────────
+  $('make-code').addEventListener('click', function () {
+    if (!checked.length) { setStatus('Check something off first, then you\'ll have a code to move.', true); return; }
+    var code = btoa(checked.join(','));
+    $('code-input').value = code;
+    $('code-input').focus();
+    $('code-input').select();
+    setStatus('Copy this code and paste it on your other device.', false);
+  });
+
+  $('load-code').addEventListener('click', function () {
+    var raw = $('code-input').value.trim();
+    if (!raw) { setStatus('Paste a progress code first.', true); return; }
+    var ids;
+    try {
+      ids = atob(raw).split(',');
+    } catch (e) {
+      setStatus('That code isn\'t valid. Copy the whole thing and try again.', true);
+      return;
+    }
+    var known = ids.filter(function (id) {
+      return deadlines.some(function (d) { return d.id === id; });
+    });
+    if (!known.length) {
+      setStatus('That code didn\'t match any deadlines on this list.', true);
+      return;
+    }
+    checked = known;
+    saveList(STORE_KEY, checked);
+    setStatus('Restored ' + known.length + ' checked item' + (known.length === 1 ? '' : 's') + '.', false);
+    render();
+  });
+
+  function setStatus(msg, isError) {
+    var el = $('status');
+    el.textContent = msg;
+    el.className = isError ? 'status err' : 'status';
+  }
+
+  // ── Calendar export (RFC 5545) ──────────────────────────────────────
+  // All timestamps are emitted as UTC with a trailing Z. That avoids shipping
+  // hand-written VTIMEZONE blocks, and every calendar client converts UTC to
+  // the user's local time correctly.
+  $('export-ics').addEventListener('click', function () {
+    var stamp = toICSDate(new Date());
+    var lines = [
+      'BEGIN:VCALENDAR',
+      'VERSION:2.0',
+      'PRODID:-//College Confused//Deadline Command Center//EN',
+      'CALSCALE:GREGORIAN',
+      'METHOD:PUBLISH',
+      'X-WR-CALNAME:College Deadlines 2026-27'
+    ];
+
+    deadlines.forEach(function (d) {
+      var start = toICSDate(new Date(Date.parse(d.dueUTC)));
+      var desc = (d.note || '') + (d.kind === 'varies'
+        ? ' Colleges set their own time on this date — confirm with each school.' : '');
+      lines.push(
+        'BEGIN:VEVENT',
+        // Stable UID: re-importing updates the event instead of duplicating it.
+        'UID:' + d.id + '@collegeconfused.org',
+        'DTSTAMP:' + stamp,
+        'DTSTART:' + start,
+        'DURATION:PT30M',
+        'SUMMARY:' + escICS(d.label + ' (' + d.tzLabel + ')'),
+        'DESCRIPTION:' + escICS(desc.trim() + ' — via collegeconfused.org'),
+        'URL:https://collegeconfused.org/deadlines.html',
+        'BEGIN:VALARM', 'TRIGGER:-P7D', 'ACTION:DISPLAY',
+        'DESCRIPTION:' + escICS('One week until: ' + d.label), 'END:VALARM',
+        'BEGIN:VALARM', 'TRIGGER:-P1D', 'ACTION:DISPLAY',
+        'DESCRIPTION:' + escICS('Tomorrow: ' + d.label), 'END:VALARM',
+        'END:VEVENT'
+      );
+    });
+    lines.push('END:VCALENDAR');
+
+    // RFC 5545 requires CRLF line endings and lines folded at 75 octets.
+    var ics = lines.map(fold).join('\r\n') + '\r\n';
+    var url = URL.createObjectURL(new Blob([ics], { type: 'text/calendar;charset=utf-8' }));
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = 'college-deadlines-2026-27.ics';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+    setStatus('Downloaded. Open the file to add these to your calendar.', false);
+  });
+
+  function toICSDate(dt) {
+    return dt.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
+  }
+
+  function escICS(s) {
+    return String(s)
+      .replace(/\\/g, '\\\\')
+      .replace(/;/g, '\\;')
+      .replace(/,/g, '\\,')
+      .replace(/\r?\n/g, '\\n');
+  }
+
+  function fold(line) {
+    if (line.length <= 75) { return line; }
+    var out = line.slice(0, 75);
+    var rest = line.slice(75);
+    while (rest.length > 74) {
+      out += '\r\n ' + rest.slice(0, 74);
+      rest = rest.slice(74);
+    }
+    return out + '\r\n ' + rest;
+  }
+
+  function esc(s) {
+    return String(s === null || s === undefined ? '' : s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+})();
+</script>
+</body>
+</html>

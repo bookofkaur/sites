@@ -64,6 +64,11 @@ input[type="text"]:focus-visible{outline:2px solid var(--accent);outline-offset:
 .dl-count.done{color:var(--ok)}
 .dl-note{color:var(--muted);font-size:0.85rem;line-height:1.55;margin-top:0.55rem}
 .dl-note a{color:var(--accent2)}
+.dl-actions{margin-top:0.7rem}
+.gcal-link{display:inline-flex;align-items:center;gap:0.35rem;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--muted);font-size:0.78rem;font-weight:700;padding:0.35rem 0.75rem;text-decoration:none;transition:border-color .2s,color .2s}
+.gcal-link::before{content:"📅";font-size:0.85rem}
+.gcal-link:hover,.gcal-link:focus-visible{border-color:var(--accent);color:var(--accent2)}
+.gcal-link:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .varies-tag{display:inline-block;background:rgba(255,212,59,0.14);color:var(--gold);font-size:0.68rem;font-weight:800;padding:0.1rem 0.5rem;border-radius:999px;margin-left:0.4rem;vertical-align:middle}
 .sources{color:var(--muted);font-size:0.8rem;line-height:1.65}
 .sources a{color:var(--accent2)}
@@ -95,7 +100,7 @@ footer a:hover,footer a:focus-visible{color:var(--accent)}
   <div class="toolbar">
     <p class="progress-line" id="progress-line">Loading deadlines…</p>
     <div class="toolbar-row">
-      <button type="button" class="btn" id="export-ics" disabled>📅 Add all to my calendar</button>
+      <button type="button" class="btn" id="export-ics" disabled>📅 Add my deadlines to my calendar</button>
       <button type="button" class="btn-sm" id="make-code" disabled>Get my progress code</button>
       <button type="button" class="btn-sm" id="reset-all" disabled>Clear my checkmarks</button>
     </div>
@@ -106,7 +111,7 @@ footer a:hover,footer a:focus-visible{color:var(--accent)}
       <div style="align-self:flex-end"><button type="button" class="btn-sm" id="load-code">Restore</button></div>
     </div>
     <p class="status" id="status" role="status"></p>
-    <p class="tip-box" style="margin:0.9rem 0 0">Your checkmarks are saved <strong>on this device only</strong> — we have no accounts and no server, so there's nothing of yours for us to store or lose. Switching to your phone? Grab a progress code above and paste it there.</p>
+    <p class="tip-box" style="margin:0.9rem 0 0">The download works with <strong>Apple Calendar, Google Calendar, and Outlook</strong> — it only includes what you haven't checked off yet, so your calendar doesn't fill up with things you've already done. For a single date, use the <strong>Add to Google Calendar</strong> link on any deadline below.<br /><br />Your checkmarks are saved <strong>on this device only</strong> — we have no accounts and no server, so there's nothing of yours for us to store or lose. Switching to your phone? Grab a progress code above and paste it there.</p>
   </div>
 
   <div id="list"></div>
@@ -220,6 +225,14 @@ footer a:hover,footer a:focus-visible{color:var(--accent)}
   function updateProgress() {
     $('progress-line').innerHTML = '<strong>' + checked.length + ' of ' + deadlines.length +
       '</strong> checked off for the 2026-27 season.';
+
+    // Keep the button honest about exactly what it will export.
+    var n = exportable().length;
+    var btn = $('export-ics');
+    btn.textContent = n === 0
+      ? '📅 Nothing left to add'
+      : '📅 Add my ' + n + ' remaining deadline' + (n === 1 ? '' : 's') + ' to my calendar';
+    btn.disabled = n === 0;
   }
 
   function card(d) {
@@ -237,6 +250,11 @@ footer a:hover,footer a:focus-visible{color:var(--accent)}
     var note = d.note ? '<p class="dl-note">' + esc(d.note) +
       (d.url ? ' <a href="' + esc(d.url) + '">Read the guide &rarr;</a>' : '') + '</p>' : '';
 
+    // No point offering to calendar something that has already happened.
+    var actions = past ? '' : '<p class="dl-actions">' +
+      '<a class="gcal-link" href="' + esc(googleUrl(d)) + '" target="_blank" rel="noopener">' +
+      'Add to Google Calendar</a></p>';
+
     return '<div class="' + cls + '">' +
       '<div class="dl-check"><input type="checkbox" id="chk-' + esc(d.id) + '" data-id="' + esc(d.id) + '"' +
         (isChecked ? ' checked' : '') + ' /></div>' +
@@ -248,8 +266,34 @@ footer a:hover,footer a:focus-visible{color:var(--accent)}
         '</div>' +
         // tzLabel is rendered verbatim — the timezone must always be visible.
         '<p class="dl-when">' + esc(d.tzLabel) + '</p>' +
-        note +
+        note + actions +
       '</div></div>';
+  }
+
+  // ── Google Calendar ─────────────────────────────────────────────────
+  // Google's template URL takes one event and opens it pre-filled in whatever
+  // account the student is signed into. No API key, no OAuth, no backend — which
+  // keeps the "nothing leaves your device" promise intact: this is just a link,
+  // and nothing is sent anywhere unless the student clicks it.
+  function googleUrl(d) {
+    var start = Date.parse(d.dueUTC);
+    var range = toICSDate(new Date(start)) + '/' + toICSDate(new Date(start + 30 * 60000));
+    var details = (d.note || '') +
+      (d.kind === 'varies' ? ' Colleges set their own time on this date — confirm with each school.' : '') +
+      '\n\nvia collegeconfused.org';
+    return 'https://calendar.google.com/calendar/render?action=TEMPLATE' +
+      '&text=' + encodeURIComponent(d.label + ' (' + d.tzLabel + ')') +
+      '&dates=' + range +
+      '&details=' + encodeURIComponent(details.trim());
+  }
+
+  // Deadlines still worth putting in a calendar: not already passed, and not
+  // ticked off. A checkbox here means "done", so exporting checked items would
+  // fill the student's calendar with things they have already finished.
+  function exportable() {
+    return deadlines.filter(function (d) {
+      return !hasPassed(d) && checked.indexOf(d.id) === -1;
+    });
   }
 
   $('list').addEventListener('change', function (e) {
@@ -320,6 +364,8 @@ footer a:hover,footer a:focus-visible{color:var(--accent)}
   // hand-written VTIMEZONE blocks, and every calendar client converts UTC to
   // the user's local time correctly.
   $('export-ics').addEventListener('click', function () {
+    var toExport = exportable();
+    if (!toExport.length) { return; }
     var stamp = toICSDate(new Date());
     var lines = [
       'BEGIN:VCALENDAR',
@@ -330,7 +376,7 @@ footer a:hover,footer a:focus-visible{color:var(--accent)}
       'X-WR-CALNAME:College Deadlines 2026-27'
     ];
 
-    deadlines.forEach(function (d) {
+    toExport.forEach(function (d) {
       var start = toICSDate(new Date(Date.parse(d.dueUTC)));
       var desc = (d.note || '') + (d.kind === 'varies'
         ? ' Colleges set their own time on this date — confirm with each school.' : '');
@@ -363,7 +409,8 @@ footer a:hover,footer a:focus-visible{color:var(--accent)}
     a.click();
     document.body.removeChild(a);
     setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
-    setStatus('Downloaded. Open the file to add these to your calendar.', false);
+    setStatus('Downloaded ' + toExport.length + ' deadline' + (toExport.length === 1 ? '' : 's') +
+      '. Open the file to add them to Apple Calendar, Outlook, or Google.', false);
   });
 
   function toICSDate(dt) {

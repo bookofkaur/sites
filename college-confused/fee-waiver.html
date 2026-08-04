@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="Find out in 60 seconds whether you can apply to college for free. Check your Common App fee waiver eligibility and get a ready-to-send message for your counselor. No account, nothing saved." />
+<meta name="color-scheme" content="dark" />
+<meta name="theme-color" content="#0c0b14" />
+<title>Can You Apply for Free? — College Confused</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--accent:#8b84ff;--accent2:#a89fff;--bg:#0c0b14;--card:#171523;--border:#2a2740;--text:#f4f3fa;--muted:#9a96b8;--ok:#8fe3a8;--bad:#ff9c9c;--gold:#FFD43B}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;overflow-x:hidden}
+nav{display:flex;align-items:center;justify-content:space-between;padding:1rem 2rem;border-bottom:1px solid var(--border);flex-wrap:wrap;gap:0.5rem}
+.logo{font-size:1.15rem;font-weight:900}.logo span{color:var(--accent)}
+nav .links a{color:var(--muted);text-decoration:none;font-size:0.85rem;padding:0.4rem 0.8rem;border-radius:6px}
+nav .links a:hover,nav .links a:focus-visible{color:var(--accent);outline:none}
+nav .links a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+nav .links a[aria-current="page"]{color:var(--accent);font-weight:700}
+main{flex:1;width:100%;max-width:900px;margin:0 auto;padding:2.5rem 2rem}
+.hero-mini{text-align:center;margin-bottom:2rem}
+.hero-mini .cap{font-size:2.2rem}
+h1{font-size:clamp(1.6rem,5vw,2.3rem);font-weight:900;letter-spacing:-1px;margin:0.5rem 0}
+h1 em{font-style:normal;color:var(--accent)}
+.hero-mini p{color:var(--muted);font-size:1rem;max-width:36rem;margin:0 auto;line-height:1.6}
+.free-badge{display:inline-block;background:rgba(139,132,255,0.14);color:var(--accent2);font-weight:800;font-size:0.75rem;letter-spacing:1px;text-transform:uppercase;padding:0.3rem 0.8rem;border-radius:999px;margin-top:0.75rem}
+h2{font-size:1.25rem;font-weight:800;margin:0 0 0.5rem}
+h3{font-size:0.95rem;font-weight:800;margin:0 0 0.3rem}
+.step{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:1.5rem;margin-bottom:1.5rem}
+.step-num{display:inline-block;background:rgba(139,132,255,0.14);color:var(--accent2);font-size:0.72rem;font-weight:800;letter-spacing:1px;text-transform:uppercase;padding:0.2rem 0.7rem;border-radius:999px;margin-bottom:0.75rem}
+.tip-box{background:rgba(139,132,255,0.1);border:1px solid var(--border);border-left:3px solid var(--accent);border-radius:8px;padding:0.8rem 1rem;color:var(--muted);font-size:0.85rem;line-height:1.55;margin:0 0 1.25rem}
+.good-box{background:rgba(143,227,168,0.08);border:1px solid var(--border);border-left:3px solid var(--ok);border-radius:8px;padding:1rem 1.15rem;color:var(--ok);font-size:0.9rem;line-height:1.6;margin:0 0 1rem}
+.gold-box{background:rgba(255,212,59,0.08);border:1px solid var(--border);border-left:3px solid var(--gold);border-radius:8px;padding:1rem 1.15rem;color:var(--gold);font-size:0.9rem;line-height:1.6;margin:0 0 1rem}
+fieldset{border:0;padding:0;margin:0}
+legend{font-size:0.9rem;font-weight:700;color:var(--text);margin-bottom:0.85rem}
+.qlist{list-style:none;display:flex;flex-direction:column;gap:0.6rem}
+.q{display:flex;gap:0.75rem;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:0.85rem 1rem;transition:border-color .2s}
+.q:has(input:checked){border-color:var(--accent);background:rgba(139,132,255,0.08)}
+.q:has(input:focus-visible){outline:2px solid var(--accent);outline-offset:2px}
+.q input{width:1.15rem;height:1.15rem;margin-top:0.1rem;accent-color:var(--accent);cursor:pointer;flex-shrink:0}
+.q label{font-size:0.9rem;line-height:1.5;cursor:pointer;color:var(--text)}
+.q .hint{display:block;color:var(--muted);font-size:0.8rem;line-height:1.5;margin-top:0.25rem}
+.income{margin-top:0.7rem;padding-top:0.7rem;border-top:1px dashed var(--border)}
+.income label{display:block;font-size:0.8rem;font-weight:700;color:var(--muted);margin-bottom:0.3rem}
+select{background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font:inherit;font-size:0.88rem;padding:0.5rem 0.6rem;max-width:16rem;width:100%}
+select:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.threshold{margin-top:0.55rem;font-size:0.88rem;color:var(--muted);line-height:1.5}
+.threshold strong{color:var(--accent2);font-size:1.05rem}
+.result{margin-top:0.5rem}
+.result h2{margin-bottom:0.75rem}
+.matched{list-style:none;margin:0.75rem 0 0;padding:0}
+.matched li{color:var(--muted);font-size:0.86rem;line-height:1.5;padding:0.3rem 0 0.3rem 1.4rem;position:relative}
+.matched li::before{content:"✓";position:absolute;left:0;color:var(--ok);font-weight:900}
+.money{font-size:1.05rem;font-weight:800;color:var(--gold)}
+.email-box{background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:1rem 1.1rem;color:var(--muted);font-size:0.86rem;line-height:1.65;white-space:pre-wrap;margin-top:0.75rem;font-family:'Segoe UI',system-ui,sans-serif}
+.btn{display:inline-block;background:var(--accent);color:#0c0b14;font:inherit;font-weight:800;font-size:0.88rem;padding:0.6rem 1.3rem;border:1px solid var(--accent);border-radius:10px;cursor:pointer;transition:background .2s;margin-top:0.85rem}
+.btn:hover{background:var(--accent2);border-color:var(--accent2)}
+.btn:focus-visible{outline:2px solid var(--text);outline-offset:3px}
+.status{color:var(--ok);font-size:0.83rem;margin-top:0.6rem;min-height:1.1rem}
+.facts{list-style:none;display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:0.85rem;margin-top:1rem}
+.facts li{background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:0.9rem 1rem}
+.facts p{color:var(--muted);font-size:0.83rem;line-height:1.55}
+.sources{color:var(--muted);font-size:0.8rem;line-height:1.65;margin-top:0.6rem}
+.sources a{color:var(--accent2)}
+footer{text-align:center;color:var(--muted);font-size:0.8rem;padding:2rem 1rem;border-top:1px solid var(--border)}
+footer a{color:var(--muted)}
+footer a:hover,footer a:focus-visible{color:var(--accent)}
+@media (max-width:640px){
+  main{padding:1.75rem 1rem}
+  nav{padding:1rem}
+  .step{padding:1.1rem}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<nav>
+  <div class="logo">College <span>Confused</span></div>
+  <div class="links"><a href="blog.html">Guides</a><a href="deadlines.html">Deadlines</a><a href="cost-tool.html">College Costs</a><a href="essay-tool.html">Write Your Essay</a></div>
+</nav>
+<main>
+  <header class="hero-mini">
+    <div class="cap" aria-hidden="true">🎟️</div>
+    <h1>Can You Apply <em>for Free?</em></h1>
+    <p>College application fees run $50–90 each. Apply to ten schools and that's $500–900 — money a lot of families simply don't have. Most students who qualify to skip those fees never find out. Takes about a minute.</p>
+    <span class="free-badge">100% free · no account · nothing saved, not even on your device</span>
+  </header>
+
+  <section class="step">
+    <span class="step-num">Step 1</span>
+    <h2>Tick anything that's true for you</h2>
+    <p class="tip-box">You only need <strong>one</strong> of these to qualify. Not sure about one? Tick it anyway — your counselor confirms the details, and guessing high costs you nothing.</p>
+    <fieldset>
+      <legend>Common App fee waiver eligibility</legend>
+      <ul class="qlist" id="qlist"></ul>
+    </fieldset>
+  </section>
+
+  <section class="step">
+    <span class="step-num">Step 2</span>
+    <div class="result" id="result" aria-live="polite">
+      <h2>Your answer</h2>
+      <p class="tip-box" style="margin:0">Tick anything above that applies — or if none of it does, read on anyway. There's still a route.</p>
+    </div>
+  </section>
+
+  <section class="step">
+    <h2>What a fee waiver actually gets you</h2>
+    <ul class="facts">
+      <li>
+        <h3>Every Common App college</h3>
+        <p>One waiver covers <strong>all</strong> the colleges you apply to through Common App. There's no cap on how many.</p>
+      </li>
+      <li>
+        <h3>Nobody can tell</h3>
+        <p>Colleges don't see your waiver when reading your application. It has no effect on your chances of getting in.</p>
+      </li>
+      <li>
+        <h3>Tests too, separately</h3>
+        <p>SAT and ACT have their own fee waivers, and an SAT/ACT waiver by itself qualifies you for the Common App one.</p>
+      </li>
+      <li>
+        <h3>Not on Common App?</h3>
+        <p>Ask about the <strong>NACAC</strong> waiver form, or apply directly — plenty of colleges charge no application fee at all.</p>
+      </li>
+    </ul>
+  </section>
+
+  <section class="step">
+    <h2>Where this comes from</h2>
+    <p class="sources">The nine criteria above are the official eligibility indicators on the <a href="https://www.commonapp.org/" target="_blank" rel="noopener">Common App</a> fee waiver form, reproduced in plain English. You self-report that you meet one, then your counselor or another school official signs off.</p>
+    <p class="sources"><strong>Income figures:</strong> USDA Food and Nutrition Service Income Eligibility Guidelines, effective <strong>July 1, 2026 – June 30, 2027</strong> (48 contiguous states, DC, Guam, and US territories; Alaska and Hawaii use higher figures). These are the reduced-price meal thresholds — 185% of the federal poverty guidelines — and they change every July. Source: <a href="https://www.federalregister.gov/documents/2026/04/09/2026-06842/child-nutrition-programs-income-eligibility-guidelines" target="_blank" rel="noopener">Federal Register, April 9, 2026</a>.</p>
+    <p class="sources">This tool gives you a strong indication, not a decision. Your school makes the final call — which is why every answer here ends with "go talk to your counselor."</p>
+  </section>
+</main>
+<footer>
+  <p>College Confused is free forever · <a href="https://collegeconfused.org">collegeconfused.org</a> · <a href="blog.html">Guides</a> · <a href="privacy.html">Privacy</a></p>
+</footer>
+<script>
+(function () {
+  'use strict';
+
+  // The nine official Common App fee waiver eligibility indicators, in the order they
+  // appear on the form, rewritten in plain English. `formal` is kept close to the original
+  // wording for the counselor message, where precision matters more than tone — and each
+  // one is a complete first-person sentence so it drops straight into the email.
+  var CRITERIA = [
+    { id: 'frpl', label: 'I get free or reduced-price school lunch — or I could if I applied',
+      hint: 'If your whole school eats free, you may still qualify on income. Check the next box instead.',
+      formal: 'I am enrolled in, or eligible to participate in, the federal free or reduced price lunch program.' },
+    { id: 'income', label: 'My family\'s income is below the federal guideline for my household size',
+      hint: 'Not sure? Pick your household size below and compare.', income: true,
+      formal: 'My annual family income falls within the USDA Food and Nutrition Service income eligibility guidelines.' },
+    { id: 'testwaiver', label: 'I used a fee waiver for the SAT or ACT — or I qualify for one',
+      formal: 'I have received, or am eligible to receive, an SAT or ACT fee waiver.' },
+    { id: 'pell', label: 'I\'ve received a Pell Grant, or I expect to qualify for one',
+      formal: 'I have received, or am eligible to receive, a Pell Grant.' },
+    { id: 'assistance', label: 'My family receives public assistance',
+      hint: 'SNAP or food stamps, TANF, Medicaid, WIC, SSI, housing assistance — any of these count.',
+      formal: 'My family receives public assistance.' },
+    { id: 'program', label: 'I\'m in a program for students from low-income families',
+      hint: 'Upward Bound, TRIO, GEAR UP, AVID, College Possible, a local college-access nonprofit — anything like that.',
+      formal: 'I am enrolled in a federal, state, or local program that aids students from low-income families.' },
+    { id: 'housing', label: 'I live in public or subsidized housing, in a foster home, or I don\'t have stable housing',
+      hint: 'This includes staying with friends or relatives because you have nowhere else, or living in a shelter or motel.',
+      formal: 'I live in federally subsidized public housing, a foster home, or am homeless.' },
+    { id: 'ward', label: 'I\'m a ward of the state, or an orphan',
+      hint: '"Ward of the state" means the court, not a parent or guardian, is legally responsible for you.',
+      formal: 'I am a ward of the state or an orphan.' },
+    { id: 'statement', label: 'A counselor, teacher, or community leader would vouch that my family can\'t afford the fees',
+      hint: 'This one is a genuine catch-all. If paying would be a real strain, someone at your school can say so in writing — that alone qualifies you.',
+      formal: 'I can provide a supporting statement from a school official, college access counselor, financial aid officer, or community leader.' }
+  ];
+
+  // USDA reduced-price (185% of poverty) ANNUAL thresholds, effective July 1 2026 – June 30 2027,
+  // for the 48 contiguous states, DC, Guam and the territories. Alaska and Hawaii are higher.
+  // Verified two ways: each figure is exactly 1.85x the 2026 federal poverty guideline (a constant
+  // $5,680 step per person), and the family-of-four figure is 2.64% above last year's $59,478,
+  // matching the 2.6% rise stated in the Federal Register notice. These change every July.
+  var INCOME_2026_27 = [29526, 40034, 50542, 61050, 71558, 82066, 92574, 103082];
+  var INCOME_STEP = 10508;
+  var FEE_LOW = 50, FEE_HIGH = 90, TYPICAL_APPS = 10;
+
+  var money = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
+  var $ = function (id) { return document.getElementById(id); };
+
+  function threshold(size) {
+    return size <= INCOME_2026_27.length
+      ? INCOME_2026_27[size - 1]
+      : INCOME_2026_27[INCOME_2026_27.length - 1] + INCOME_STEP * (size - INCOME_2026_27.length);
+  }
+
+  // ── Build the checklist ─────────────────────────────────────────────
+  $('qlist').innerHTML = CRITERIA.map(function (c) {
+    var html = '<li class="q"><input type="checkbox" id="c-' + c.id + '" data-id="' + c.id + '" />' +
+      '<div><label for="c-' + c.id + '">' + esc(c.label) +
+      (c.hint ? '<span class="hint">' + esc(c.hint) + '</span>' : '') + '</label>';
+    if (c.income) {
+      html += '<div class="income">' +
+        '<label for="hh-size">How many people live in your household, including you?</label>' +
+        '<select id="hh-size">' +
+        '<option value="">Choose a household size</option>' +
+        [1,2,3,4,5,6,7,8,9,10].map(function (n) {
+          return '<option value="' + n + '">' + n + (n === 10 ? ' or more' : ' ' + (n === 1 ? 'person' : 'people')) + '</option>';
+        }).join('') +
+        '</select><p class="threshold" id="threshold"></p></div>';
+    }
+    return html + '</div></li>';
+  }).join('');
+
+  $('qlist').addEventListener('change', function (e) {
+    if (e.target.id === 'hh-size') {
+      var size = parseInt(e.target.value, 10);
+      var out = $('threshold');
+      if (!size) { out.textContent = ''; return; }
+      var limit = threshold(size);
+      out.innerHTML = 'For ' + size + (size === 10 ? '+ people' : (size === 1 ? ' person' : ' people')) +
+        ', the cutoff is <strong>' + money.format(limit) + ' a year</strong> before taxes. ' +
+        'If your household earns less than that, tick the box above.';
+      return;
+    }
+    render();
+  });
+
+  // ── Result ──────────────────────────────────────────────────────────
+  function render() {
+    var matched = CRITERIA.filter(function (c) {
+      var el = $('c-' + c.id);
+      return el && el.checked;
+    });
+    var box = $('result');
+
+    if (!matched.length) {
+      box.innerHTML = '<h2>Nothing ticked yet</h2>' +
+        '<p class="gold-box"><strong>Don\'t stop here.</strong> The last item on that list is a genuine catch-all: if paying ' +
+        'application fees would be a real strain on your family, a counselor or teacher can say so in writing, and that ' +
+        'by itself qualifies you. Fee waivers are not only for the very lowest incomes.</p>' +
+        '<p class="tip-box" style="margin:0">Worth asking your counselor even if you ticked nothing. The worst answer is no, ' +
+        'and the question costs you nothing.</p>';
+      return;
+    }
+
+    var low = money.format(FEE_LOW * TYPICAL_APPS), high = money.format(FEE_HIGH * TYPICAL_APPS);
+    box.innerHTML = '<h2>You very likely qualify</h2>' +
+      '<p class="good-box">You matched <strong>' + matched.length + '</strong> of the nine official criteria — and ' +
+      '<strong>one is all it takes</strong>. On ' + TYPICAL_APPS + ' applications that\'s roughly ' +
+      '<span class="money">' + low + '–' + high + '</span> you don\'t have to pay.</p>' +
+      '<h3>What you matched</h3><ul class="matched">' +
+      matched.map(function (c) { return '<li>' + esc(c.label) + '</li>'; }).join('') + '</ul>' +
+      '<h3 style="margin-top:1.25rem">Send this to your counselor</h3>' +
+      '<p class="sources" style="margin:0">Your counselor has to confirm the waiver — this is the whole ask. Copy it, ' +
+      'fill in the two blanks, send it.</p>' +
+      '<div class="email-box" id="email">' + esc(emailText(matched)) + '</div>' +
+      '<button type="button" class="btn" id="copy-email">Copy this message</button>' +
+      '<p class="status" id="copy-status"></p>';
+
+    $('copy-email').addEventListener('click', copyEmail);
+  }
+
+  function emailText(matched) {
+    var reasons = matched.map(function (c) { return '  - ' + c.formal; }).join('\n');
+    return 'Subject: Requesting a Common App fee waiver\n\n' +
+      'Hi [counselor\'s name],\n\n' +
+      'I\'m applying to college through the Common App this year, and I believe I qualify for the ' +
+      'application fee waiver. Based on the Common App\'s eligibility criteria:\n\n' + reasons + '\n\n' +
+      'Could you confirm my eligibility and approve the fee waiver in my Common App account? ' +
+      'I understand it needs a school official to sign off.\n\n' +
+      'Thank you for your help.\n\n' +
+      '[your name]';
+  }
+
+  function copyEmail() {
+    var text = $('email').textContent;
+    var done = function () { setStatus('Copied. Paste it into an email to your counselor.'); };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done, fallback);
+    } else { fallback(); }
+
+    function fallback() {
+      // Older browsers and non-secure contexts: select the text so the student can copy it.
+      try {
+        var r = document.createRange();
+        r.selectNodeContents($('email'));
+        var sel = window.getSelection();
+        sel.removeAllRanges();
+        sel.addRange(r);
+        setStatus('Selected the message — press Ctrl+C (or Cmd+C) to copy it.');
+      } catch (e) {
+        setStatus('Select the message above and copy it manually.');
+      }
+    }
+  }
+
+  function setStatus(msg) { $('copy-status').textContent = msg; }
+
+  function esc(s) {
+    return String(s === null || s === undefined ? '' : s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+})();
+</script>
+</body>
+</html>

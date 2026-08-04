@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<meta name="description" content="College Confused — free college-prep guides for every student: scholarships, FAFSA, essays, the Common App, and test prep. No paywalls, ever." />
+<meta name="description" content="College Confused — free college-prep tools and guides for every student: what college really costs, deadline countdowns, scholarships, FAFSA, essays, and test prep. No accounts, no paywalls, ever." />
 <meta name="color-scheme" content="dark" />
 <meta name="theme-color" content="#0c0b14" />
 <link rel="manifest" href="manifest.webmanifest" />
@@ -19,7 +19,7 @@ if ('serviceWorker' in navigator) {
 <title>College Confused — Free College Prep for Every Student</title>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{--accent:#8b84ff;--accent2:#a89fff;--bg:#0c0b14;--card:#171523;--border:#2a2740;--text:#f4f3fa;--muted:#9a96b8}
+:root{--accent:#8b84ff;--accent2:#a89fff;--bg:#0c0b14;--card:#171523;--border:#2a2740;--text:#f4f3fa;--muted:#9a96b8;--ok:#8fe3a8;--bad:#ff9c9c;--gold:#FFD43B}
 body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;overflow-x:hidden}
 nav{display:flex;align-items:center;justify-content:space-between;padding:1rem 2rem;border-bottom:1px solid var(--border);flex-wrap:wrap;gap:0.5rem}
 .logo{font-size:1.15rem;font-weight:900}.logo span{color:var(--accent)}
@@ -40,14 +40,42 @@ h1 em{font-style:normal;color:var(--accent)}
 .sub-cta{display:block;margin-top:1rem;color:var(--muted);font-size:0.85rem}
 .sub-cta a{color:var(--muted)}
 .sub-cta a:hover,.sub-cta a:focus-visible{color:var(--accent)}
+/* ── Live cycle strip ─────────────────────────────────────────────── */
+.cycle{background:var(--card);border:1px solid var(--border);border-left:4px solid var(--accent);border-radius:14px;padding:1.35rem 1.6rem;margin-bottom:3rem}
+.cycle[hidden]{display:none}
+.cycle-head{display:flex;align-items:baseline;gap:0.75rem;flex-wrap:wrap;margin-bottom:0.9rem}
+.cycle-head h2{font-size:1.05rem;font-weight:800;margin:0}
+.cycle-live{display:inline-flex;align-items:center;gap:0.4rem;color:var(--ok);font-size:0.75rem;font-weight:800;text-transform:uppercase;letter-spacing:1px}
+.cycle-dot{width:0.5rem;height:0.5rem;border-radius:50%;background:var(--ok)}
+.cycle-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:0.85rem;list-style:none}
+.cycle-item{background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:0.8rem 0.95rem}
+.cycle-item.urgent{border-color:var(--bad)}
+.cycle-item.soon{border-color:var(--gold)}
+.cycle-days{font-size:1.35rem;font-weight:900;letter-spacing:-0.5px;color:var(--accent2)}
+.cycle-days.urgent{color:var(--bad)}
+.cycle-days.soon{color:var(--gold)}
+.cycle-label{font-size:0.85rem;font-weight:700;color:var(--text);margin-top:0.15rem;line-height:1.35}
+.cycle-when{font-size:0.76rem;color:var(--muted);margin-top:0.25rem}
+.cycle-more{display:inline-block;margin-top:0.95rem;color:var(--accent2);font-size:0.85rem;font-weight:700;text-decoration:none}
+.cycle-more:hover,.cycle-more:focus-visible{text-decoration:underline}
+/* ── Cards ────────────────────────────────────────────────────────── */
+.section-heading{font-size:1.35rem;font-weight:800;margin-bottom:0.35rem}
+.section-sub{color:var(--muted);font-size:0.92rem;margin-bottom:1.1rem;line-height:1.6}
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1.5rem;margin-top:1.5rem}
 .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:1.75rem;display:block;text-decoration:none;color:inherit;transition:border-color 0.2s,transform 0.2s}
 .card:hover,.card:focus-visible{border-color:var(--accent);transform:translateY(-2px)}
 .card:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .card .ico{font-size:1.6rem}
-.card h2{font-size:1rem;font-weight:800;margin:0.6rem 0 0.4rem;color:var(--text)}
+.card h3{font-size:1rem;font-weight:800;margin:0.6rem 0 0.4rem;color:var(--text)}
 .card p{color:var(--muted);font-size:0.87rem;line-height:1.55}
-.about{display:grid;grid-template-columns:280px 1fr;gap:3rem;align-items:center;background:var(--card);border:1px solid var(--border);border-radius:18px;padding:3rem;margin:0.5rem 0 3rem}
+/* Tools read as interactive; guides read as reading. */
+.tools{margin-bottom:3rem}
+.tool-card{background:linear-gradient(160deg,rgba(139,132,255,0.13),rgba(139,132,255,0.04));border-color:rgba(139,132,255,0.45)}
+.tool-card:hover,.tool-card:focus-visible{border-color:var(--accent)}
+.tool-tag{display:inline-block;background:rgba(139,132,255,0.2);color:var(--accent2);font-size:0.65rem;font-weight:800;letter-spacing:1px;text-transform:uppercase;padding:0.15rem 0.55rem;border-radius:999px;margin-left:0.5rem;vertical-align:middle}
+.tool-card .go{display:inline-block;margin-top:0.85rem;color:var(--accent2);font-size:0.85rem;font-weight:800}
+/* ── About ────────────────────────────────────────────────────────── */
+.about{display:grid;grid-template-columns:280px 1fr;gap:3rem;align-items:center;background:var(--card);border:1px solid var(--border);border-radius:18px;padding:3rem;margin:0 0 3rem}
 .about-photo img{width:100%;height:auto;aspect-ratio:1/1;object-fit:cover;border-radius:50%;border:3px solid var(--accent);display:block}
 .about-eyebrow{display:block;font-size:0.75rem;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--accent2);margin-bottom:0.6rem}
 .about-content p{color:var(--muted);font-size:1rem;line-height:1.7;margin-bottom:1rem;max-width:44rem}
@@ -58,12 +86,23 @@ h1 em{font-style:normal;color:var(--accent)}
 .stat-label{font-size:0.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-top:0.15rem}
 .read-more{display:inline-block;margin-top:0.4rem;color:var(--accent2);font-size:0.85rem;font-weight:700;text-decoration:none}
 .read-more:hover,.read-more:focus-visible{text-decoration:underline}
-.section-heading{font-size:1.35rem;font-weight:800;margin-bottom:1.1rem}
+/* ── Trust ────────────────────────────────────────────────────────── */
+.trust{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:2.5rem;margin:3rem 0 0;text-align:center}
+.trust h2{font-size:1.3rem;font-weight:800;margin:0.6rem 0 0.75rem}
+.trust > p{color:var(--muted);font-size:0.98rem;line-height:1.7;max-width:46rem;margin:0 auto}
+.trust-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:1rem;margin-top:1.75rem;text-align:left}
+.trust-item{background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:1rem 1.1rem}
+.trust-item h3{font-size:0.88rem;font-weight:800;margin-bottom:0.3rem}
+.trust-item p{color:var(--muted);font-size:0.83rem;line-height:1.55}
+.trust-link{display:inline-block;margin-top:1.5rem;color:var(--accent2);font-size:0.85rem;font-weight:700}
 @media (max-width:640px){
+  main{padding:2rem 1rem}
+  nav{padding:1rem}
   .about{grid-template-columns:1fr;text-align:center;padding:1.75rem}
   .about-photo img{max-width:180px;margin:0 auto}
   .stat-row{justify-content:center}
   .stat{align-items:center}
+  .cycle,.trust{padding:1.4rem}
 }
 footer{text-align:center;color:var(--muted);font-size:0.8rem;padding:2rem 1rem;border-top:1px solid var(--border)}
 footer a{color:var(--muted)}
@@ -74,28 +113,72 @@ footer a:hover,footer a:focus-visible{color:var(--accent)}
 <body>
 <nav>
   <div class="logo">College <span>Confused</span></div>
-  <div class="links"><a href="blog.html">Blog</a><a href="blog/scholarships-hub.html">Scholarships</a><a href="blog/essay-hub.html">Essays</a><a href="essay-tool.html">Write Your Essay</a></div>
+  <div class="links"><a href="blog.html">Guides</a><a href="deadlines.html">Deadlines</a><a href="cost-tool.html">College Costs</a><a href="essay-tool.html">Write Your Essay</a></div>
 </nav>
 <main>
   <section class="hero">
     <div class="hero-inner">
       <div class="cap" aria-hidden="true">🎓</div>
       <h1>Simplify <em>the college application process</em></h1>
-      <span class="free-badge">100% free · no paywalls · ever</span>
-      <p>College Confused provides tutorials, walkthroughs, and guides on how to efficiently apply and pay for college — scholarships, FAFSA, essays, the Common App, and test prep, in plain English.</p>
-      <a class="cta" href="blog.html">Browse the Blog</a>
-      <span class="sub-cta"><a href="blog/first-gen-guide.html">Read why this site exists</a></span>
+      <span class="free-badge">100% free · no accounts · no paywalls · ever</span>
+      <p>Free tools and plain-English guides for applying to college and paying for it — what schools actually cost, when everything is due, scholarships, FAFSA, essays, and test prep.</p>
+      <a class="cta" href="#tools">Start with a free tool</a>
+      <span class="sub-cta"><a href="blog.html">Or browse the guides</a></span>
     </div>
   </section>
+
+  <!-- ── Live cycle strip: driven by data/deadlines.json, hidden if it can't load ── -->
+  <section class="cycle" id="cycle" aria-labelledby="cycle-title" hidden>
+    <div class="cycle-head">
+      <h2 id="cycle-title">The 2026-27 application season is open</h2>
+      <span class="cycle-live"><span class="cycle-dot" aria-hidden="true"></span>Live</span>
+    </div>
+    <ul class="cycle-list" id="cycle-list"></ul>
+    <a class="cycle-more" href="deadlines.html">See every deadline, and put them in your calendar &rarr;</a>
+  </section>
+
+  <!-- ── Tools ────────────────────────────────────────────────────────── -->
+  <section class="tools" id="tools" aria-labelledby="tools-title">
+    <h2 class="section-heading" id="tools-title">Free tools</h2>
+    <p class="section-sub">These do the work with you — no sign-up, and nothing you type gets stored on our end.</p>
+    <div class="grid">
+      <a class="card tool-card" href="cost-tool.html">
+        <div class="ico" aria-hidden="true">💵</div>
+        <h3>What College Actually Costs You<span class="tool-tag">Tool</span></h3>
+        <p>The sticker price is not the price. Compare what families at your income level really pay, using federal data — and see whether the new 2026 loan caps can even cover it.</p>
+        <span class="go">Check a college &rarr;</span>
+      </a>
+      <a class="card tool-card" href="fee-waiver.html">
+        <div class="ico" aria-hidden="true">🎟️</div>
+        <h3>Can You Apply for Free?<span class="tool-tag">Tool</span></h3>
+        <p>Application fees run $50–90 each. Most students who qualify to skip them never find out. One minute to check, plus a ready-to-send message for your counselor.</p>
+        <span class="go">Check in 60 seconds &rarr;</span>
+      </a>
+      <a class="card tool-card" href="deadlines.html">
+        <div class="ico" aria-hidden="true">🗓️</div>
+        <h3>Deadline Command Center<span class="tool-tag">Tool</span></h3>
+        <p>Every date this season, counting down. Check things off as you finish them, and export the whole thing to your phone's calendar in one tap.</p>
+        <span class="go">See what's due &rarr;</span>
+      </a>
+      <a class="card tool-card" href="essay-tool.html">
+        <div class="ico" aria-hidden="true">✍️</div>
+        <h3>Write Your Essay<span class="tool-tag">Tool</span></h3>
+        <p>Draft, store, and improve your college essays, with free AI feedback trained on the approach that won $1M+ in scholarships.</p>
+        <span class="go">Start writing &rarr;</span>
+      </a>
+    </div>
+  </section>
+
+  <!-- ── Founder ──────────────────────────────────────────────────────── -->
   <section class="about" aria-label="About the founder">
     <div class="about-photo">
-      <img src="assets/darrian.jpg" alt="Darrian Belcher, founder of College Confused" width="900" height="900" loading="eager" />
+      <img src="assets/darrian.jpg" alt="Darrian Belcher, founder of College Confused" width="900" height="900" loading="lazy" />
     </div>
     <div class="about-content">
       <span class="about-eyebrow">Built by someone who's been there</span>
       <p>I'm Darrian Belcher. Growing up, my house burned down, my parents split, and I worked weekends at McDonald's to help my family stay afloat. I taught myself to code on a school-issued Chromebook because it was the only computer I had. My older sister had already been through the process and helped me every step of the way — from the Common App to essays to FAFSA. Not every student has that person. This site is my attempt to be that person for the ones who don't.</p>
       <div class="stat-row">
-        <div class="stat"><span class="stat-num">25</span><span class="stat-label">Acceptances</span></div>
+        <div class="stat"><span class="stat-num">25+</span><span class="stat-label">Acceptances</span></div>
         <div class="stat"><span class="stat-num">10+</span><span class="stat-label">Full-Ride Offers</span></div>
         <div class="stat"><span class="stat-num">$1M+</span><span class="stat-label">In Scholarships</span></div>
       </div>
@@ -103,42 +186,125 @@ footer a:hover,footer a:focus-visible{color:var(--accent)}
       <a class="read-more" href="blog/first-gen-guide.html">Read my full story →</a>
     </div>
   </section>
+
+  <!-- ── Guides ───────────────────────────────────────────────────────── -->
   <h2 class="section-heading">Where do you want to start?</h2>
+  <p class="section-sub">Step-by-step walkthroughs, in plain English.</p>
   <section class="grid" aria-label="Guides">
     <a class="card" href="blog/application-timeline.html">
       <div class="ico" aria-hidden="true">🗓️</div>
-      <h2>Application Timeline</h2>
+      <h3>Application Timeline</h3>
       <p>Every deadline from junior-year planning to decision day, laid out so nothing sneaks up on you.</p>
     </a>
     <a class="card" href="blog/scholarships-hub.html">
       <div class="ico" aria-hidden="true">💰</div>
-      <h2>Scholarships</h2>
+      <h3>Scholarships</h3>
       <p>Find scholarships, avoid scams, and build a strategy that actually wins — plus a real scholarship bulletin.</p>
     </a>
     <a class="card" href="blog/essay-hub.html">
       <div class="ico" aria-hidden="true">✍️</div>
-      <h2>Essays</h2>
+      <h3>Essays</h3>
       <p>Get past the blank page and write a personal statement that actually sounds like you.</p>
     </a>
     <a class="card" href="blog/fafsa-hub.html">
       <div class="ico" aria-hidden="true">🧾</div>
-      <h2>FAFSA Guide</h2>
+      <h3>FAFSA Guide</h3>
       <p>Financial aid without the jargon — step-by-step, plus what to do if your aid is delayed.</p>
     </a>
     <a class="card" href="blog/test-prep-guide.html">
       <div class="ico" aria-hidden="true">📝</div>
-      <h2>SAT / ACT Prep</h2>
+      <h3>SAT / ACT Prep</h3>
       <p>Free study resources, fee-waiver eligibility, and a strategy for when to test.</p>
     </a>
     <a class="card" href="blog/college-list-guide.html">
       <div class="ico" aria-hidden="true">🧭</div>
-      <h2>College List Builder</h2>
+      <h3>College List Builder</h3>
       <p>Build a balanced reach/match/safety list that fits your goals and your budget.</p>
     </a>
   </section>
+
+  <!-- ── Trust ────────────────────────────────────────────────────────── -->
+  <section class="trust" aria-labelledby="trust-title">
+    <span class="free-badge">Why this site is different</span>
+    <h2 id="trust-title">We don't want your data</h2>
+    <p>Most "free" college sites make their money by selling your information to colleges and advertisers, or by running the same test you're studying for. We don't do any of that — there is nothing to sign up for, because there is nothing we want from you.</p>
+    <div class="trust-grid">
+      <div class="trust-item">
+        <h3>No accounts</h3>
+        <p>Nothing to sign up for. No email, no password, no profile.</p>
+      </div>
+      <div class="trust-item">
+        <h3>No trackers or ads</h3>
+        <p>No analytics, no advertising pixels, nobody following you around the web afterward.</p>
+      </div>
+      <div class="trust-item">
+        <h3>Your work stays yours</h3>
+        <p>Essays and checklists are saved in your own browser. Your essay only leaves your device when you press the AI feedback button.</p>
+      </div>
+      <div class="trust-item">
+        <h3>No one pays us to say this</h3>
+        <p>No college sponsors us and no scholarship company pays for placement. Cost numbers come straight from public federal data.</p>
+      </div>
+    </div>
+    <a class="trust-link" href="privacy.html">Read the full privacy policy →</a>
+  </section>
 </main>
 <footer>
-  <p>College Confused is free forever · <a href="https://collegeconfused.org">collegeconfused.org</a> · <a href="blog.html">Blog</a> · <a href="privacy.html">Privacy</a></p>
+  <p>College Confused is free forever · <a href="https://collegeconfused.org">collegeconfused.org</a> · <a href="blog.html">Guides</a> · <a href="privacy.html">Privacy</a></p>
 </footer>
+<script>
+(function () {
+  'use strict';
+  var DAY_MS = 86400000;
+
+  // The strip is supplementary — if the data can't load, it stays hidden rather
+  // than showing a broken or empty box.
+  fetch('data/deadlines.json')
+    .then(function (r) { if (!r.ok) { throw new Error('HTTP ' + r.status); } return r.json(); })
+    .then(function (data) {
+      var now = Date.now();
+      var upcoming = data.deadlines
+        .map(function (d) { return { d: d, days: daysUntil(d.dueDate) }; })
+        // Whether a deadline has passed is an instant question, not a calendar one:
+        // an 11:59 PM Pacific cutoff is still open at 9 AM on that same day.
+        .filter(function (x) { return Date.parse(x.d.dueUTC) > now; })
+        .sort(function (a, b) { return Date.parse(a.d.dueUTC) - Date.parse(b.d.dueUTC); })
+        .slice(0, 3);
+
+      if (!upcoming.length) { return; }
+
+      document.getElementById('cycle-list').innerHTML = upcoming.map(function (x) {
+        var cls = x.days <= 7 ? 'urgent' : (x.days <= 30 ? 'soon' : '');
+        var count = x.days === 0 ? 'Today' : (x.days === 1 ? '1 day' : x.days + ' days');
+        return '<li class="cycle-item ' + cls + '">' +
+          '<div class="cycle-days ' + cls + '">' + count + '</div>' +
+          '<div class="cycle-label">' + esc(x.d.label) + '</div>' +
+          // tzLabel rendered verbatim — the timezone must always be visible.
+          '<div class="cycle-when">' + esc(x.d.tzLabel) + '</div></li>';
+      }).join('');
+
+      document.getElementById('cycle').hidden = false;
+    })
+    .catch(function () { /* strip stays hidden */ });
+
+  // Whole calendar days between the viewer's local date and the deadline's own date.
+  // Both sides are normalised to UTC midnight, so this is exact integer day maths with
+  // no DST drift — and two deadlines displayed as the same date always show the same
+  // number of days, even when their underlying instants differ.
+  function daysUntil(dueDate) {
+    var p = dueDate.split('-');
+    var due = Date.UTC(+p[0], +p[1] - 1, +p[2]);
+    var n = new Date();
+    var today = Date.UTC(n.getFullYear(), n.getMonth(), n.getDate());
+    return Math.round((due - today) / DAY_MS);
+  }
+
+  function esc(s) {
+    return String(s === null || s === undefined ? '' : s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+})();
+</script>
 </body>
 </html>

@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="What college actually costs you — compare sticker price to what families at your income level really pay, using federal College Scorecard data. Free, no account, nothing leaves your device." />
+<meta name="color-scheme" content="dark" />
+<meta name="theme-color" content="#0c0b14" />
+<title>What College Actually Costs You — College Confused</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--accent:#8b84ff;--accent2:#a89fff;--bg:#0c0b14;--card:#171523;--border:#2a2740;--text:#f4f3fa;--muted:#9a96b8;--ok:#8fe3a8;--bad:#ff9c9c;--gold:#FFD43B}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;overflow-x:hidden}
+nav{display:flex;align-items:center;justify-content:space-between;padding:1rem 2rem;border-bottom:1px solid var(--border);flex-wrap:wrap;gap:0.5rem}
+.logo{font-size:1.15rem;font-weight:900}.logo span{color:var(--accent)}
+nav .links a{color:var(--muted);text-decoration:none;font-size:0.85rem;padding:0.4rem 0.8rem;border-radius:6px}
+nav .links a:hover,nav .links a:focus-visible{color:var(--accent);outline:none}
+nav .links a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+nav .links a[aria-current="page"]{color:var(--accent);font-weight:700}
+main{flex:1;width:100%;max-width:1100px;margin:0 auto;padding:2.5rem 2rem}
+.hero-mini{text-align:center;margin-bottom:2rem}
+.hero-mini .cap{font-size:2.2rem}
+h1{font-size:clamp(1.6rem,5vw,2.3rem);font-weight:900;letter-spacing:-1px;margin:0.5rem 0}
+h1 em{font-style:normal;color:var(--accent)}
+.hero-mini p{color:var(--muted);font-size:1rem;max-width:36rem;margin:0 auto;line-height:1.6}
+.free-badge{display:inline-block;background:rgba(139,132,255,0.14);color:var(--accent2);font-weight:800;font-size:0.75rem;letter-spacing:1px;text-transform:uppercase;padding:0.3rem 0.8rem;border-radius:999px;margin-top:0.75rem}
+h2{font-size:1.25rem;font-weight:800;margin-bottom:0.9rem}
+h3{font-size:1rem;font-weight:800;margin:1.1rem 0 0.5rem}
+.step{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:1.5rem;margin-bottom:1.5rem}
+.step-num{display:inline-block;background:rgba(139,132,255,0.14);color:var(--accent2);font-size:0.72rem;font-weight:800;letter-spacing:1px;text-transform:uppercase;padding:0.2rem 0.7rem;border-radius:999px;margin-bottom:0.75rem}
+.tip-box{background:rgba(139,132,255,0.1);border:1px solid var(--border);border-left:3px solid var(--accent);border-radius:8px;padding:0.8rem 1rem;color:var(--muted);font-size:0.85rem;line-height:1.55;margin:0 0 1.25rem}
+.warn-box{background:rgba(255,156,156,0.08);border:1px solid var(--border);border-left:3px solid var(--bad);border-radius:8px;padding:0.8rem 1rem;color:var(--bad);font-size:0.88rem;line-height:1.55;margin:0.75rem 0}
+.good-box{background:rgba(143,227,168,0.08);border:1px solid var(--border);border-left:3px solid var(--ok);border-radius:8px;padding:0.8rem 1rem;color:var(--ok);font-size:0.88rem;line-height:1.55;margin:0.75rem 0}
+fieldset{border:0;padding:0;margin:0}
+legend{font-size:0.82rem;font-weight:700;color:var(--muted);margin-bottom:0.5rem}
+.bands{display:flex;flex-wrap:wrap;gap:0.5rem}
+.band{display:inline-flex;align-items:center;gap:0.4rem;background:var(--bg);border:1px solid var(--border);border-radius:999px;padding:0.45rem 0.95rem;font-size:0.85rem;font-weight:700;color:var(--muted);cursor:pointer}
+.band:hover{border-color:var(--accent);color:var(--text)}
+.band:has(input:checked){border-color:var(--accent);color:var(--accent2);background:rgba(139,132,255,0.12)}
+.band:has(input:focus-visible){outline:2px solid var(--accent);outline-offset:2px}
+.band input{accent-color:var(--accent)}
+.picker{display:flex;gap:0.6rem;flex-wrap:wrap;align-items:flex-end}
+.picker .field{flex:1;min-width:15rem;margin:0}
+label{display:block;font-size:0.82rem;font-weight:700;color:var(--muted);margin-bottom:0.35rem}
+input[type="text"]{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font:inherit;font-size:0.9rem;padding:0.6rem 0.75rem}
+input[type="text"]:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.btn{display:inline-block;background:var(--accent);color:#0c0b14;font:inherit;font-weight:800;font-size:0.88rem;padding:0.6rem 1.3rem;border:1px solid var(--accent);border-radius:10px;cursor:pointer;transition:background .2s}
+.btn:hover{background:var(--accent2);border-color:var(--accent2)}
+.btn:focus-visible{outline:2px solid var(--text);outline-offset:3px}
+.btn:disabled{opacity:0.55;cursor:not-allowed}
+.btn-sm{background:var(--bg);color:var(--muted);border:1px solid var(--border);font:inherit;font-size:0.78rem;font-weight:700;padding:0.35rem 0.75rem;border-radius:8px;cursor:pointer;transition:border-color .2s,color .2s}
+.btn-sm:hover{border-color:var(--accent);color:var(--accent)}
+.btn-sm:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.table-wrap{overflow-x:auto;margin-top:0.5rem}
+table{width:100%;border-collapse:collapse;font-size:0.88rem;min-width:34rem}
+caption{text-align:left;color:var(--muted);font-size:0.82rem;line-height:1.5;padding-bottom:0.6rem}
+th,td{text-align:left;padding:0.7rem 0.6rem;border-bottom:1px solid var(--border)}
+th{color:var(--muted);font-size:0.75rem;text-transform:uppercase;letter-spacing:0.5px;font-weight:800}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+.school-name{font-weight:700;color:var(--text)}
+.school-loc{color:var(--muted);font-size:0.78rem}
+.big-save{color:var(--ok);font-weight:800}
+.no-data{color:var(--muted);font-style:italic}
+.gap-card{background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:1.1rem 1.25rem;margin-bottom:1rem}
+.gap-card h3{margin:0 0 0.15rem;font-size:0.98rem}
+.gap-card .school-loc{margin-bottom:0.8rem}
+.gap-lines{list-style:none;font-size:0.86rem}
+.gap-lines li{display:flex;justify-content:space-between;gap:1rem;padding:0.38rem 0;border-bottom:1px solid var(--border);color:var(--muted)}
+.gap-lines li:last-child{border-bottom:0}
+.gap-lines li span:last-child{font-variant-numeric:tabular-nums;color:var(--text);font-weight:700;white-space:nowrap}
+.gap-lines li.total{border-top:2px solid var(--border);margin-top:0.3rem;padding-top:0.6rem;color:var(--text);font-weight:800}
+.gap-lines li.total span:last-child{color:var(--gold);font-size:1.05rem}
+.empty-note{color:var(--muted);font-size:0.9rem;line-height:1.6;padding:0.5rem 0}
+.sources{color:var(--muted);font-size:0.8rem;line-height:1.65;margin-top:0.5rem}
+.sources a{color:var(--accent2)}
+.chip-list{display:flex;flex-wrap:wrap;gap:0.5rem;margin-top:1rem}
+.chip-list:empty{display:none}
+.picked{display:inline-flex;align-items:center;gap:0.5rem;background:rgba(139,132,255,0.12);border:1px solid var(--accent);border-radius:999px;padding:0.3rem 0.5rem 0.3rem 0.9rem;font-size:0.82rem;color:var(--accent2);font-weight:700}
+.picked button{background:none;border:0;color:var(--accent2);font:inherit;font-size:1rem;line-height:1;cursor:pointer;padding:0.1rem 0.3rem;border-radius:50%}
+.picked button:hover{color:var(--bad)}
+.picked button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+footer{text-align:center;color:var(--muted);font-size:0.8rem;padding:2rem 1rem;border-top:1px solid var(--border)}
+footer a{color:var(--muted)}
+footer a:hover,footer a:focus-visible{color:var(--accent)}
+@media (max-width:640px){
+  main{padding:1.75rem 1rem}
+  nav{padding:1rem}
+  .step{padding:1.1rem}
+  .picker .field{min-width:100%}
+  .picker .btn{width:100%}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<nav>
+  <div class="logo">College <span>Confused</span></div>
+  <div class="links"><a href="blog.html">Guides</a><a href="deadlines.html">Deadlines</a><a href="cost-tool.html" aria-current="page">College Costs</a><a href="essay-tool.html">Write Your Essay</a></div>
+</nav>
+<main>
+  <header class="hero-mini">
+    <div class="cap" aria-hidden="true">💵</div>
+    <h1>What College <em>Actually Costs You</em></h1>
+    <p>The sticker price is not the price. Most families pay far less — and at some expensive private colleges, low- and middle-income families pay the least of all. Here's the real number.</p>
+    <span class="free-badge">100% free · no account · nothing leaves your device</span>
+  </header>
+
+  <p class="tip-box" id="loading-note">Loading college data…</p>
+
+  <!-- ── Step 1: income band ──────────────────────────────────────────── -->
+  <section class="step">
+    <span class="step-num">Step 1</span>
+    <h2>What's your family's yearly income?</h2>
+    <p class="tip-box">Pick the range you're closest to — you don't need an exact number, and you don't need to ask your parents for a tax form. Nothing you pick here is sent anywhere or saved.</p>
+    <fieldset>
+      <legend>Family income range (before taxes)</legend>
+      <div class="bands" id="bands"></div>
+    </fieldset>
+  </section>
+
+  <!-- ── Step 2: schools ──────────────────────────────────────────────── -->
+  <section class="step">
+    <span class="step-num">Step 2</span>
+    <h2>Add up to 5 colleges</h2>
+    <div class="picker">
+      <div class="field">
+        <label for="school-input">Search for a college</label>
+        <input type="text" id="school-input" list="school-options" autocomplete="off" placeholder="Start typing a college name…" disabled />
+        <datalist id="school-options"></datalist>
+      </div>
+      <button type="button" class="btn" id="add-school" disabled>Add college</button>
+    </div>
+    <p class="warn-box" id="picker-error" role="status"></p>
+    <div class="chip-list" id="picked-list"></div>
+  </section>
+
+  <!-- ── Results ──────────────────────────────────────────────────────── -->
+  <section class="step" id="results-step">
+    <span class="step-num">Your results</span>
+    <h2>Sticker price vs. what you'd actually pay</h2>
+    <div id="results" aria-live="polite">
+      <p class="empty-note">Pick an income range and add a college to see your numbers.</p>
+    </div>
+  </section>
+
+  <!-- ── Four-year gap ────────────────────────────────────────────────── -->
+  <section class="step" id="gap-step" hidden>
+    <span class="step-num">The part nobody tells you</span>
+    <h2>Can your family actually borrow this much?</h2>
+    <p class="tip-box"><strong>This changed on July 1, 2026.</strong> Parent PLUS loans used to cover whatever federal aid didn't. Now they're capped at <strong>$20,000 per year</strong> and <strong>$65,000 total</strong> per student — and new Parent PLUS loans can no longer use income-driven repayment. If the four-year cost is more than federal loans allow, that difference has to come from savings, scholarships, private loans, or a different school.</p>
+    <div id="gap-results"></div>
+  </section>
+
+  <section class="step">
+    <h2>Before you pay to apply anywhere</h2>
+    <p class="tip-box" style="margin:0">Application fees are $50–90 per college — $500–900 across ten schools. If your family's income put you in one of the lower bands above, there's a good chance you can skip those fees entirely. <a href="fee-waiver.html" style="color:var(--accent2);font-weight:700">Check in 60 seconds &rarr;</a></p>
+  </section>
+
+  <section class="step">
+    <h2>Where these numbers come from</h2>
+    <p class="sources" id="source-note"></p>
+    <p class="sources"><strong>What "net price" means:</strong> the average yearly price students in your income range actually paid at that college after grants and scholarships — tuition, fees, housing, and food included. It is an <strong>average of past students</strong>, not a quote. Your real offer depends on your grades, your specific finances, and the year. Always run the college's own net price calculator and compare your actual aid letters.</p>
+    <p class="sources"><strong>Federal loan figures:</strong> a dependent undergraduate can borrow <strong>$5,500</strong> freshman year, <strong>$6,500</strong> sophomore year, and <strong>$7,500</strong> in each of the next two — <strong>$27,000</strong> across four years. (You may see a $31,000 lifetime limit quoted; that extra room only opens up in a fifth year, so we don't count it here.) Parent PLUS is capped at <strong>$20,000/year</strong> and <strong>$65,000 total</strong> as of July 1, 2026 (<a href="https://studentaid.gov/understand-aid/types/loans/plus" target="_blank" rel="noopener">studentaid.gov</a>). Loans taken before July 1, 2026 keep the old limits for three more years.</p>
+  </section>
+</main>
+<footer>
+  <p>College Confused is free forever · <a href="https://collegeconfused.org">collegeconfused.org</a> · <a href="blog.html">Guides</a> · <a href="privacy.html">Privacy</a></p>
+</footer>
+<script>
+(function () {
+  'use strict';
+
+  // Federal borrowing limits. Sources cited in the "Where these numbers come from" section.
+  // Dependent undergrads can borrow $5,500 / $6,500 / $7,500 / $7,500 across four years.
+  // That is $27,000 — NOT the $31,000 lifetime aggregate, which only becomes reachable in a
+  // fifth year. Using the aggregate here would understate the gap by up to $4,000.
+  var FED_STUDENT_TOTAL = 27000;   // dependent undergrad, four years
+  var PLUS_ANNUAL_CAP   = 20000;   // per year, effective July 1 2026
+  var PLUS_TOTAL_CAP    = 65000;   // per dependent student, effective July 1 2026
+  var YEARS             = 4;
+  var MAX_SCHOOLS       = 5;
+
+  // Field keys in data/colleges.json, in the order the net-price bands appear.
+  var BAND_KEYS = ['np_0_30', 'np_30_48', 'np_48_75', 'np_75_110', 'np_110_plus'];
+  var BAND_LABELS = ['Under $30,000', '$30,000 - $48,000', '$48,000 - $75,000', '$75,000 - $110,000', 'Over $110,000'];
+
+  var money = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
+
+  var db = null;           // { idx: {field->position}, rows: [] }
+  var bandIndex = null;    // 0-4, which income band is selected
+  var picked = [];         // selected school rows
+
+  var $ = function (id) { return document.getElementById(id); };
+
+  // ── Load the committed Scorecard snapshot ───────────────────────────
+  fetch('data/colleges.json')
+    .then(function (r) {
+      if (!r.ok) { throw new Error('HTTP ' + r.status); }
+      return r.json();
+    })
+    .then(function (data) {
+      var idx = {};
+      data.fields.forEach(function (f, i) { idx[f] = i; });
+      db = { idx: idx, rows: data.rows };
+
+      $('loading-note').hidden = true;
+      $('school-input').disabled = false;
+      $('add-school').disabled = false;
+      $('source-note').innerHTML = '<strong>Source:</strong> ' + escapeHtml(data.source) +
+        ' — <a href="' + data.source_url + '" target="_blank" rel="noopener">collegescorecard.ed.gov</a>. ' +
+        'Public domain U.S. government data covering ' + data.rows.length.toLocaleString() +
+        ' four-year colleges. Snapshot taken ' + escapeHtml(data.as_of) + '.';
+      buildBands();
+    })
+    .catch(function (err) {
+      $('loading-note').className = 'warn-box';
+      $('loading-note').innerHTML = 'Couldn\'t load the college data (' + escapeHtml(String(err.message)) +
+        '). Try reloading. In the meantime, our <a href="blog/fafsa-hub.html">FAFSA guide</a> walks through paying for college step by step.';
+    });
+
+  // ── Step 1: income bands ────────────────────────────────────────────
+  function buildBands() {
+    var html = '';
+    for (var i = 0; i < BAND_LABELS.length; i++) {
+      html += '<label class="band"><input type="radio" name="income-band" value="' + i + '" /> ' +
+              escapeHtml(BAND_LABELS[i]) + '</label>';
+    }
+    $('bands').innerHTML = html;
+    $('bands').addEventListener('change', function (e) {
+      if (e.target.name === 'income-band') {
+        bandIndex = parseInt(e.target.value, 10);
+        render();
+      }
+    });
+  }
+
+  // ── Step 2: school picker ───────────────────────────────────────────
+  var input = $('school-input');
+
+  input.addEventListener('input', function () {
+    var q = input.value.trim().toLowerCase();
+    var list = $('school-options');
+    if (!db || q.length < 2) { list.innerHTML = ''; return; }
+
+    var out = [];
+    for (var i = 0; i < db.rows.length && out.length < 25; i++) {
+      var name = db.rows[i][db.idx.name];
+      if (name.toLowerCase().indexOf(q) !== -1) {
+        out.push('<option value="' + escapeHtml(name) + '"></option>');
+      }
+    }
+    list.innerHTML = out.join('');
+  });
+
+  input.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') { e.preventDefault(); addSchool(); }
+  });
+
+  $('add-school').addEventListener('click', addSchool);
+
+  function addSchool() {
+    var q = input.value.trim().toLowerCase();
+    var err = $('picker-error');
+    err.textContent = '';
+
+    if (!db || !q) { return; }
+    if (picked.length >= MAX_SCHOOLS) {
+      err.textContent = 'That\'s ' + MAX_SCHOOLS + ' colleges — remove one to add another.';
+      return;
+    }
+
+    // Prefer an exact name match (what the datalist gives us), else the first substring hit.
+    var exact = null, partial = null;
+    for (var i = 0; i < db.rows.length; i++) {
+      var name = db.rows[i][db.idx.name].toLowerCase();
+      if (name === q) { exact = db.rows[i]; break; }
+      if (partial === null && name.indexOf(q) !== -1) { partial = db.rows[i]; }
+    }
+    var row = exact || partial;
+
+    if (!row) {
+      err.textContent = 'No four-year college found matching "' + input.value.trim() + '". Try a shorter search, or the college\'s full official name.';
+      return;
+    }
+    if (picked.some(function (p) { return p[db.idx.id] === row[db.idx.id]; })) {
+      err.textContent = row[db.idx.name] + ' is already on your list.';
+      return;
+    }
+
+    picked.push(row);
+    input.value = '';
+    $('school-options').innerHTML = '';
+    render();
+  }
+
+  $('picked-list').addEventListener('click', function (e) {
+    var btn = e.target.closest('button[data-remove]');
+    if (!btn) { return; }
+    var id = parseInt(btn.getAttribute('data-remove'), 10);
+    picked = picked.filter(function (p) { return p[db.idx.id] !== id; });
+    $('picker-error').textContent = '';
+    render();
+  });
+
+  // ── Rendering ───────────────────────────────────────────────────────
+  function render() {
+    renderPicked();
+    renderResults();
+    renderGap();
+  }
+
+  function renderPicked() {
+    $('picked-list').innerHTML = picked.map(function (r) {
+      var name = r[db.idx.name];
+      return '<span class="picked">' + escapeHtml(name) +
+        '<button type="button" data-remove="' + r[db.idx.id] + '" aria-label="Remove ' + escapeHtml(name) + '">&times;</button></span>';
+    }).join('');
+  }
+
+  function renderResults() {
+    var box = $('results');
+
+    if (bandIndex === null || !picked.length) {
+      box.innerHTML = '<p class="empty-note">' +
+        (bandIndex === null ? 'Pick an income range above' : 'Add a college above') +
+        ' to see your numbers.</p>';
+      return;
+    }
+
+    var rows = picked.map(function (r) {
+      var sticker = r[db.idx.sticker];
+      var net = r[db.idx[BAND_KEYS[bandIndex]]];
+      var cells = '<td><span class="school-name">' + escapeHtml(r[db.idx.name]) + '</span><br />' +
+                  '<span class="school-loc">' + escapeHtml(r[db.idx.city] || '') + ', ' + escapeHtml(r[db.idx.state] || '') + '</span></td>';
+
+      cells += '<td class="num">' + (sticker === null ? '<span class="no-data">Not reported</span>' : money.format(sticker)) + '</td>';
+
+      if (net === null) {
+        // Scorecard suppresses small cells to protect privacy. Never show this as $0.
+        cells += '<td class="num"><span class="no-data">Not reported</span></td><td class="num"><span class="no-data">—</span></td>';
+      } else {
+        cells += '<td class="num"><strong>' + money.format(net) + '</strong></td>';
+        if (sticker === null) {
+          cells += '<td class="num"><span class="no-data">—</span></td>';
+        } else {
+          var saved = sticker - net;
+          var pct = Math.round(saved / sticker * 100);
+          cells += '<td class="num">' + (saved > 0
+            ? '<span class="big-save">' + money.format(saved) + ' less<br /><span class="school-loc">' + pct + '% off sticker</span></span>'
+            : money.format(saved)) + '</td>';
+        }
+      }
+      return '<tr>' + cells + '</tr>';
+    }).join('');
+
+    box.innerHTML =
+      '<div class="table-wrap"><table>' +
+      '<caption>Average yearly cost for families earning <strong>' + escapeHtml(BAND_LABELS[bandIndex]) +
+      '</strong>. Scroll sideways on a small screen to see every column.</caption>' +
+      '<thead><tr><th scope="col">College</th><th scope="col" class="num">Sticker price / yr</th>' +
+      '<th scope="col" class="num">You\'d likely pay / yr</th><th scope="col" class="num">Difference</th></tr></thead>' +
+      '<tbody>' + rows + '</tbody></table></div>' +
+      '<p class="empty-note">"Not reported" means the college didn\'t report that figure, or it was withheld to protect student privacy — it does <strong>not</strong> mean the college is free.</p>';
+  }
+
+  function renderGap() {
+    var step = $('gap-step');
+    var box = $('gap-results');
+
+    var usable = picked.filter(function (r) { return r[db.idx[BAND_KEYS[bandIndex]]] !== null; });
+    if (bandIndex === null || !usable.length) { step.hidden = true; return; }
+    step.hidden = false;
+
+    box.innerHTML = usable.map(function (r) {
+      var net = r[db.idx[BAND_KEYS[bandIndex]]];
+      var fourYear = net * YEARS;
+      var federalCovers = Math.min(FED_STUDENT_TOTAL, fourYear);
+      var afterStudent = fourYear - federalCovers;
+      var plusCovers = Math.min(PLUS_TOTAL_CAP, Math.max(0, afterStudent));
+      var gap = Math.max(0, fourYear - federalCovers - plusCovers);
+
+      // What parents would need to borrow each year, after the student's own federal loans.
+      var parentPerYear = Math.max(0, net - (FED_STUDENT_TOTAL / YEARS));
+
+      var html = '<div class="gap-card"><h3>' + escapeHtml(r[db.idx.name]) + '</h3>' +
+        '<p class="school-loc">' + escapeHtml(r[db.idx.city] || '') + ', ' + escapeHtml(r[db.idx.state] || '') + '</p>' +
+        '<ul class="gap-lines">' +
+        line('Four years at ' + money.format(net) + '/yr', fourYear) +
+        line('Your own federal student loans (max)', -federalCovers) +
+        line('Parent PLUS loans (capped at ' + money.format(PLUS_TOTAL_CAP) + ')', -plusCovers) +
+        '<li class="total"><span>Left to cover another way</span><span>' + money.format(gap) + '</span></li>' +
+        '</ul>';
+
+      if (gap > 0) {
+        html += '<p class="warn-box">Federal loans can\'t stretch this far. You\'d need about <strong>' +
+          money.format(gap) + '</strong> over four years from savings, scholarships, or private loans — ' +
+          'or roughly <strong>' + money.format(Math.round(gap / YEARS)) + ' a year</strong>. ' +
+          'This is exactly the gap <a href="blog/scholarships-hub.html">scholarships</a> are for.</p>';
+      } else {
+        html += '<p class="good-box">Federal loans could cover this on paper — but that\'s still <strong>' +
+          money.format(federalCovers + plusCovers) + '</strong> of debt for your family. Grants and scholarships beat loans every time.</p>';
+      }
+
+      if (parentPerYear > PLUS_ANNUAL_CAP) {
+        html += '<p class="warn-box"><strong>Watch the yearly cap too.</strong> Your family would need about ' +
+          money.format(Math.round(parentPerYear)) + ' a year from Parent PLUS, but the yearly cap is ' +
+          money.format(PLUS_ANNUAL_CAP) + '. Even if the four-year total worked out, you could run out of borrowing room before senior year.</p>';
+      }
+
+      return html + '</div>';
+    }).join('');
+  }
+
+  function line(label, amount) {
+    var sign = amount < 0 ? '-' : '';
+    return '<li><span>' + escapeHtml(label) + '</span><span>' + sign + money.format(Math.abs(amount)) + '</span></li>';
+  }
+
+  function escapeHtml(s) {
+    return String(s === null || s === undefined ? '' : s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+})();
+</script>
+</body>
+</html>

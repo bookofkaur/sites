@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="Peach State Savings — job application tracker. Pipeline, follow-up reminders, and event history for every application. Data stays in your browser." />
+<meta name="color-scheme" content="dark" />
+<meta name="theme-color" content="#0c0a09" />
+<title>Job Tracker — Peach State Savings</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --peach:#f97316;--peach-lt:#fb923c;--success:#22c55e;--warn:#eab308;--danger:#ef4444;
+  --bg:#0c0a09;--surface:#1c1917;--card:#292524;--border:#3d3836;
+  --text:#fafaf9;--muted:#a8a29e;
+}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+nav{display:flex;align-items:center;justify-content:space-between;padding:0.9rem 2rem;border-bottom:1px solid var(--border);position:sticky;top:0;background:rgba(12,10,9,0.97);backdrop-filter:blur(8px);z-index:100}
+.logo{font-size:1.2rem;font-weight:800}.logo span{color:var(--peach)}
+.nav-actions{display:flex;gap:0.5rem;align-items:center}
+.main{max-width:1000px;margin:0 auto;padding:2rem 1.25rem}
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.5rem;margin-bottom:1.25rem}
+.card-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1rem;margin-bottom:1.5rem}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:1.25rem}
+.stat-card .label{font-size:0.78rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px}
+.stat-card .value{font-size:1.8rem;font-weight:900;margin-top:0.2rem}
+input,textarea,select{background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:0.6rem 0.9rem;font-size:0.9rem;width:100%;outline:none;transition:border-color 0.2s;font-family:inherit}
+input:focus,select:focus,textarea:focus{border-color:var(--peach)}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;margin-bottom:0.75rem}
+.form-group{margin-bottom:0.75rem}
+label{font-size:0.82rem;color:var(--muted);display:block;margin-bottom:0.3rem}
+.btn{display:inline-flex;align-items:center;gap:0.4rem;padding:0.6rem 1.25rem;border-radius:8px;font-weight:700;font-size:0.88rem;cursor:pointer;border:none;transition:all 0.2s}
+.btn-primary{background:var(--peach);color:#fff}.btn-primary:hover{background:var(--peach-lt)}
+.btn-danger{background:rgba(239,68,68,0.12);color:var(--danger);border:1px solid rgba(239,68,68,0.25)}.btn-danger:hover{background:rgba(239,68,68,0.22)}
+.btn-ghost{background:transparent;border:1px solid var(--border);color:var(--text)}.btn-ghost:hover{border-color:var(--peach);color:var(--peach)}
+.btn-sm{padding:0.3rem 0.65rem;font-size:0.78rem}
+.badge{display:inline-block;padding:0.2rem 0.6rem;border-radius:20px;font-size:0.75rem;font-weight:700;white-space:nowrap}
+.badge-green{background:rgba(34,197,94,0.15);color:var(--success)}
+.badge-red{background:rgba(239,68,68,0.15);color:var(--danger)}
+.badge-yellow{background:rgba(234,179,8,0.15);color:var(--warn)}
+.badge-orange{background:rgba(249,115,22,0.15);color:var(--peach)}
+.badge-gray{background:rgba(168,162,158,0.15);color:var(--muted)}
+.section-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem;flex-wrap:wrap;gap:0.75rem}
+.section-header h2{font-size:1.4rem;font-weight:800}
+.alert{border:1px solid rgba(234,179,8,0.35);background:rgba(234,179,8,0.08);border-radius:10px;padding:1rem 1.25rem;margin-bottom:1.25rem;font-size:0.88rem}
+.alert strong{color:var(--warn)}
+.alert ul{margin:0.4rem 0 0 1.1rem}
+.app-card{background:var(--card);border:1px solid var(--border);border-radius:12px;margin-bottom:0.9rem;overflow:hidden}
+.app-head{display:flex;justify-content:space-between;align-items:center;gap:0.75rem;padding:1rem 1.25rem;cursor:pointer;flex-wrap:wrap}
+.app-head:hover{background:rgba(255,255,255,0.02)}
+.app-title{font-weight:700;font-size:0.95rem}
+.app-title .co{color:var(--peach)}
+.app-sub{font-size:0.8rem;color:var(--muted);margin-top:0.15rem}
+.app-body{border-top:1px solid var(--border);padding:1.25rem;display:none}
+.app-card.open .app-body{display:block}
+.meta-line{font-size:0.83rem;color:var(--muted);margin-bottom:0.75rem}
+.meta-line a{color:var(--peach)}
+.timeline{margin:0.75rem 0 1rem;font-size:0.85rem}
+.timeline li{list-style:none;padding:0.3rem 0;border-bottom:1px solid rgba(255,255,255,0.04)}
+.timeline .tdate{color:var(--muted);font-family:ui-monospace,monospace;font-size:0.78rem;margin-right:0.5rem}
+.timeline .ttype{font-weight:700;margin-right:0.4rem}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:200;display:flex;align-items:center;justify-content:center;padding:1rem}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:2rem;width:100%;max-width:520px;max-height:90vh;overflow-y:auto}
+.modal h2{font-size:1.2rem;font-weight:800;margin-bottom:1.25rem}
+.modal-actions{display:flex;gap:0.75rem;justify-content:flex-end;margin-top:1.25rem}
+.hidden{display:none!important}
+.empty{text-align:center;padding:3rem;color:var(--muted)}
+.toggle-row{display:flex;align-items:center;gap:0.5rem;font-size:0.85rem;color:var(--muted)}
+.toggle-row input{width:auto}
+.notes-block{font-size:0.85rem;color:var(--text);background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:0.75rem;margin-bottom:0.75rem;white-space:pre-wrap}
+footer{text-align:center;color:var(--muted);font-size:0.78rem;padding:1.5rem;border-top:1px solid var(--border);margin-top:2rem}
+@media(max-width:640px){.form-row{grid-template-columns:1fr}nav{padding:0.9rem 1rem}}
+</style>
+</head>
+<body>
+<nav>
+  <div class="logo">🍑 Peach State <span>Jobs</span></div>
+  <div class="nav-actions">
+    <button class="btn btn-ghost btn-sm" onclick="exportCsv()">Export CSV</button>
+    <button class="btn btn-ghost btn-sm" onclick="exportData()">Export</button>
+    <button class="btn btn-ghost btn-sm" onclick="document.getElementById('importFile').click()">Import</button>
+    <input type="file" id="importFile" class="hidden" accept="application/json" onchange="importData(event)" />
+    <button class="btn btn-primary btn-sm" onclick="openAddModal()">+ Add</button>
+  </div>
+</nav>
+
+<div class="main">
+  <div class="section-header">
+    <h2>Job Application Tracker</h2>
+    <div class="toggle-row">
+      <input type="checkbox" id="showClosed" onchange="render()" />
+      <label for="showClosed" style="margin:0">Show closed (rejected / ghosted / withdrawn)</label>
+    </div>
+  </div>
+
+  <div class="card-grid" id="stats"></div>
+  <div id="followups"></div>
+  <div id="pipeline"></div>
+</div>
+
+<!-- Add application modal -->
+<div class="modal-overlay hidden" id="addModal">
+  <div class="modal">
+    <h2>Add Application</h2>
+    <div class="form-row">
+      <div><label for="f-company">Company *</label><input id="f-company" /></div>
+      <div><label for="f-role">Role / Title *</label><input id="f-role" /></div>
+    </div>
+    <div class="form-row">
+      <div><label for="f-url">Job Link</label><input id="f-url" placeholder="https://..." /></div>
+      <div><label for="f-source">Source</label><input id="f-source" placeholder="LinkedIn, referral, Indeed..." /></div>
+    </div>
+    <div class="form-row">
+      <div><label for="f-pay">Pay</label><input id="f-pay" placeholder="$85k, $40/hr..." /></div>
+      <div><label for="f-location">Location</label><input id="f-location" placeholder="Remote, Atlanta..." /></div>
+    </div>
+    <div class="form-row">
+      <div><label for="f-status">Status</label><select id="f-status"></select></div>
+      <div><label for="f-applied">Date Applied / Contacted *</label><input id="f-applied" type="date" /></div>
+    </div>
+    <div class="form-row">
+      <div><label for="f-method">Method of Contact</label><select id="f-method"></select></div>
+      <div><label for="f-phone">Company Telephone</label><input id="f-phone" type="tel" placeholder="(404) 555-0100" /></div>
+    </div>
+    <div class="form-row">
+      <div><label for="f-addr1">Company Street Address 1</label><input id="f-addr1" placeholder="123 Peachtree St NE" /></div>
+      <div><label for="f-addr2">Street Address 2 (Apt/Suite)</label><input id="f-addr2" placeholder="Suite 400" /></div>
+    </div>
+    <div class="form-group"><label for="f-csz">Company City, State, Zip</label><input id="f-csz" placeholder="Atlanta, GA 30303" /></div>
+    <div class="form-group"><label for="f-notes">Notes</label><textarea id="f-notes" rows="3"></textarea></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeAddModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="addApplication()">Add Application</button>
+    </div>
+  </div>
+</div>
+
+<footer>Data lives in this browser (localStorage). Use Export for backups or to move devices.</footer>
+
+<script>
+'use strict';
+const KEY = 'pssjobs.apps.v1';
+const STATUSES = ['Interested','Applied','Interviewing','Offer','Accepted','Rejected','Ghosted','Withdrawn'];
+const ICONS = {Interested:'👀',Applied:'📤',Interviewing:'🎤',Offer:'🎉',Accepted:'✅',Rejected:'❌',Ghosted:'👻',Withdrawn:'🚪'};
+const BADGE = {Interested:'badge-gray',Applied:'badge-orange',Interviewing:'badge-yellow',Offer:'badge-green',Accepted:'badge-green',Rejected:'badge-red',Ghosted:'badge-red',Withdrawn:'badge-gray'};
+const ACTIVE = ['Interested','Applied','Interviewing','Offer'];
+const EVENT_TYPES = ['Interview','Follow-up','Recruiter contact','Offer received','Rejection','Resume drafted','Applied','Note'];
+const CONTACT_METHODS = ['Internet','Employer website','Email','Phone','In person','Mail','Other'];
+
+// Seeded from the Neon job_applications table, 2026-08-03
+const SEED = [
+  {id:1,company:'Mercor',role:'Generalist Expert',url:'https://work.mercor.com/jobs/list_AAABnp5YcIXDPTIS_P9GHIX5',source:'Referral link',pay:'',location:'',methodOfContact:'Internet',companyPhone:'',address1:'',address2:'',cityStateZip:'',status:'Interviewing',applied:'2026-07-10',nextAction:'Wait for interview results / follow up if no word',nextActionDate:'2026-07-17',notes:'First application in the tracker.',events:[{date:'2026-07-10',type:'Interview',details:'Completed first interview.'}]},
+  {id:2,company:'Delta Air Lines',role:'Project Manager, Business Analysis and Reporting - Revenue Pipeline',url:'https://delta.avature.net/careers/JobDetail?jobId=30859',source:'LinkedIn',pay:'',location:'',methodOfContact:'Internet',companyPhone:'(404) 715-2600',address1:'1030 Delta Blvd',address2:'',cityStateZip:'Atlanta, GA 30354',status:'Applied',applied:'2026-07-10',nextAction:'Follow up if no response',nextActionDate:'2026-07-24',notes:'Revenue Pipeline Solutions Center (RPSC). Job ID 30859.',events:[{date:'2026-07-10',type:'Note',details:'Application added to tracker.'}]},
+  {id:3,company:'Worldpay',role:'Data Analyst / Business Solution Consultant',url:'',source:'Global Payments careers site',pay:'',location:'',methodOfContact:'Internet',companyPhone:'',address1:'',address2:'',cityStateZip:'',status:'Applied',applied:'2026-07-12',nextAction:'Follow up if no response / prep for screen (payments + SQL/Power BI stories)',nextActionDate:'2026-07-26',notes:'Req JR0610151. Submitted 2026-07-12, portal status: Awaiting Review. Resume: Darrian_Belcher_Resume_Worldpay_DA.docx (+ PDF). Strong fit: Visa Token Services issuer approval uplift (ASAF ~10%), authorization/authentication, SQL/Excel/Power BI.',events:[{date:'2026-07-12',type:'Resume drafted',details:'Tailored resume created (Worldpay DA/BSC, ATS keyword-optimized).'},{date:'2026-07-12',type:'Applied',details:'Application submitted (Req JR0610151). Portal status: Awaiting Review.'}]},
+  {id:4,company:'Google',role:'Technical Program Manager, Compliance Security and Risk Management (CSRM) - Data Centers',url:'',source:'Google Careers',pay:'$138,000-$197,000 + 15% bonus target + equity',location:'Atlanta, GA (also Austin / NYC / Reston / Sunnyvale)',methodOfContact:'Internet',companyPhone:'',address1:'',address2:'',cityStateZip:'',status:'Applied',applied:'2026-07-28',nextAction:'',nextActionDate:'',notes:'Tailored resume: Darrian_Belcher_Resume_Google_TPM.docx/.pdf. Emphasized data orchestration/pipeline automation (4 Python tools, Jira Align API sync, GenAI summarization), regulated payments environment (PCI/tokenization/SCA) as proxy for CSRM requirement, and self-hosted infra stack for technical depth.',events:[{date:'2026-07-28',type:'Applied',details:'Submitted tailored resume (Google TPM CSRM version).'}]},
+  {id:5,company:'Mastercard',role:'Technical Program Management I, Marketing Technology Solutions',url:'',source:'Mastercard Careers',pay:'$61,000-$102,000 + bonus/commission potential',location:'Atlanta, GA',methodOfContact:'Internet',companyPhone:'',address1:'',address2:'',cityStateZip:'',status:'Applied',applied:'2026-07-28',nextAction:'',nextActionDate:'',notes:'Job ID R-282070. Tailored resume: Darrian_Belcher_Resume_Mastercard_TPM.docx/.pdf. Entry-level posting, tone calibrated to collaborative/support framing; SoleOps (CRM, AI listing generator) as the marketing-tech domain hook.',events:[{date:'2026-07-28',type:'Applied',details:'Submitted tailored resume + cover letter (Job ID R-282070, Atlanta).'}]}
+];
+
+const load = () => {
+  const raw = localStorage.getItem(KEY);
+  if (raw) { try { return JSON.parse(raw); } catch (e) { /* corrupted -> reseed */ } }
+  save(SEED);
+  return JSON.parse(JSON.stringify(SEED));
+};
+const save = (apps) => localStorage.setItem(KEY, JSON.stringify(apps));
+
+let apps = load();
+const openCards = new Set();
+
+const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const todayStr = () => new Date().toISOString().slice(0, 10);
+const fmt = (d) => d ? d : '—';
+const nextId = () => apps.reduce((m, a) => Math.max(m, a.id), 0) + 1;
+
+function sortApps(list) {
+  const rank = (s) => (s === 'Interviewing' || s === 'Offer') ? 0 : (ACTIVE.includes(s) ? 1 : 2);
+  return [...list].sort((a, b) => rank(a.status) - rank(b.status) || (b.applied || '').localeCompare(a.applied || '') || b.id - a.id);
+}
+
+function render() {
+  const showClosed = document.getElementById('showClosed').checked;
+  const active = apps.filter(a => ACTIVE.includes(a.status));
+  const interviewing = apps.filter(a => a.status === 'Interviewing');
+  const offers = apps.filter(a => a.status === 'Offer' || a.status === 'Accepted');
+
+  document.getElementById('stats').innerHTML = [
+    ['Total', apps.length], ['Active', active.length],
+    ['Interviewing', interviewing.length], ['Offers', offers.length]
+  ].map(([l, v]) => '<div class="stat-card"><div class="label">' + l + '</div><div class="value">' + v + '</div></div>').join('');
+
+  const soon = new Date(); soon.setDate(soon.getDate() + 2);
+  const due = active.filter(a => a.nextActionDate && a.nextActionDate <= soon.toISOString().slice(0, 10))
+                    .sort((a, b) => a.nextActionDate.localeCompare(b.nextActionDate));
+  document.getElementById('followups').innerHTML = due.length
+    ? '<div class="alert"><strong>Follow-ups due:</strong><ul>' + due.map(a =>
+        '<li><b>' + esc(a.company) + ' — ' + esc(a.role) + '</b>: ' + esc(a.nextAction || 'follow up') + ' (' + a.nextActionDate + ')</li>').join('') + '</ul></div>'
+    : '';
+
+  const visible = sortApps(apps).filter(a => showClosed || ACTIVE.includes(a.status) || a.status === 'Accepted');
+  document.getElementById('pipeline').innerHTML = visible.length
+    ? visible.map(cardHtml).join('')
+    : '<div class="empty">No applications yet — hit <b>+ Add</b> to log your first one.</div>';
+}
+
+function cardHtml(a) {
+  const meta = [a.pay && ('💰 ' + esc(a.pay)), a.location && ('📍 ' + esc(a.location)), a.source && ('🔗 via ' + esc(a.source))].filter(Boolean).join(' · ');
+  const address = [a.address1, a.address2, a.cityStateZip].filter(Boolean).map(esc).join(', ');
+  const contact = [a.methodOfContact && ('📇 ' + esc(a.methodOfContact)), a.companyPhone && ('📞 ' + esc(a.companyPhone)), address && ('🏢 ' + address)].filter(Boolean).join(' · ');
+  const link = a.url ? '<a href="' + esc(a.url) + '" target="_blank" rel="noopener">Job posting ↗</a>' : '';
+  const events = (a.events || []).slice().sort((x, y) => (y.date || '').localeCompare(x.date || ''));
+  const statusOpts = STATUSES.map(s => '<option value="' + s + '"' + (s === a.status ? ' selected' : '') + '>' + s + '</option>').join('');
+  const mcOpts = CONTACT_METHODS.map(m => '<option value="' + m + '"' + (m === (a.methodOfContact || 'Internet') ? ' selected' : '') + '>' + m + '</option>').join('');
+  const evOpts = '<option value="">Log event: (none)</option>' + EVENT_TYPES.map(t => '<option value="' + t + '">' + t + '</option>').join('');
+  return '<div class="app-card' + (openCards.has(a.id) ? ' open' : '') + '" id="card-' + a.id + '">' +
+    '<div class="app-head" onclick="toggleCard(' + a.id + ')">' +
+      '<div><div class="app-title">' + ICONS[a.status] + ' <span class="co">' + esc(a.company) + '</span> — ' + esc(a.role) + '</div>' +
+      '<div class="app-sub">applied ' + fmt(a.applied) + (a.nextActionDate ? ' · next: ' + a.nextActionDate : '') + '</div></div>' +
+      '<span class="badge ' + BADGE[a.status] + '">' + a.status + '</span>' +
+    '</div>' +
+    '<div class="app-body">' +
+      (meta ? '<div class="meta-line">' + meta + '</div>' : '') +
+      (contact ? '<div class="meta-line">' + contact + '</div>' : '') +
+      (link ? '<div class="meta-line">' + link + '</div>' : '') +
+      (a.notes ? '<div class="notes-block">' + esc(a.notes) + '</div>' : '') +
+      (events.length ? '<b style="font-size:0.85rem">Timeline</b><ul class="timeline">' + events.map(e =>
+        '<li><span class="tdate">' + esc(e.date) + '</span><span class="ttype">' + esc(e.type) + '</span>' + esc(e.details || '') + '</li>').join('') + '</ul>' : '') +
+      '<div class="form-row">' +
+        '<div><label for="st-' + a.id + '">Status</label><select id="st-' + a.id + '">' + statusOpts + '</select></div>' +
+        '<div><label for="ev-' + a.id + '">Log event</label><select id="ev-' + a.id + '">' + evOpts + '</select></div>' +
+      '</div>' +
+      '<div class="form-row">' +
+        '<div><label for="na-' + a.id + '">Next action</label><input id="na-' + a.id + '" value="' + esc(a.nextAction || '') + '" /></div>' +
+        '<div><label for="nad-' + a.id + '">Next action date</label><input id="nad-' + a.id + '" type="date" value="' + esc(a.nextActionDate || '') + '" /></div>' +
+      '</div>' +
+      '<div class="form-row">' +
+        '<div><label for="mc-' + a.id + '">Method of contact</label><select id="mc-' + a.id + '">' + mcOpts + '</select></div>' +
+        '<div><label for="ph-' + a.id + '">Company telephone</label><input id="ph-' + a.id + '" type="tel" value="' + esc(a.companyPhone || '') + '" /></div>' +
+      '</div>' +
+      '<div class="form-row">' +
+        '<div><label for="a1-' + a.id + '">Street address 1</label><input id="a1-' + a.id + '" value="' + esc(a.address1 || '') + '" /></div>' +
+        '<div><label for="a2-' + a.id + '">Street address 2 (Apt/Suite)</label><input id="a2-' + a.id + '" value="' + esc(a.address2 || '') + '" /></div>' +
+      '</div>' +
+      '<div class="form-group"><label for="csz-' + a.id + '">City, State, Zip</label><input id="csz-' + a.id + '" value="' + esc(a.cityStateZip || '') + '" /></div>' +
+      '<div class="form-group"><label for="evd-' + a.id + '">Event details (if logging an event)</label><input id="evd-' + a.id + '" /></div>' +
+      '<div class="form-group"><label for="nt-' + a.id + '">Notes</label><textarea id="nt-' + a.id + '" rows="3">' + esc(a.notes || '') + '</textarea></div>' +
+      '<div class="modal-actions" style="justify-content:space-between">' +
+        '<button class="btn btn-danger btn-sm" onclick="removeApp(' + a.id + ')">Delete</button>' +
+        '<button class="btn btn-primary btn-sm" onclick="saveApp(' + a.id + ')">Save</button>' +
+      '</div>' +
+    '</div></div>';
+}
+
+function toggleCard(id) {
+  if (openCards.has(id)) openCards.delete(id); else openCards.add(id);
+  document.getElementById('card-' + id).classList.toggle('open');
+}
+
+function saveApp(id) {
+  const a = apps.find(x => x.id === id);
+  if (!a) return;
+  a.status = document.getElementById('st-' + id).value;
+  a.nextAction = document.getElementById('na-' + id).value.trim();
+  a.nextActionDate = document.getElementById('nad-' + id).value;
+  a.methodOfContact = document.getElementById('mc-' + id).value;
+  a.companyPhone = document.getElementById('ph-' + id).value.trim();
+  a.address1 = document.getElementById('a1-' + id).value.trim();
+  a.address2 = document.getElementById('a2-' + id).value.trim();
+  a.cityStateZip = document.getElementById('csz-' + id).value.trim();
+  a.notes = document.getElementById('nt-' + id).value.trim();
+  const evType = document.getElementById('ev-' + id).value;
+  if (evType) {
+    a.events = a.events || [];
+    a.events.push({date: todayStr(), type: evType, details: document.getElementById('evd-' + id).value.trim()});
+  }
+  save(apps); render();
+}
+
+function removeApp(id) {
+  const a = apps.find(x => x.id === id);
+  if (!a) return;
+  if (!confirm('Delete "' + a.company + ' — ' + a.role + '"? This cannot be undone.')) return;
+  apps = apps.filter(x => x.id !== id);
+  openCards.delete(id);
+  save(apps); render();
+}
+
+function openAddModal() {
+  document.getElementById('f-status').innerHTML = STATUSES.map(s => '<option value="' + s + '"' + (s === 'Applied' ? ' selected' : '') + '>' + s + '</option>').join('');
+  document.getElementById('f-method').innerHTML = CONTACT_METHODS.map(m => '<option value="' + m + '"' + (m === 'Internet' ? ' selected' : '') + '>' + m + '</option>').join('');
+  document.getElementById('f-applied').value = todayStr();
+  document.getElementById('addModal').classList.remove('hidden');
+  document.getElementById('f-company').focus();
+}
+function closeAddModal() { document.getElementById('addModal').classList.add('hidden'); }
+
+function addApplication() {
+  const val = (fid) => document.getElementById(fid).value.trim();
+  const company = val('f-company'), role = val('f-role');
+  if (!company || !role) { alert('Company and Role are required.'); return; }
+  apps.push({
+    id: nextId(), company: company, role: role, url: val('f-url'), source: val('f-source'),
+    pay: val('f-pay'), location: val('f-location'),
+    methodOfContact: document.getElementById('f-method').value, companyPhone: val('f-phone'),
+    address1: val('f-addr1'), address2: val('f-addr2'), cityStateZip: val('f-csz'),
+    status: document.getElementById('f-status').value,
+    applied: document.getElementById('f-applied').value, nextAction: '', nextActionDate: '',
+    notes: val('f-notes'), events: []
+  });
+  ['f-company','f-role','f-url','f-source','f-pay','f-location','f-phone','f-addr1','f-addr2','f-csz','f-notes'].forEach(fid => { document.getElementById(fid).value = ''; });
+  save(apps); closeAddModal(); render();
+}
+
+function exportCsv() {
+  const cols = ['Method of Contact','Date Applied/Contacted','Business/Company Name','Telephone Number','Street Address 1','Street Address 2','City State Zip','Position','Result/Status'];
+  const q = (v) => '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"';
+  const rows = sortApps(apps).map(a => [
+    a.methodOfContact || '', a.applied || '', a.company, a.companyPhone || '',
+    a.address1 || '', a.address2 || '', a.cityStateZip || '', a.role, a.status
+  ].map(q).join(','));
+  const blob = new Blob([cols.map(q).join(',') + '\r\n' + rows.join('\r\n') + '\r\n'], {type: 'text/csv'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'work-search-log-' + todayStr() + '.csv';
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+function exportData() {
+  const blob = new Blob([JSON.stringify(apps, null, 2)], {type: 'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'pss-job-tracker-' + todayStr() + '.json';
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+function importData(ev) {
+  const file = ev.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const data = JSON.parse(reader.result);
+      if (!Array.isArray(data)) throw new Error('not an array');
+      if (!confirm('Replace your ' + apps.length + ' tracked application(s) with the ' + data.length + ' in this file?')) return;
+      apps = data;
+      save(apps); render();
+    } catch (e) {
+      alert('Import failed: not a valid tracker export.');
+    }
+  };
+  reader.readAsText(file);
+  ev.target.value = '';
+}
+
+document.getElementById('addModal').addEventListener('click', function (e) {
+  if (e.target === this) closeAddModal();
+});
+
+render();
+</script>
+</body>
+</html>

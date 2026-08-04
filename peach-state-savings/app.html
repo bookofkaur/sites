@@ -114,6 +114,7 @@ tr:hover td{background:rgba(255,255,255,0.02)}
     <button onclick="showPanel('networth')" id="nav-networth">Net Worth</button>
     <button onclick="showPanel('cards')" id="nav-cards">Cards & Debt</button>
     <button onclick="showPanel('bills')" id="nav-bills">Bills</button>
+    <button onclick="showPanel('jobs')" id="nav-jobs">Jobs</button>
   </div>
   <button class="nav-burger" aria-label="Menu" aria-expanded="false" onclick="toggleMobileNav(this)">☰</button>
 </nav>
@@ -130,7 +131,7 @@ tr:hover td{background:rgba(255,255,255,0.02)}
     <div class="sidebar-item" onclick="showPanel('cards')" id="sb-cards">💳 Cards & Debt</div>
     <div class="sidebar-item" onclick="showPanel('bills')" id="sb-bills">📅 Bills</div>
     <div class="sidebar-section">More</div>
-    <a class="sidebar-item" href="jobs.html" style="text-decoration:none">💼 Job Tracker</a>
+    <div class="sidebar-item" onclick="showPanel('jobs')" id="sb-jobs">💼 Jobs</div>
   </div>
 
   <div class="main">
@@ -239,6 +240,9 @@ tr:hover td{background:rgba(255,255,255,0.02)}
       </div>
       <div class="card-grid" id="bills-stats"></div>
       <div id="bills-list"></div>
+    </div>
+    <div class="panel" id="panel-jobs">
+      <iframe src="jobs.html" title="Job Application Tracker" loading="lazy" style="width:100%;height:calc(100vh - 130px);border:none;border-radius:12px;background:var(--bg)"></iframe>
     </div>
   </div>
 </div>

@@ -149,16 +149,33 @@ const CONTACT_METHODS = ['Internet','Employer website','Email','Phone','In perso
 
 // Seeded from the Neon job_applications table, 2026-08-03
 const SEED = [
-  {id:1,company:'Mercor',role:'Generalist Expert',url:'https://work.mercor.com/jobs/list_AAABnp5YcIXDPTIS_P9GHIX5',source:'Referral link',pay:'',location:'',methodOfContact:'Internet',companyPhone:'',address1:'',address2:'',cityStateZip:'',status:'Interviewing',applied:'2026-07-10',nextAction:'Wait for interview results / follow up if no word',nextActionDate:'2026-07-17',notes:'First application in the tracker.',events:[{date:'2026-07-10',type:'Interview',details:'Completed first interview.'}]},
+  {id:1,company:'Mercor',role:'Generalist Expert',url:'https://work.mercor.com/jobs/list_AAABnp5YcIXDPTIS_P9GHIX5',source:'Referral link',pay:'',location:'',methodOfContact:'Internet',companyPhone:'(650) 200-0797',address1:'55 2nd St',address2:'Suite 2600',cityStateZip:'San Francisco, CA 94105',status:'Interviewing',applied:'2026-07-10',nextAction:'Wait for interview results / follow up if no word',nextActionDate:'2026-07-17',notes:'First application in the tracker.',events:[{date:'2026-07-10',type:'Interview',details:'Completed first interview.'}]},
   {id:2,company:'Delta Air Lines',role:'Project Manager, Business Analysis and Reporting - Revenue Pipeline',url:'https://delta.avature.net/careers/JobDetail?jobId=30859',source:'LinkedIn',pay:'',location:'',methodOfContact:'Internet',companyPhone:'(404) 715-2600',address1:'1030 Delta Blvd',address2:'',cityStateZip:'Atlanta, GA 30354',status:'Applied',applied:'2026-07-10',nextAction:'Follow up if no response',nextActionDate:'2026-07-24',notes:'Revenue Pipeline Solutions Center (RPSC). Job ID 30859.',events:[{date:'2026-07-10',type:'Note',details:'Application added to tracker.'}]},
-  {id:3,company:'Worldpay',role:'Data Analyst / Business Solution Consultant',url:'',source:'Global Payments careers site',pay:'',location:'',methodOfContact:'Internet',companyPhone:'',address1:'',address2:'',cityStateZip:'',status:'Applied',applied:'2026-07-12',nextAction:'Follow up if no response / prep for screen (payments + SQL/Power BI stories)',nextActionDate:'2026-07-26',notes:'Req JR0610151. Submitted 2026-07-12, portal status: Awaiting Review. Resume: Darrian_Belcher_Resume_Worldpay_DA.docx (+ PDF). Strong fit: Visa Token Services issuer approval uplift (ASAF ~10%), authorization/authentication, SQL/Excel/Power BI.',events:[{date:'2026-07-12',type:'Resume drafted',details:'Tailored resume created (Worldpay DA/BSC, ATS keyword-optimized).'},{date:'2026-07-12',type:'Applied',details:'Application submitted (Req JR0610151). Portal status: Awaiting Review.'}]},
-  {id:4,company:'Google',role:'Technical Program Manager, Compliance Security and Risk Management (CSRM) - Data Centers',url:'',source:'Google Careers',pay:'$138,000-$197,000 + 15% bonus target + equity',location:'Atlanta, GA (also Austin / NYC / Reston / Sunnyvale)',methodOfContact:'Internet',companyPhone:'',address1:'',address2:'',cityStateZip:'',status:'Applied',applied:'2026-07-28',nextAction:'',nextActionDate:'',notes:'Tailored resume: Darrian_Belcher_Resume_Google_TPM.docx/.pdf. Emphasized data orchestration/pipeline automation (4 Python tools, Jira Align API sync, GenAI summarization), regulated payments environment (PCI/tokenization/SCA) as proxy for CSRM requirement, and self-hosted infra stack for technical depth.',events:[{date:'2026-07-28',type:'Applied',details:'Submitted tailored resume (Google TPM CSRM version).'}]},
-  {id:5,company:'Mastercard',role:'Technical Program Management I, Marketing Technology Solutions',url:'',source:'Mastercard Careers',pay:'$61,000-$102,000 + bonus/commission potential',location:'Atlanta, GA',methodOfContact:'Internet',companyPhone:'',address1:'',address2:'',cityStateZip:'',status:'Applied',applied:'2026-07-28',nextAction:'',nextActionDate:'',notes:'Job ID R-282070. Tailored resume: Darrian_Belcher_Resume_Mastercard_TPM.docx/.pdf. Entry-level posting, tone calibrated to collaborative/support framing; SoleOps (CRM, AI listing generator) as the marketing-tech domain hook.',events:[{date:'2026-07-28',type:'Applied',details:'Submitted tailored resume + cover letter (Job ID R-282070, Atlanta).'}]}
+  {id:3,company:'Worldpay',role:'Data Analyst / Business Solution Consultant',url:'',source:'Global Payments careers site',pay:'',location:'',methodOfContact:'Internet',companyPhone:'(877) 713-5964',address1:'8500 Governors Hill Dr',address2:'',cityStateZip:'Cincinnati, OH 45249',status:'Applied',applied:'2026-07-12',nextAction:'Follow up if no response / prep for screen (payments + SQL/Power BI stories)',nextActionDate:'2026-07-26',notes:'Req JR0610151. Submitted 2026-07-12, portal status: Awaiting Review. Resume: Darrian_Belcher_Resume_Worldpay_DA.docx (+ PDF). Strong fit: Visa Token Services issuer approval uplift (ASAF ~10%), authorization/authentication, SQL/Excel/Power BI.',events:[{date:'2026-07-12',type:'Resume drafted',details:'Tailored resume created (Worldpay DA/BSC, ATS keyword-optimized).'},{date:'2026-07-12',type:'Applied',details:'Application submitted (Req JR0610151). Portal status: Awaiting Review.'}]},
+  {id:4,company:'Google',role:'Technical Program Manager, Compliance Security and Risk Management (CSRM) - Data Centers',url:'',source:'Google Careers',pay:'$138,000-$197,000 + 15% bonus target + equity',location:'Atlanta, GA (also Austin / NYC / Reston / Sunnyvale)',methodOfContact:'Internet',companyPhone:'(650) 253-0000',address1:'10 10th St NE',address2:'',cityStateZip:'Atlanta, GA 30309',status:'Applied',applied:'2026-07-28',nextAction:'',nextActionDate:'',notes:'Tailored resume: Darrian_Belcher_Resume_Google_TPM.docx/.pdf. Emphasized data orchestration/pipeline automation (4 Python tools, Jira Align API sync, GenAI summarization), regulated payments environment (PCI/tokenization/SCA) as proxy for CSRM requirement, and self-hosted infra stack for technical depth.',events:[{date:'2026-07-28',type:'Applied',details:'Submitted tailored resume (Google TPM CSRM version).'}]},
+  {id:5,company:'Mastercard',role:'Technical Program Management I, Marketing Technology Solutions',url:'',source:'Mastercard Careers',pay:'$61,000-$102,000 + bonus/commission potential',location:'Atlanta, GA',methodOfContact:'Internet',companyPhone:'(914) 249-2000',address1:'675 Ponce De Leon Ave NE',address2:'',cityStateZip:'Atlanta, GA 30308',status:'Applied',applied:'2026-07-28',nextAction:'',nextActionDate:'',notes:'Job ID R-282070. Tailored resume: Darrian_Belcher_Resume_Mastercard_TPM.docx/.pdf. Entry-level posting, tone calibrated to collaborative/support framing; SoleOps (CRM, AI listing generator) as the marketing-tech domain hook.',events:[{date:'2026-07-28',type:'Applied',details:'Submitted tailored resume + cover letter (Job ID R-282070, Atlanta).'}]}
 ];
+
+const WS_FIELDS = ['methodOfContact','companyPhone','address1','address2','cityStateZip'];
+
+// Devices seeded before the work-search fields existed: pull the researched
+// values from SEED into stored entries, but never overwrite a user's own edits.
+const backfill = (stored) => {
+  let changed = false;
+  stored.forEach((a) => {
+    const s = SEED.find(x => x.id === a.id && x.company === a.company);
+    if (!s) return;
+    WS_FIELDS.forEach((f) => {
+      if (!a[f] && s[f]) { a[f] = s[f]; changed = true; }
+    });
+  });
+  if (changed) save(stored);
+  return stored;
+};
 
 const load = () => {
   const raw = localStorage.getItem(KEY);
-  if (raw) { try { return JSON.parse(raw); } catch (e) { /* corrupted -> reseed */ } }
+  if (raw) { try { return backfill(JSON.parse(raw)); } catch (e) { /* corrupted -> reseed */ } }
   save(SEED);
   return JSON.parse(JSON.stringify(SEED));
 };

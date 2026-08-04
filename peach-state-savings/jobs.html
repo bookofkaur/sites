@@ -6,6 +6,9 @@
 <meta name="description" content="Peach State Savings — job application tracker. Pipeline, follow-up reminders, and event history for every application. Data stays in your browser." />
 <meta name="color-scheme" content="dark" />
 <meta name="theme-color" content="#0c0a09" />
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png" />
 <title>Job Tracker — Peach State Savings</title>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -69,7 +72,7 @@ label{font-size:0.82rem;color:var(--muted);display:block;margin-bottom:0.3rem}
 .toggle-row input{width:auto}
 .notes-block{font-size:0.85rem;color:var(--text);background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:0.75rem;margin-bottom:0.75rem;white-space:pre-wrap}
 footer{text-align:center;color:var(--muted);font-size:0.78rem;padding:1.5rem;border-top:1px solid var(--border);margin-top:2rem}
-@media(max-width:640px){.form-row{grid-template-columns:1fr}nav{padding:0.9rem 1rem}}
+@media(max-width:640px){.form-row{grid-template-columns:1fr}nav{padding:0.75rem 1rem;flex-wrap:wrap;gap:0.4rem}.logo{font-size:1rem;flex-basis:100%}.nav-actions{flex-wrap:wrap}.btn-sm{padding:0.3rem 0.55rem;font-size:0.74rem}}
 </style>
 </head>
 <body>

@@ -39,6 +39,7 @@ footer{text-align:center;color:var(--muted);font-size:0.8rem;padding:2rem 1rem;b
 footer a{color:var(--muted)}footer a:hover,footer a:focus-visible{color:var(--accent)}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
+<script src="analytics.js" defer></script>
 </head>
 <body>
 <nav>
@@ -59,7 +60,7 @@ footer a{color:var(--muted)}footer a:hover,footer a:focus-visible{color:var(--ac
         <li>Listing + sold-order tracking</li>
         <li>Runs in your browser — no account</li>
       </ul>
-      <a class="btn ghost" href="app.html">Launch Free</a>
+      <a class="btn ghost" href="app.html" onclick="soTrack&&soTrack('plan-click-lite')">Launch Free</a>
     </div>
     <div class="plan featured">
       <h2>AI Pricing</h2>
@@ -116,6 +117,7 @@ const STRIPE_LINKS = {
 };
 document.querySelectorAll('[data-plan]').forEach(btn=>{
   btn.addEventListener('click',()=>{
+    if(window.soTrack)soTrack('plan-click-'+btn.dataset.plan);
     const link=STRIPE_LINKS[btn.dataset.plan];
     if(link){location.href=link;return;}
     btn.textContent='Launching this week — email me for early access';
